@@ -1,9 +1,9 @@
 openapi: 3.1.0
 
 info:
-  title: Starter Kit API
+  title: Restaurant Discovery API
   version: 1.0.0
-  description: REST API for the Starter Kit application
+  description: REST API for restaurant discovery, reviews, favorites, ownership requests, owner management, and admin moderation.
 
 servers:
   - url: /api
@@ -12,6 +12,20 @@ servers:
 tags:
   - name: Auth
     description: Authentication and session management
+  - name: Restaurants
+    description: Restaurant brands and public discovery
+  - name: Branches
+    description: Physical restaurant branches
+  - name: Reviews
+    description: Customer reviews for branches
+  - name: Images
+    description: Branch images
+  - name: Favorites
+    description: Saved restaurants
+  - name: Restaurant Claims
+    description: Ownership requests
+  - name: Admin
+    description: Admin moderation and logs
 
 # ─── Reusable components ───────────────────────────────────────────────────────
 components:
@@ -117,6 +131,70 @@ components:
                 type: string
                 example: Invalid email address
 
+    Restaurant:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          example: Pizza Hut
+        description:
+          type: string
+        cuisineType:
+          type: string
+          example: Italian
+        priceRange:
+          type: string
+          enum: [$, $$, $$$, $$$$]
+          example: $$
+        verified:
+          type: boolean
+          example: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Branch:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        restaurantId:
+          type: string
+          format: uuid
+        name:
+          type: string
+          example: Beirut Branch
+        address:
+          type: string
+        city:
+          type: string
+          example: Beirut
+        latitude:
+          type: number
+          format: float
+        longitude:
+          type: number
+          format: float
+        phone:
+          type: string
+        openingHours:
+          type: object
+          example:
+            monday: "09:00-23:00"
+            tuesday: "09:00-23:00"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
 # ─── Paths ─────────────────────────────────────────────────────────────────────
 paths:
   /auth/register:
@@ -262,3 +340,383 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+
+  /restaurants:
+    get:
+      tags: [Restaurants]
+      summary: Get all restaurants
+      responses:
+        "200":
+          description: List of restaurants
+
+  /restaurants/{restaurantId}:
+    get:
+      tags: [Restaurants]
+      summary: Get restaurant details
+      parameters:
+        - in: path
+          name: restaurantId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Restaurant details
+
+  /restaurants/{restaurantId}/branches:
+    get:
+      tags: [Branches]
+      summary: Get branches for a restaurant
+      parameters:
+        - in: path
+          name: restaurantId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: List of branches
+
+  /branches/{branchId}:
+    get:
+      tags: [Branches]
+      summary: Get branch details
+      parameters:
+        - in: path
+          name: branchId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Branch details
+
+  /branches/{branchId}/reviews:
+    get:
+      tags: [Reviews]
+      summary: Get reviews for a branch
+      parameters:
+        - in: path
+          name: branchId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: List of reviews
+
+    post:
+      tags: [Reviews]
+      summary: Create a review for a branch
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: branchId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [rating]
+              properties:
+                rating:
+                  type: integer
+                  minimum: 1
+                  maximum: 5
+                  example: 5
+                comment:
+                  type: string
+                  example: The pasta was amazing.
+      responses:
+        "201":
+          description: Review created
+        "401":
+          description: Unauthorized
+
+  /reviews/{reviewId}:
+    patch:
+      tags: [Reviews]
+      summary: Update my review
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: reviewId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                rating:
+                  type: integer
+                  minimum: 1
+                  maximum: 5
+                  example: 4
+                comment:
+                  type: string
+                  example: Good food, but service was slow.
+      responses:
+        "200":
+          description: Review updated
+        "401":
+          description: Unauthorized
+        "403":
+          description: Cannot edit another user's review
+
+    delete:
+      tags: [Reviews]
+      summary: Delete my review
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: reviewId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Review deleted
+        "401":
+          description: Unauthorized
+        "403":
+          description: Cannot delete another user's review
+
+  /favorites:
+    get:
+      tags: [Favorites]
+      summary: Get my favorite restaurants
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: List of favorite restaurants
+        "401":
+          description: Unauthorized
+
+  /favorites/{restaurantId}:
+    post:
+      tags: [Favorites]
+      summary: Add restaurant to favorites
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: restaurantId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "201":
+          description: Restaurant added to favorites
+        "401":
+          description: Unauthorized
+
+    delete:
+      tags: [Favorites]
+      summary: Remove restaurant from favorites
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: restaurantId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Restaurant removed from favorites
+        "401":
+          description: Unauthorized
+  /restaurant-claims:
+    post:
+      tags: [Restaurant Claims]
+      summary: Submit a restaurant ownership request
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - restaurantId
+              properties:
+                restaurantId:
+                  type: string
+                  format: uuid
+                message:
+                  type: string
+                  example: I am the owner of this restaurant.
+      responses:
+        "201":
+          description: Ownership request submitted
+        "401":
+          description: Unauthorized
+
+    get:
+      tags: [Restaurant Claims]
+      summary: Get my ownership requests
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: List of my ownership requests
+        "401":
+          description: Unauthorized
+
+  /admin/restaurant-claims:
+    get:
+      tags: [Admin]
+      summary: Get all restaurant ownership requests
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: List of ownership requests
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+
+  /admin/restaurant-claims/{claimId}/approve:
+    patch:
+      tags: [Admin]
+      summary: Approve a restaurant ownership request
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: claimId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Ownership request approved
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+
+  /admin/restaurant-claims/{claimId}/reject:
+    patch:
+      tags: [Admin]
+      summary: Reject a restaurant ownership request
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: claimId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Ownership request rejected
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+  
+  /admin/restaurants/{restaurantId}/verify:
+    patch:
+      tags: [Admin]
+      summary: Verify a restaurant
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: restaurantId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Restaurant verified
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+
+  /admin/reviews:
+    get:
+      tags: [Admin]
+      summary: Get all reviews
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: List of reviews
+
+  /admin/reviews/{reviewId}:
+    delete:
+      tags: [Admin]
+      summary: Remove a review
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: reviewId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Review removed
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+
+  /admin/imports/restaurants:
+    post:
+      tags: [Admin]
+      summary: Import restaurants from external sources
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Import started
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+
+  /admin/imports/logs:
+    get:
+      tags: [Admin]
+      summary: Get restaurant import logs
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: List of import logs
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
