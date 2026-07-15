@@ -1,5 +1,5 @@
 {
-  "name": "@starter-kit/api",
+  "name": "@fp_restaurant/api",
   "version": "0.0.1",
   "private": true,
   "main": "./server.ts",
@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "@asteasolutions/zod-to-openapi": "^7.3.4",
-    "@starter-kit/shared": "*",
+    "@fp_restaurant/shared": "*",
     "@types/cookie-parser": "^1.4.10",
     "bullmq": "^5.12.0",
     "cookie-parser": "^1.4.7",
