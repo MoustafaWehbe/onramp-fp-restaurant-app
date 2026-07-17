@@ -4,6 +4,7 @@ import { AppLayout } from "../layouts/AppLayout";
 import { AuthLayout } from "../layouts/AuthLayout";
 import { Login } from "../pages/auth/Login";
 import { Register } from "../pages/auth/Register";
+import { EmailVerification } from "../pages/auth/EmailVerification";
 import { Dashboard } from "../pages/dashboard/Dashboard";
 import { Settings } from "../pages/dashboard/Settings";
 import { NotFound } from "../pages/NotFound";
@@ -27,6 +28,7 @@ export function AppRoutes() {
 
       <Route element={<AuthCenteredLayout />}>
         <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/email-verification" element={<EmailVerification />} />
       </Route>
 
       {/* Protected app routes */}
