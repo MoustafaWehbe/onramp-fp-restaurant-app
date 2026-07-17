@@ -42,9 +42,6 @@ export default function ForgotPasswordPage() {
     try {
       // Temporary simulation until the backend endpoint is ready.
       await new Promise((resolve) => setTimeout(resolve, 800));
-
-      console.log("Forgot password request:", data);
-
       setSubmittedEmail(data.email);
       setIsSubmitted(true);
     } catch (error) {
