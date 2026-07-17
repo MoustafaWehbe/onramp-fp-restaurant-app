@@ -83,7 +83,7 @@ export function Login() {
               id="email"
               type="email"
               placeholder="you@example.com"
-              className="h-16 rounded-2xl border-gray-300 bg-white px-6 text-lg placeholder:text-gray-400 focus-visible:ring-2 focus-visible:ring-orange-500"
+              className="h-16 rounded-2xl border-gray-300 bg-white px-6 text-lg placeholder:text-gray-400 "
               {...register("email")}
             />
 
@@ -106,9 +106,8 @@ export function Login() {
 
               <Link
                 to="/forgot-password"
-                className="text-base font-medium text-orange-500 hover:text-orange-600"
-              >
-                Forgot?
+                className="text-base font-medium text-primary hover:opacity-80"              >
+                Forgot password?
               </Link>
             </div>
 
@@ -117,7 +116,7 @@ export function Login() {
                 id="password"
                 type={showPassword ? "text" : "password"}
                 placeholder="••••••••"
-                className="h-16 rounded-2xl border-gray-300 bg-white px-6 pr-14 text-lg placeholder:text-gray-400 focus-visible:ring-2 focus-visible:ring-orange-500"
+                className="h-16 rounded-2xl border-gray-300 bg-white px-6 pr-14 text-lg placeholder:text-gray-400 "
                 {...register("password")}
               />
 
@@ -125,7 +124,7 @@ export function Login() {
                 type="button"
                 aria-label={showPassword ? "Hide password" : "Show password"}
                 onClick={() => setShowPassword((prev) => !prev)}
-                className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-500 transition hover:text-orange-500"
+                className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-500 transition hover:text-primary"
               >
                 {showPassword ? <EyeOff size={22} /> : <Eye size={22} />}
               </button>
@@ -141,8 +140,7 @@ export function Login() {
           <Button
             type="submit"
             disabled={isSubmitting}
-            className="h-20 w-full rounded-2xl bg-orange-500 text-xl font-semibold hover:bg-orange-600"
-          >
+            className="h-20 w-full rounded-2xl text-xl font-semibold">
             {isSubmitting ? "Signing in..." : "Sign In"}
           </Button>
         </form>
@@ -153,7 +151,7 @@ export function Login() {
           New to Platera?{" "}
           <Link
             to="/register"
-            className="font-semibold text-orange-500 hover:underline"
+            className="font-semibold text-primary hover:underline"
           >
             Create an account
           </Link>

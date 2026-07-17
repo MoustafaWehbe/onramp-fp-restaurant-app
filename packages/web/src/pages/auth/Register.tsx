@@ -55,125 +55,129 @@ export function Register() {
     }
   };
 
-  return (
-    <Card className="w-full max-w-2xl rounded-3xl border-gray-200 bg-gray-50/80 px-8 py-8 shadow-lg">
-      <CardHeader className="space-y-3 pb-10">
-        <CardTitle className="text-5xl font-extrabold tracking-tight text-gray-950">
-          Create an account
-        </CardTitle>
+return (
+    <Card className="w-full max-w-2xl rounded-3xl border-gray-200 bg-gray-50/80 px-8 py-8 shadow-lg"> 
+    <CardHeader className="space-y-3 pb-10">
+      <CardTitle className="text-5xl font-extrabold tracking-tight text-foreground">
+        Create an account
+      </CardTitle>
 
-        <CardDescription className="text-xl leading-relaxed text-gray-500">
-          Fill in the details below to get started.
-        </CardDescription>
-      </CardHeader>
+      <CardDescription className="text-xl leading-relaxed text-muted-foreground">
+        Fill in the details below to get started.
+      </CardDescription>
+    </CardHeader>
 
-      <CardContent>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-10">
-          {error && (
-            <div className="rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-base text-red-600">
-              {error}
-            </div>
+    <CardContent>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-10">
+        {error && (
+          <div className="rounded-2xl border border-destructive/20 bg-destructive/10 px-5 py-4 text-base text-destructive">
+            {error}
+          </div>
+        )}
+
+        {/* Name */}
+        <div className="space-y-4">
+          <Label
+            htmlFor="name"
+            className="text-xl font-semibold text-foreground"
+          >
+            Name
+          </Label>
+
+          <Input
+            id="name"
+            placeholder="Alice Smith"
+            className="h-16 rounded-2xl border-input bg-background px-6 text-lg placeholder:text-muted-foreground "
+            {...register("name")}
+          />
+
+          {errors.name && (
+            <p className="text-base text-destructive">
+              {errors.name.message}
+            </p>
           )}
+        </div>
 
-          {/* Name */}
-          <div className="space-y-4">
-            <Label
-              htmlFor="name"
-              className="text-xl font-semibold text-gray-900"
-            >
-              Name
-            </Label>
+        {/* Email */}
+        <div className="space-y-4">
+          <Label
+            htmlFor="email"
+            className="text-xl font-semibold text-foreground"
+          >
+            Email
+          </Label>
 
+          <Input
+            id="email"
+            type="email"
+            placeholder="you@example.com"
+            className="h-16 rounded-2xl border-input bg-background px-6 text-lg placeholder:text-muted-foreground "
+            {...register("email")}
+          />
+
+          {errors.email && (
+            <p className="text-base text-destructive">
+              {errors.email.message}
+            </p>
+          )}
+        </div>
+
+        {/* Password */}
+        <div className="space-y-4">
+          <Label
+            htmlFor="password"
+            className="text-xl font-semibold text-foreground"
+          >
+            Password
+          </Label>
+
+          <div className="relative">
             <Input
-              id="name"
-              placeholder="Alice Smith"
-              className="h-16 rounded-2xl border-gray-300 bg-white px-6 text-lg placeholder:text-gray-400 focus-visible:ring-2 focus-visible:ring-orange-500"
-              {...register("name")}
+              id="password"
+              type={showPassword ? "text" : "password"}
+              placeholder="••••••••"
+              className="h-16 rounded-2xl border-input bg-background px-6 pr-14 text-lg placeholder:text-muted-foreground "
+              {...register("password")}
             />
 
-            {errors.name && (
-              <p className="text-base text-red-500">{errors.name.message}</p>
-            )}
-          </div>
-
-          {/* Email */}
-          <div className="space-y-4">
-            <Label
-              htmlFor="email"
-              className="text-xl font-semibold text-gray-900"
+            <button
+              type="button"
+              aria-label={showPassword ? "Hide password" : "Show password"}
+              onClick={() => setShowPassword((prev) => !prev)}
+              className="absolute right-5 top-1/2 -translate-y-1/2 text-muted-foreground transition hover:text-primary"
             >
-              Email
-            </Label>
-
-            <Input
-              id="email"
-              type="email"
-              placeholder="you@example.com"
-              className="h-16 rounded-2xl border-gray-300 bg-white px-6 text-lg placeholder:text-gray-400 focus-visible:ring-2 focus-visible:ring-orange-500"
-              {...register("email")}
-            />
-
-            {errors.email && (
-              <p className="text-base text-red-500">{errors.email.message}</p>
-            )}
+              {showPassword ? <EyeOff size={22} /> : <Eye size={22} />}
+            </button>
           </div>
 
-          {/* Password */}
-          <div className="space-y-4">
-            <Label
-              htmlFor="password"
-              className="text-xl font-semibold text-gray-900"
-            >
-              Password
-            </Label>
+          {errors.password && (
+            <p className="text-base text-destructive">
+              {errors.password.message}
+            </p>
+          )}
+        </div>
 
-            <div className="relative">
-              <Input
-                id="password"
-                type={showPassword ? "text" : "password"}
-                placeholder="••••••••"
-                className="h-16 rounded-2xl border-gray-300 bg-white px-6 pr-14 text-lg placeholder:text-gray-400 focus-visible:ring-2 focus-visible:ring-orange-500"
-                {...register("password")}
-              />
+        <Button
+          type="submit"
+          disabled={isSubmitting}
+          className="h-20 w-full rounded-2xl text-xl font-semibold"
+        >
+          {isSubmitting ? "Creating account..." : "Create account"}
+        </Button>
+      </form>
+    </CardContent>
 
-              <button
-                type="button"
-                aria-label={showPassword ? "Hide password" : "Show password"}
-                onClick={() => setShowPassword((prev) => !prev)}
-                className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-500 transition hover:text-orange-500"
-              >
-                {showPassword ? <EyeOff size={22} /> : <Eye size={22} />}
-              </button>
-            </div>
-
-            {errors.password && (
-              <p className="text-base text-red-500">
-                {errors.password.message}
-              </p>
-            )}
-          </div>
-
-          <Button
-            type="submit"
-            disabled={isSubmitting}
-            className="h-20 w-full rounded-2xl bg-orange-500 text-xl font-semibold hover:bg-orange-600"
-          >
-            {isSubmitting ? "Creating account..." : "Create account"}
-          </Button>
-        </form>
-      </CardContent>
-
-      <CardFooter className="justify-center pt-8">
-        <p className="text-lg text-gray-500">
-          Already have an account?{" "}
-          <Link
-            to="/login"
-            className="font-semibold text-orange-500 hover:underline"
-          >
-            Sign in
-          </Link>
-        </p>
-      </CardFooter>
-    </Card>
-  );
+    <CardFooter className="justify-center pt-8">
+      <p className="text-lg text-muted-foreground">
+        Already have an account?{" "}
+        <Link
+          to="/login"
+          className="font-semibold text-primary hover:underline"
+        >
+          Sign in
+        </Link>
+      </p>
+    </CardFooter>
+  </Card>
+);
 }
