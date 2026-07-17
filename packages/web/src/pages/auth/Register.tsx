@@ -87,7 +87,7 @@ return (
           <Input
             id="name"
             placeholder="Alice Smith"
-            className="h-16 rounded-2xl border-input bg-background px-6 text-lg placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-primary"
+            className="h-16 rounded-2xl border-input bg-background px-6 text-lg placeholder:text-muted-foreground "
             {...register("name")}
           />
 
@@ -111,7 +111,7 @@ return (
             id="email"
             type="email"
             placeholder="you@example.com"
-            className="h-16 rounded-2xl border-input bg-background px-6 text-lg placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-primary"
+            className="h-16 rounded-2xl border-input bg-background px-6 text-lg placeholder:text-muted-foreground "
             {...register("email")}
           />
 
@@ -136,7 +136,7 @@ return (
               id="password"
               type={showPassword ? "text" : "password"}
               placeholder="••••••••"
-              className="h-16 rounded-2xl border-input bg-background px-6 pr-14 text-lg placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-primary"
+              className="h-16 rounded-2xl border-input bg-background px-6 pr-14 text-lg placeholder:text-muted-foreground "
               {...register("password")}
             />
 

@@ -83,7 +83,7 @@ export function Login() {
               id="email"
               type="email"
               placeholder="you@example.com"
-              className="h-16 rounded-2xl border-gray-300 bg-white px-6 text-lg placeholder:text-gray-400 focus-visible:ring-primary"
+              className="h-16 rounded-2xl border-gray-300 bg-white px-6 text-lg placeholder:text-gray-400 "
               {...register("email")}
             />
 
@@ -116,7 +116,7 @@ export function Login() {
                 id="password"
                 type={showPassword ? "text" : "password"}
                 placeholder="••••••••"
-                className="h-16 rounded-2xl border-gray-300 bg-white px-6 pr-14 text-lg placeholder:text-gray-400 focus-visible:ring-primary "
+                className="h-16 rounded-2xl border-gray-300 bg-white px-6 pr-14 text-lg placeholder:text-gray-400 "
                 {...register("password")}
               />
 
