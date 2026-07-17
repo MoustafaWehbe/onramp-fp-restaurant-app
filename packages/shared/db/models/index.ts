@@ -2,13 +2,15 @@ import type { Sequelize } from "sequelize";
 import { User } from "./User";
 import { Session } from "./Session";
 import { RefreshToken } from "./RefreshToken";
+import { EmailVerificationToken } from "./EmailVerificationToken";
 
-export { User, Session, RefreshToken };
+export { User, Session, RefreshToken, EmailVerificationToken };
 
 export function initModels(sequelize: Sequelize): void {
   User.initModel(sequelize);
   Session.initModel(sequelize);
   RefreshToken.initModel(sequelize);
+  EmailVerificationToken.initModel(sequelize);
 
   // Associations
   User.hasMany(Session, { foreignKey: "userId", as: "sessions" });
@@ -22,4 +24,13 @@ export function initModels(sequelize: Sequelize): void {
     as: "refreshTokens",
   });
   RefreshToken.belongsTo(Session, { foreignKey: "sessionId", as: "session" });
+
+  User.hasMany(EmailVerificationToken, {
+    foreignKey: "userId",
+    as: "emailVerificationTokens",
+  });
+  EmailVerificationToken.belongsTo(User, {
+    foreignKey: "userId",
+    as: "user",
+  });
 }

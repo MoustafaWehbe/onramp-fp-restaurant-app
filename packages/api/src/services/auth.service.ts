@@ -4,6 +4,7 @@ import {
   verifyPassword,
   generateTokenPair,
   verifyRefreshToken,
+  EmailVerificationToken,
 } from "@starter-kit/shared";
 import { User, Session, RefreshToken } from "../models";
 import { createError } from "../middleware/error-handler";
@@ -142,6 +143,43 @@ export class AuthService {
     });
     if (!user) throw createError("User not found", 404);
     return user;
+  }
+
+  async requestEmailVerification(userId: string) {
+    const user = await User.findByPk(userId);
+    if(!user) throw createError("User not found", 404);
+    if(user.emailVerified) throw createError("Email already verified", 409);
+
+    await EmailVerificationToken.destroy({ where: { userId } });
+
+    const rawToken = crypto.randomBytes(32).toString("hex");
+    const tokenHash = crypto.createHash("sha256").update(rawToken).digest("hex");
+
+    await EmailVerificationToken.create({
+      userId: user.id,
+      tokenHash,
+      expiresAt: new Date(Date.now() + 60*60*1_000),
+    });
+
+    await sendVerificationEmail(user.email, rawToken);
+    return { message: "Verification email sent" }
+  }
+
+  async verifyEmail(rawToken: string) {
+    const tokenHash = crypto.createHash("sha256").update(rawToken).digest("hex");
+    const tokenStored = await EmailVerificationToken.findOne({ where: { tokenHash } });
+
+    if(!tokenStored || tokenStored.isExpired) {
+      throw createError("Invalid or expired verification token", 400);
+    }
+
+    const user = await User.findByPk(tokenStored.userId);
+    if(!user) throw createError("User not found", 404);
+
+    await user.update({ emailVerified: true });
+    await tokenStored.destroy();
+
+    return { message: "Email verified successfully" };
   }
 }
 
