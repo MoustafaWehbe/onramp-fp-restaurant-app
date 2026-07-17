@@ -3,6 +3,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { Eye, EyeOff } from "lucide-react";
+
 import { useAuth } from "../../hooks/useAuth";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
@@ -31,7 +33,9 @@ type RegisterFormData = z.infer<typeof registerSchema>;
 export function Register() {
   const { register: registerUser } = useAuth();
   const navigate = useNavigate();
+
   const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   const {
     register,
@@ -52,66 +56,124 @@ export function Register() {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Create an account</CardTitle>
-        <CardDescription>
-          Fill in the details below to get started
+    <Card className="w-full max-w-2xl rounded-3xl border-gray-200 bg-gray-50/80 px-8 py-8 shadow-lg">
+      <CardHeader className="space-y-3 pb-10">
+        <CardTitle className="text-5xl font-extrabold tracking-tight text-gray-950">
+          Create an account
+        </CardTitle>
+
+        <CardDescription className="text-xl leading-relaxed text-gray-500">
+          Fill in the details below to get started.
         </CardDescription>
       </CardHeader>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <CardContent className="space-y-4">
+
+      <CardContent>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-10">
           {error && (
-            <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
+            <div className="rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-base text-red-600">
               {error}
-            </p>
+            </div>
           )}
-          <div className="space-y-2">
-            <Label htmlFor="name">Name</Label>
-            <Input id="name" placeholder="Alice Smith" {...register("name")} />
+
+          {/* Name */}
+          <div className="space-y-4">
+            <Label
+              htmlFor="name"
+              className="text-xl font-semibold text-gray-900"
+            >
+              Name
+            </Label>
+
+            <Input
+              id="name"
+              placeholder="Alice Smith"
+              className="h-16 rounded-2xl border-gray-300 bg-white px-6 text-lg placeholder:text-gray-400 focus-visible:ring-2 focus-visible:ring-orange-500"
+              {...register("name")}
+            />
+
             {errors.name && (
-              <p className="text-xs text-destructive">{errors.name.message}</p>
+              <p className="text-base text-red-500">{errors.name.message}</p>
             )}
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+
+          {/* Email */}
+          <div className="space-y-4">
+            <Label
+              htmlFor="email"
+              className="text-xl font-semibold text-gray-900"
+            >
+              Email
+            </Label>
+
             <Input
               id="email"
               type="email"
               placeholder="you@example.com"
+              className="h-16 rounded-2xl border-gray-300 bg-white px-6 text-lg placeholder:text-gray-400 focus-visible:ring-2 focus-visible:ring-orange-500"
               {...register("email")}
             />
+
             {errors.email && (
-              <p className="text-xs text-destructive">{errors.email.message}</p>
+              <p className="text-base text-red-500">{errors.email.message}</p>
             )}
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="••••••••"
-              {...register("password")}
-            />
+
+          {/* Password */}
+          <div className="space-y-4">
+            <Label
+              htmlFor="password"
+              className="text-xl font-semibold text-gray-900"
+            >
+              Password
+            </Label>
+
+            <div className="relative">
+              <Input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                placeholder="••••••••"
+                className="h-16 rounded-2xl border-gray-300 bg-white px-6 pr-14 text-lg placeholder:text-gray-400 focus-visible:ring-2 focus-visible:ring-orange-500"
+                {...register("password")}
+              />
+
+              <button
+                type="button"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-500 transition hover:text-orange-500"
+              >
+                {showPassword ? <EyeOff size={22} /> : <Eye size={22} />}
+              </button>
+            </div>
+
             {errors.password && (
-              <p className="text-xs text-destructive">
+              <p className="text-base text-red-500">
                 {errors.password.message}
               </p>
             )}
           </div>
-        </CardContent>
-        <CardFooter className="flex-col gap-4">
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? "Creating account…" : "Create account"}
+
+          <Button
+            type="submit"
+            disabled={isSubmitting}
+            className="h-20 w-full rounded-2xl bg-orange-500 text-xl font-semibold hover:bg-orange-600"
+          >
+            {isSubmitting ? "Creating account..." : "Create account"}
           </Button>
-          <p className="text-sm text-muted-foreground">
-            Already have an account?{" "}
-            <Link to="/login" className="text-primary hover:underline">
-              Sign in
-            </Link>
-          </p>
-        </CardFooter>
-      </form>
+        </form>
+      </CardContent>
+
+      <CardFooter className="justify-center pt-8">
+        <p className="text-lg text-gray-500">
+          Already have an account?{" "}
+          <Link
+            to="/login"
+            className="font-semibold text-orange-500 hover:underline"
+          >
+            Sign in
+          </Link>
+        </p>
+      </CardFooter>
     </Card>
   );
 }
