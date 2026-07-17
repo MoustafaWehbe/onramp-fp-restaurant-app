@@ -13,6 +13,8 @@ import { Profile } from "../pages/profile/Profile";
 import { OwnerDashboard } from "../pages/dashboard/OwnerDashboard";
 import { AdminDashboard } from "../pages/dashboard/AdminDashboard";
 import { Search } from "../pages/restaurants/Search";
+import AuthCenteredLayout from "../layouts/AuthCenteredLayout";
+import ForgotPassword from "../pages/auth/ForgotPassword";
 
 export function AppRoutes() {
   return (
@@ -21,6 +23,10 @@ export function AppRoutes() {
       <Route element={<AuthLayout />}>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+      </Route>
+
+      <Route element={<AuthCenteredLayout />}>
+        <Route path="/forgot-password" element={<ForgotPassword />} />
       </Route>
 
       {/* Protected app routes */}
