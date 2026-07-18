@@ -8,6 +8,7 @@ import {
 } from "@starter-kit/shared";
 import { User, Session, RefreshToken } from "../models";
 import { createError } from "../middleware/error-handler";
+import { sendVerificationEmail } from "src/lib/mailer";
 
 interface RegisterInput {
   email: string;
@@ -35,6 +36,8 @@ export class AuthService {
       passwordHash,
       name: input.name,
     });
+
+    await this.requestEmailVerification(user.id);
 
     return { id: user.id, email: user.email, name: user.name, role: user.role };
   }
@@ -161,7 +164,12 @@ export class AuthService {
       expiresAt: new Date(Date.now() + 60*60*1_000),
     });
 
-    await sendVerificationEmail(user.email, rawToken);
+    try {
+      await sendVerificationEmail(user.email, rawToken);
+    } catch(err) {
+      console.error("Failed to send verification email: ", err);
+    }
+    
     return { message: "Verification email sent" }
   }
 
