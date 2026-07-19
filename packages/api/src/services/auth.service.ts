@@ -174,13 +174,9 @@ export class AuthService {
   }
 
   async verifyEmail(rawToken: string) {
-    console.log("Received raw token:", rawToken);
-
     const tokenHash = crypto.createHash("sha256").update(rawToken).digest("hex");
     const tokenStored = await EmailVerificationToken.findOne({ where: { tokenHash } });
 
-    console.log("Generated hash:", tokenHash);
-    
     if(!tokenStored || tokenStored.isExpired) {
       throw createError("Invalid or expired verification token", 400);
     }
