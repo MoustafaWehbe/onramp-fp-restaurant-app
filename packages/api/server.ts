@@ -2,13 +2,17 @@ import path from "path";
 import dotenv from "dotenv";
 dotenv.config({ path: path.resolve(__dirname, "../../.env") });
 
-import { app } from "./app";
-import { initializeDatabase } from "./src/lib/db";
-
 const PORT = parseInt(process.env.PORT ?? "3000", 10);
 
 async function start(): Promise<void> {
   try {
+    // Load application modules only after dotenv has populated process.env.
+    // This matters because the mailer reads its SMTP settings as it is imported.
+    const [{ app }, { initializeDatabase }] = await Promise.all([
+      import("./app"),
+      import("./src/lib/db"),
+    ]);
+
     await initializeDatabase();
 
     app.listen(PORT, () => {

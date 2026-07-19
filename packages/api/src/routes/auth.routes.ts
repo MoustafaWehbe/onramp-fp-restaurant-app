@@ -22,5 +22,6 @@ router.post(
 router.post("/refresh", authController.refresh);
 router.post("/logout", authenticate, authController.logout);
 router.get("/me", authenticate, authController.me);
+router.post("/verify-email", authController.verifyEmail);
 
 export { router as authRouter };

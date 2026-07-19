@@ -15,6 +15,7 @@ import { AdminDashboard } from "../pages/dashboard/AdminDashboard";
 import { Search } from "../pages/restaurants/Search";
 import AuthCenteredLayout from "../layouts/AuthCenteredLayout";
 import ForgotPassword from "../pages/auth/ForgotPassword";
+import { VerifyEmailToken } from "../pages/auth/VerifyEmailToken";
 
 export function AppRoutes() {
   return (
@@ -27,6 +28,7 @@ export function AppRoutes() {
 
       <Route element={<AuthCenteredLayout />}>
         <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/verify-email" element={<VerifyEmailToken />}/>
       </Route>
 
       {/* Protected app routes */}

@@ -1,26 +1,32 @@
 import nodemailer from "nodemailer";
 
-const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: Number(process.env.SMTP_PORT ?? 587),
-    secure: process.env.SMTP_SECURE === "true",
-    auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-    },
-});
+function createTransporter() {
+    const host = process.env.SMTP_HOST;
+    if (!host) {
+        throw new Error("SMTP_HOST is not configured");
+    }
 
-const FROM_ADDRESS = process.env.SMTP_FROM ?? "no-reply@example.com";
-const APP_URL = process.env.APP_URL ?? "http://localhost:3000";
+    return nodemailer.createTransport({
+        host,
+        port: Number(process.env.SMTP_PORT ?? 587),
+        secure: process.env.SMTP_SECURE === "true",
+        auth: {
+            user: process.env.SMTP_USER,
+            pass: process.env.SMTP_PASS,
+        },
+    });
+}
 
 export async function sendVerificationEmail(
     to: string,
     rawToken: string,
 ): Promise<void> {
-    const verifyUrl = `${APP_URL}/verify-email?token=${rawToken}`;
+    const fromAddress = process.env.SMTP_FROM ?? "no-reply@example.com";
+    const appUrl = process.env.APP_URL ?? "http://localhost:3000";
+    const verifyUrl = `${appUrl}/verify-email?token=${rawToken}`;
 
-    await transporter.sendMail({
-        from: FROM_ADDRESS,
+    await createTransporter().sendMail({
+        from: fromAddress,
         to,
         subject: "Verify your email address",
         html: `
