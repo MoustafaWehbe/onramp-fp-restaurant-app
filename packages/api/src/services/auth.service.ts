@@ -5,7 +5,7 @@ import {
   generateTokenPair,
   verifyRefreshToken,
   EmailVerificationToken,
-} from "@starter-kit/shared";
+} from "@fp_restaurant/shared";
 import { User, Session, RefreshToken } from "../models";
 import { createError } from "../middleware/error-handler";
 import { sendVerificationEmail } from "../lib/mailer";

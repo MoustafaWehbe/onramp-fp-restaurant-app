@@ -14,6 +14,7 @@ jest.mock("../../src/services/auth.service", () => ({
     refresh: jest.fn(),
     logout: jest.fn(),
     getProfile: jest.fn(),
+    verifyEmail: jest.fn(),
   },
 }));
 
@@ -89,6 +90,49 @@ describe("POST /api/auth/login", () => {
 
   it("returns 422 when body is missing", async () => {
     const res = await request(app).post("/api/auth/login").send({});
+    expect(res.status).toBe(422);
+  });
+});
+
+// ─── POST /api/auth/verify-email ─────────────────────────────────────────────
+
+describe("POST /api/auth/verify-email", () => {
+  it("returns 200 when email verification succeeds", async () => {
+    mockAuthService.verifyEmail.mockResolvedValue({
+      message: "Email verified successfully",
+    });
+
+    const res = await request(app)
+      .post("/api/auth/verify-email")
+      .send({
+        token: "valid-verification-token",
+      });
+
+    expect(res.status).toBe(200);
+    expect(res.body.data.message).toBe(
+      "Email verified successfully",
+    );
+  });
+
+  it("returns 400 when token is invalid", async () => {
+    mockAuthService.verifyEmail.mockRejectedValue(
+      new Error("Invalid or expired verification token"),
+    );
+
+    const res = await request(app)
+      .post("/api/auth/verify-email")
+      .send({
+        token: "invalid-token",
+      });
+
+    expect(res.status).toBe(400);
+  });
+
+  it("returns 422 when token is missing", async () => {
+    const res = await request(app)
+      .post("/api/auth/verify-email")
+      .send({});
+
     expect(res.status).toBe(422);
   });
 });
