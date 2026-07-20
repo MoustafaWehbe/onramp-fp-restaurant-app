@@ -4,6 +4,7 @@ import { AppLayout } from "../layouts/AppLayout";
 import { AuthLayout } from "../layouts/AuthLayout";
 import { Login } from "../pages/auth/Login";
 import { Register } from "../pages/auth/Register";
+import { EmailVerification } from "../pages/auth/EmailVerification";
 import { Dashboard } from "../pages/dashboard/Dashboard";
 import { Settings } from "../pages/dashboard/Settings";
 import { NotFound } from "../pages/NotFound";
@@ -16,6 +17,8 @@ import { Search } from "../pages/restaurants/Search";
 import AuthCenteredLayout from "../layouts/AuthCenteredLayout";
 import ForgotPassword from "../pages/auth/ForgotPassword";
 import { VerifyEmailToken } from "../pages/auth/VerifyEmailToken";
+import ResetPassword from "../pages/auth/ResetPassword";
+
 
 export function AppRoutes() {
   return (
@@ -29,6 +32,8 @@ export function AppRoutes() {
       <Route element={<AuthCenteredLayout />}>
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/verify-email" element={<VerifyEmailToken />}/>
+        <Route path="/email-verification" element={<EmailVerification />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
       </Route>
 
       {/* Protected app routes */}
