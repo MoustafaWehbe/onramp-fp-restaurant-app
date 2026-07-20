@@ -10,6 +10,7 @@ import {
 import { User, Session, RefreshToken } from "../models";
 import { createError } from "../middleware/error-handler";
 import { sendVerificationEmail, sendPasswordResetEmail } from "../lib/mailer";
+import { UniqueConstraintError } from "sequelize";
 
 interface RegisterInput {
   email: string;
@@ -222,11 +223,21 @@ export class AuthService {
       .update(rawToken)
       .digest("hex");
 
-    const resetToken = await PasswordResetToken.create({
-      userId: user.id,
-      tokenHash,
-      expiresAt: new Date(Date.now() + 60 * 60 * 1000),
-    });
+    let resetToken;
+
+    try {
+      resetToken = await PasswordResetToken.create({
+        userId: user.id,
+        tokenHash,
+        expiresAt: new Date(Date.now() + 60 * 60 * 1000),
+      });
+    } catch (error) {
+      if (error instanceof UniqueConstraintError) {
+        return { message: genericMessage };
+      }
+
+      throw error;
+    }
 
     try {
       await sendPasswordResetEmail(user.email, rawToken);

@@ -32,6 +32,7 @@ router.post(
 
 router.post(
   "/forgot-password",
+  authRateLimiter,
   validate(forgotPasswordSchema),
   authController.forgotPassword,
 );

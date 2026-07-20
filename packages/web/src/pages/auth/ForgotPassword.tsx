@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { ArrowLeft, CheckCircle2, Loader2, Mail } from "lucide-react";
+import { apiClient } from "../../lib/api-client";
 
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
@@ -40,22 +41,9 @@ export default function ForgotPasswordPage() {
 
   const onSubmit = async (data: ForgotPasswordFormData) => {
     try {
-      const response = await fetch(
-        "http://localhost:3000/api/auth/forgot-password",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            email: data.email,
-          }),
-        },
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to send reset link");
-      }
+      await apiClient.post("/auth/forgot-password", {
+        email: data.email,
+      });
 
       setSubmittedEmail(data.email);
       setIsSubmitted(true);
