@@ -51,8 +51,7 @@ export function Register() {
       await registerUser(data.email, data.password, data.name);
       navigate("/login");
     } catch(err) {
-      console.log(err);
-      setError("Registration failed.");
+      setError(err instanceof Error ? err.message : "Registration failed. ");
     }
   };
 

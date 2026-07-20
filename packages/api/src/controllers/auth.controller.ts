@@ -109,7 +109,7 @@ export const authController = {
 
       const result = await authService.verifyEmail(token);
 
-      res.json(result);
+      res.json({ data: result});
     } catch (error) {
       next(error);
     }

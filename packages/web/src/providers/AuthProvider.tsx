@@ -6,6 +6,7 @@ import {
   type ReactNode,
 } from "react";
 import { apiClient } from "../lib/api-client";
+import { getErrorMessage } from "../lib/error-handler";
 
 interface AuthUser {
   id: string;
@@ -49,7 +50,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     password: string,
     name: string,
   ): Promise<void> {
-    await apiClient.post("/auth/register", { email, password, name });
+    try {
+      await apiClient.post("/auth/register", { email, password, name });
+    } catch(err) {
+      throw new Error(getErrorMessage(err, "Registration failed. "));
+    }
+    
   }
 
   async function logout(): Promise<void> {
