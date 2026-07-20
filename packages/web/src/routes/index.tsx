@@ -16,6 +16,7 @@ import { AdminDashboard } from "../pages/dashboard/AdminDashboard";
 import { Search } from "../pages/restaurants/Search";
 import AuthCenteredLayout from "../layouts/AuthCenteredLayout";
 import ForgotPassword from "../pages/auth/ForgotPassword";
+import { VerifyEmailToken } from "../pages/auth/VerifyEmailToken";
 import ResetPassword from "../pages/auth/ResetPassword";
 
 
@@ -30,6 +31,7 @@ export function AppRoutes() {
 
       <Route element={<AuthCenteredLayout />}>
         <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/verify-email" element={<VerifyEmailToken />}/>
         <Route path="/email-verification" element={<EmailVerification />} />
         <Route path="/reset-password" element={<ResetPassword />} />
       </Route>
