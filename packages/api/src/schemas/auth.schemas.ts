@@ -18,3 +18,7 @@ export const loginSchema = z.object({
 export const verifyEmailSchema = z.object({
   token: z.string().min(1),
 }); 
+
+export const forgotPasswordSchema = z.object({
+  email: z.string().trim().email("Invalid email address"),
+});

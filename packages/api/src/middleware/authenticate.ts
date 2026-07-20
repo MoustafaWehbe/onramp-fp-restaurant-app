@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
-import { verifyAccessToken } from "@starter-kit/shared";
-import type { JwtPayload } from "@starter-kit/shared";
+import { verifyAccessToken } from "@fp_restaurant/shared";
+import type { JwtPayload } from "@fp_restaurant/shared";
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
