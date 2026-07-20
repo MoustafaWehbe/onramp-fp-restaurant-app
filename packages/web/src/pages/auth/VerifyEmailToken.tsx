@@ -37,7 +37,7 @@ export function VerifyEmailToken() {
       } catch (error: any) {
         setStatus("error");
         setMessage(
-          error.response?.data?.message ??
+          error.response?.data?.error ??
             "Verification link is invalid or has expired.",
         );
       }
