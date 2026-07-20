@@ -1,21 +1,20 @@
 import nodemailer from "nodemailer";
 
-function createTransporter() {
-    const host = process.env.SMTP_HOST;
-    if (!host) {
-        throw new Error("SMTP_HOST is not configured");
-    }
-
-    return nodemailer.createTransport({
-        host,
-        port: Number(process.env.SMTP_PORT ?? 587),
-        secure: process.env.SMTP_SECURE === "true",
-        auth: {
-            user: process.env.SMTP_USER,
-            pass: process.env.SMTP_PASS,
-        },
-    });
+const host = process.env.SMTP_HOST;
+if (!host) {
+    throw new Error("SMTP_HOST is not configured");
 }
+
+const transporter = nodemailer.createTransport({
+    host,
+    port: Number(process.env.SMTP_PORT ?? 587),
+    secure: process.env.SMTP_SECURE === "true",
+    auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+    },
+});
+
 
 export async function sendVerificationEmail(
     to: string,
@@ -25,7 +24,7 @@ export async function sendVerificationEmail(
     const appUrl = process.env.APP_URL ?? "http://localhost:3000";
     const verifyUrl = `${appUrl}/verify-email?token=${rawToken}`;
 
-    await createTransporter().sendMail({
+    await transporter.sendMail({
         from: fromAddress,
         to,
         subject: "Verify your email address",
