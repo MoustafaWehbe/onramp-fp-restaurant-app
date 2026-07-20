@@ -50,8 +50,8 @@ export function Register() {
       setError(null);
       await registerUser(data.email, data.password, data.name);
       navigate("/email-verification", {state: { email: data.email } });
-    } catch {
-      setError("Registration failed. That email may already be in use.");
+    } catch(err) {
+      setError(err instanceof Error ? err.message : "Registration failed. ");
     }
   };
 
