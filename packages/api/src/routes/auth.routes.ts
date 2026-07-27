@@ -41,6 +41,6 @@ router.post(
   "/reset-password",
   authRateLimiter,
   validate(resetPasswordSchema),
-  authController.forgotPassword,
+  authController.resetPassword,
 )
 export { router as authRouter };
