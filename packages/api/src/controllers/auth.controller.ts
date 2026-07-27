@@ -1,5 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
 import { authService } from "../services/auth.service";
+import { resetPasswordSchema } from "src/schemas/auth.schemas";
 
 const isProduction = process.env.NODE_ENV === "production";
 
@@ -109,19 +110,37 @@ export const authController = {
 
       const result = await authService.verifyEmail(token);
 
-      res.json({ data: result});
+      res.json({ data: result });
     } catch (error) {
       next(error);
     }
   },
 
   async forgotPassword(req: Request, res: Response, next: NextFunction) {
-  try {
-    const result = await authService.requestPasswordReset(req.body.email);
+    try {
+      const result = await authService.requestPasswordReset(req.body.email);
 
-    res.status(200).json(result);
-  } catch (error) {
-    next(error);
+      res.status(200).json(result);
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async resetPassword(req: Request, res: Response) {
+    try {
+      const { token, newPassword } = req.body;
+      const data = resetPasswordSchema.parse(req.body);
+
+      const result = await authService.resetPassword(
+        data.token,
+        data.newPassword
+      );
+      return res.status(200).send(result);
+
+    } catch (error) {
+      return res.status(400).send({
+        message: error instanceof Error ? error.message : "Something went wrong",
+      });
+    }
   }
-}
 };

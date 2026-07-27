@@ -1,4 +1,5 @@
 import crypto from "crypto";
+import bcrypt from "bcrypt";
 import {
   hashPassword,
   verifyPassword,
@@ -250,6 +251,55 @@ export class AuthService {
       message: genericMessage,
     };
   }
+
+  async resetPassword(token: string, newPassword: string) {
+
+  const tokenHash = crypto
+    .createHash("sha256")
+    .update(token)
+    .digest("hex");
+
+
+  const resetToken = await PasswordResetToken.findOne({
+    where: {
+      tokenHash,
+    },
+  });
+
+
+  if (!resetToken) {
+    throw new Error("Invalid or expired reset token");
+  }
+
+
+  if (!resetToken.isValid) {
+    await resetToken.destroy();
+
+    throw new Error("Reset token has expired");
+  }
+
+
+  const user = await User.findByPk(resetToken.userId);
+
+
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+
+  const passwordHash = await bcrypt.hash(newPassword, 12);
+
+
+  user.passwordHash = passwordHash;
+
+  await user.save();
+
+  await resetToken.destroy();
+
+  return {
+    message: "Password reset successfully",
+  };
+}
 }
 
 export const authService = new AuthService();
