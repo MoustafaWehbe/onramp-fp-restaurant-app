@@ -27,7 +27,7 @@ type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
 export default function ForgotPasswordPage() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [submittedEmail, setSubmittedEmail] = useState("");
-
+  const [error, setError] = useState<string | null>(null);
   const {
     register,
     handleSubmit,
@@ -49,6 +49,9 @@ export default function ForgotPasswordPage() {
       setIsSubmitted(true);
     } catch (error) {
       console.error("Forgot password error:", error);
+      setError(
+        "Something went wrong while sending the reset email. Please try again."
+      );
     }
   };
 
@@ -119,6 +122,14 @@ export default function ForgotPasswordPage() {
 
       <form onSubmit={handleSubmit(onSubmit)} noValidate>
         <CardContent className="space-y-8 px-6 md:px-10">
+          {error && (
+            <div
+              className="rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-base text-red-600"
+              role="alert"
+            >
+              {error}
+            </div>
+          )}
           <div className="space-y-4">
             <Label
               htmlFor="email"
@@ -181,3 +192,4 @@ export default function ForgotPasswordPage() {
     </Card>
   );
 }
+

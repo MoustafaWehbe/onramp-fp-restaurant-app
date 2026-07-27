@@ -23,6 +23,7 @@ import {
     CardHeader,
     CardTitle,
 } from "../../components/ui/card";
+import { apiClient } from "@/lib/api-client";
 
 const resetPasswordSchema = z
     .object({
@@ -64,26 +65,28 @@ export default function ResetPasswordPage() {
     });
 
     const onSubmit = async (data: ResetPasswordFormData) => {
-        try {
-            setError(null);
+    try {
+        setError(null);
 
-            if (!token) {
-                setError("This password reset link is invalid or incomplete.");
-                return;
-            }
-
-            // Temporary delay until the backend endpoint is ready.
-            await new Promise((resolve) => setTimeout(resolve, 800));
-
-            // Later, send:
-            // token
-            // data.password
-
-            setIsSubmitted(true);
-        } catch {
-            setError("Unable to reset your password. Please try again.");
+        if (!token) {
+            setError("This password reset link is invalid or incomplete.");
+            return;
         }
-    };
+
+        await apiClient.post("/auth/reset-password", {
+            token,
+            newPassword: data.password,
+        });
+
+        setIsSubmitted(true);
+
+    } catch (error: any) {
+        setError(
+            error.response?.data?.message ??
+            "Unable to reset your password. Please try again."
+        );
+    }
+};
 
     if (isSubmitted) {
         return (
