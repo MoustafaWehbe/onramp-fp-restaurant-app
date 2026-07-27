@@ -4,7 +4,11 @@ const passwordSchema = z
   .string()
   .min(8, "Password must be at least 8 characters")
   .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
-  .regex(/[0-9]/, "Password must contain at least one number");
+  .regex(/[0-9]/, "Password must contain at least one number")
+   .refine(
+    (password) => Buffer.byteLength(password, "utf8") <= 72,
+    "Password is too long. Please use a shorter password."
+  );
 
 export const registerSchema = z.object({
   email: z.string().email("Invalid email address"),

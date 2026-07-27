@@ -12,7 +12,7 @@ import { User, Session, RefreshToken } from "../models";
 import { createError } from "../middleware/error-handler";
 import { sendVerificationEmail, sendPasswordResetEmail } from "../lib/mailer";
 import { UniqueConstraintError } from "sequelize";
-
+import { getSequelize } from "@fp_restaurant/shared";
 interface RegisterInput {
   email: string;
   password: string;
@@ -252,54 +252,84 @@ export class AuthService {
     };
   }
 
-  async resetPassword(token: string, newPassword: string) {
+ async resetPassword(token: string, newPassword: string) {
+  const sequelize = getSequelize();
+  const transaction = await sequelize.transaction();
 
-  const tokenHash = crypto
-    .createHash("sha256")
-    .update(token)
-    .digest("hex");
+  try {
+    const tokenHash = crypto
+      .createHash("sha256")
+      .update(token)
+      .digest("hex");
 
+    const resetToken = await PasswordResetToken.findOne({
+      where: {
+        tokenHash,
+      },
+      transaction,
+      lock: transaction.LOCK.UPDATE,
+    });
 
-  const resetToken = await PasswordResetToken.findOne({
-    where: {
-      tokenHash,
-    },
-  });
+    if (!resetToken) {
+      throw new Error("Invalid or expired reset token");
+    }
 
+    if (!resetToken.isValid) {
+      await resetToken.destroy({
+        transaction,
+      });
 
-  if (!resetToken) {
-    throw new Error("Invalid or expired reset token");
+      throw new Error("Reset token has expired");
+    }
+
+    const user = await User.findByPk(resetToken.userId, {
+      transaction,
+    });
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const passwordHash = await bcrypt.hash(newPassword, 12);
+
+    user.passwordHash = passwordHash;
+
+    await user.save({
+      transaction,
+    });
+
+    // Revoke active refresh tokens after password reset
+    await RefreshToken.destroy({
+      where: {
+        userId: user.id,
+      },
+      transaction,
+    });
+
+    // Terminate active sessions after password reset
+    await Session.destroy({
+      where: {
+        userId: user.id,
+      },
+      transaction,
+    });
+
+    // Consume reset token
+    await resetToken.destroy({
+      transaction,
+    });
+
+    await transaction.commit();
+
+    return {
+      message: "Password reset successfully",
+    };
+  } catch (error) {
+    await transaction.rollback();
+    throw error;
   }
-
-
-  if (!resetToken.isValid) {
-    await resetToken.destroy();
-
-    throw new Error("Reset token has expired");
-  }
-
-
-  const user = await User.findByPk(resetToken.userId);
-
-
-  if (!user) {
-    throw new Error("User not found");
-  }
-
-
-  const passwordHash = await bcrypt.hash(newPassword, 12);
-
-
-  user.passwordHash = passwordHash;
-
-  await user.save();
-
-  await resetToken.destroy();
-
-  return {
-    message: "Password reset successfully",
-  };
 }
 }
+
 
 export const authService = new AuthService();
