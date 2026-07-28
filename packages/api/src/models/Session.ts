@@ -1,1 +1,1 @@
-export { Session } from "@starter-kit/shared";
+export { Session } from "@fp_restaurant/shared";

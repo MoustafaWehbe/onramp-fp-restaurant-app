@@ -1,14 +1,16 @@
 import type { Sequelize } from "sequelize";
 import { User } from "./User";
+import { Restaurant } from "./Restaurant";
 import { Session } from "./Session";
 import { RefreshToken } from "./RefreshToken";
 import { EmailVerificationToken } from "./EmailVerificationToken";
 import { PasswordResetToken } from "./PasswordResetToken";
 
-export { User, Session, RefreshToken, EmailVerificationToken, PasswordResetToken};
+export { User, Restaurant, Session, RefreshToken, EmailVerificationToken, PasswordResetToken};
 
 export function initModels(sequelize: Sequelize): void {
   User.initModel(sequelize);
+  Restaurant.initModel(sequelize);
   Session.initModel(sequelize);
   RefreshToken.initModel(sequelize);
   EmailVerificationToken.initModel(sequelize);
