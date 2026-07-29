@@ -64,12 +64,12 @@ export function initModels(sequelize: Sequelize): void {
     as: "user",
   });
   User.hasMany(Favorite, {
-  foreignKey: "user_id",
+  foreignKey: "userId",
   as: "favorites",
 });
 
 Favorite.belongsTo(User, {
-  foreignKey: "user_id",
+  foreignKey: "userId",
   as: "user",
 });
 
