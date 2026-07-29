@@ -4,12 +4,24 @@ const { faker } = require("@faker-js/faker");
 
 module.exports = {
   async up(queryInterface) {
-    const [users] = await queryInterface.sequelize.query(
-      "SELECT id FROM users LIMIT 15;"
+    const users = await queryInterface.sequelize.query(
+      `SELECT id FROM users`,
+      {
+        type: QueryTypes.SELECT,
+      }
     );
 
-    if (users.length === 0) {
-      throw new Error("No users found. Seed users first.");
+    const restaurants = await queryInterface.sequelize.query(
+      `SELECT id FROM restaurants`,
+      {
+        type: QueryTypes.SELECT,
+      }
+    );
+
+    if (!restaurants.length) {
+      throw new Error(
+        "Cannot seed admin logs: no restaurants found. Please seed restaurants first."
+      );
     }
 
     const adminLogs = [];
@@ -24,7 +36,7 @@ module.exports = {
           "delete_restaurant",
         ]),
         target_type: "restaurant",
-        target_id: faker.string.uuid(),
+        target_id: restaurants[i % restaurants.length].id,
         created_at: new Date(),
         updated_at: new Date(),
       });
