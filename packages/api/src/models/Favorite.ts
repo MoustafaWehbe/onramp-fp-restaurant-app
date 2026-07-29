@@ -1,0 +1,1 @@
+export {Favorite} from "@fp_restaurant/shared";

@@ -6,7 +6,8 @@ import { RefreshToken } from "./RefreshToken";
 import { EmailVerificationToken } from "./EmailVerificationToken";
 import { PasswordResetToken } from "./PasswordResetToken";
 import { AdminLog } from "./AdminLog";
-export { User, Restaurant, Session, RefreshToken, EmailVerificationToken, PasswordResetToken, AdminLog };
+import { Favorite } from "./Favorite";
+export { User, Restaurant, Session, RefreshToken, EmailVerificationToken, PasswordResetToken, AdminLog,Favorite };
 
 export function initModels(sequelize: Sequelize): void {
   User.initModel(sequelize);
@@ -16,6 +17,7 @@ export function initModels(sequelize: Sequelize): void {
   EmailVerificationToken.initModel(sequelize);
   PasswordResetToken.initModel(sequelize);
   AdminLog.initModel(sequelize);
+  Favorite.initModel(sequelize);
   // Associations
   User.hasMany(Session, { foreignKey: "userId", as: "sessions" });
   Session.belongsTo(User, { foreignKey: "userId", as: "user" });
@@ -57,4 +59,23 @@ export function initModels(sequelize: Sequelize): void {
     foreignKey: "userId",
     as: "user",
   });
+  User.hasMany(Favorite, {
+  foreignKey: "user_id",
+  as: "favorites",
+});
+
+Favorite.belongsTo(User, {
+  foreignKey: "user_id",
+  as: "user",
+});
+
+Restaurant.hasMany(Favorite, {
+  foreignKey: "restaurant_id",
+  as: "favorites",
+});
+
+Favorite.belongsTo(Restaurant, {
+  foreignKey: "restaurant_id",
+  as: "restaurant",
+});
 }
