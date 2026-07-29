@@ -13,7 +13,7 @@ export interface BranchAttributes {
 }
 
 export interface BranchCreationAttributes
-  extends Optional<BranchAttributes, "id">{}
+  extends Optional<BranchAttributes, "id" | "phone">{}
 
 export class Branch 
   extends Model<BranchAttributes,BranchCreationAttributes>

@@ -12,7 +12,7 @@ export interface RestaurantAttributes {
 }
 
 export interface RestaurantCreationAttributes
-  extends Optional<RestaurantAttributes, "id" | "phone"> {}
+  extends Optional<RestaurantAttributes, "id"> {}
 
 export class Restaurant
   extends Model<RestaurantAttributes, RestaurantCreationAttributes>
