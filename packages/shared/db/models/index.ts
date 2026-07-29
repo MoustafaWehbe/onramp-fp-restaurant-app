@@ -1,16 +1,18 @@
 import type { Sequelize } from "sequelize";
 import { User } from "./User";
 import { Restaurant } from "./Restaurant";
+import { Branch } from "./Branch";
 import { Session } from "./Session";
 import { RefreshToken } from "./RefreshToken";
 import { EmailVerificationToken } from "./EmailVerificationToken";
 import { PasswordResetToken } from "./PasswordResetToken";
 import { AdminLog } from "./AdminLog";
-export { User, Restaurant, Session, RefreshToken, EmailVerificationToken, PasswordResetToken, AdminLog };
+export { User, Restaurant, Branch, Session, RefreshToken, EmailVerificationToken, PasswordResetToken, AdminLog };
 
 export function initModels(sequelize: Sequelize): void {
   User.initModel(sequelize);
   Restaurant.initModel(sequelize);
+  Branch.initModel(sequelize);
   Session.initModel(sequelize);
   RefreshToken.initModel(sequelize);
   EmailVerificationToken.initModel(sequelize);
@@ -56,5 +58,15 @@ export function initModels(sequelize: Sequelize): void {
   AdminLog.belongsTo(User, {
     foreignKey: "userId",
     as: "user",
+  });
+  
+  Restaurant.hasMany(Branch, {
+    foreignKey: "restaurantId",
+    as: "branches",
+  });
+
+  Branch.belongsTo(Restaurant, {
+    foreignKey: "restaurantId",
+    as: "restaurant",
   });
 }
