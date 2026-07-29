@@ -7,7 +7,7 @@ import { EmailVerificationToken } from "./EmailVerificationToken";
 import { PasswordResetToken } from "./PasswordResetToken";
 import { AdminLog } from "./AdminLog";
 import { RestaurantClaim } from "./RestaurantClaim";
-export { User, Restaurant, Session, RefreshToken, EmailVerificationToken, PasswordResetToken, AdminLog,RestaurantClaim};
+export { User, Restaurant, Session, RefreshToken, EmailVerificationToken, PasswordResetToken, AdminLog, RestaurantClaim };
 
 export function initModels(sequelize: Sequelize): void {
   User.initModel(sequelize);
@@ -49,7 +49,7 @@ export function initModels(sequelize: Sequelize): void {
     foreignKey: "userId",
     as: "user",
   });
-  
+
   User.hasMany(AdminLog, {
     foreignKey: "userId",
     as: "adminLogs",
@@ -67,5 +67,15 @@ export function initModels(sequelize: Sequelize): void {
   RestaurantClaim.belongsTo(User, {
     foreignKey: "user_id",
     as: "user",
+  });
+
+  Restaurant.hasMany(RestaurantClaim, {
+    foreignKey: "restaurant_id",
+    as: "restaurantClaims",
+  });
+
+  RestaurantClaim.belongsTo(Restaurant, {
+    foreignKey: "restaurant_id",
+    as: "restaurant",
   });
 }
