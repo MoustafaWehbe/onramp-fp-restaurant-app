@@ -1,17 +1,19 @@
 import type { Sequelize } from "sequelize";
 import { User } from "./User";
 import { Restaurant } from "./Restaurant";
+import { Branch } from "./Branch";
 import { Session } from "./Session";
 import { RefreshToken } from "./RefreshToken";
 import { EmailVerificationToken } from "./EmailVerificationToken";
 import { PasswordResetToken } from "./PasswordResetToken";
 import { AdminLog } from "./AdminLog";
 import { RestaurantClaim } from "./RestaurantClaim";
-export { User, Restaurant, Session, RefreshToken, EmailVerificationToken, PasswordResetToken, AdminLog, RestaurantClaim };
+export { User, Branch,Restaurant, Session, RefreshToken, EmailVerificationToken, PasswordResetToken, AdminLog, RestaurantClaim };
 
 export function initModels(sequelize: Sequelize): void {
   User.initModel(sequelize);
   Restaurant.initModel(sequelize);
+  Branch.initModel(sequelize);
   Session.initModel(sequelize);
   RefreshToken.initModel(sequelize);
   EmailVerificationToken.initModel(sequelize);
@@ -61,21 +63,30 @@ export function initModels(sequelize: Sequelize): void {
   });
 
   User.hasMany(RestaurantClaim, {
-    foreignKey: "user_id",
+    foreignKey: "userId",
     as: "restaurantClaims",
   });
   RestaurantClaim.belongsTo(User, {
-    foreignKey: "user_id",
+    foreignKey: "userId",
     as: "user",
   });
 
   Restaurant.hasMany(RestaurantClaim, {
-    foreignKey: "restaurant_id",
+    foreignKey: "restaurantId",
     as: "restaurantClaims",
   });
 
   RestaurantClaim.belongsTo(Restaurant, {
-    foreignKey: "restaurant_id",
+    foreignKey: "restaurantId",
+    as:"restaurant",
+  });
+  Restaurant.hasMany(Branch, {
+    foreignKey: "restaurantId",
+    as: "branches",
+  });
+
+  Branch.belongsTo(Restaurant, {
+    foreignKey: "restaurantId",
     as: "restaurant",
   });
 }

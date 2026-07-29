@@ -73,8 +73,4 @@ export class Restaurant
       }
     );
   }
-
-  static associate(models: any) {
-    // Define associations here when needed
-  }
 }

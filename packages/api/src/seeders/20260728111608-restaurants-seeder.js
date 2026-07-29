@@ -51,10 +51,9 @@ module.exports = {
       name: faker.company.name(),
       description: faker.lorem.sentence(),
       cuisine_type: faker.helpers.arrayElement(cuisineTypes),
-      ambiance_tags: faker.helpers.arrayElements(ambianceTags, {
-        min: 1,
-        max: 3,
-      }),
+      ambiance_tags: JSON.stringify(
+        faker.helpers.arrayElements(ambianceTags, {min: 1,max: 3,}),
+      ),
       price_range: faker.helpers.arrayElement(priceRanges),
       email: faker.internet.email(),
       phone: faker.phone.number(),
