@@ -45,16 +45,9 @@ module.exports = {
     await queryInterface.bulkInsert("admin_logs", adminLogs);
   },
 
-  async down(queryInterface, Sequelize) {
+  async down(queryInterface) {
     await queryInterface.bulkDelete("admin_logs", {
-      action: {
-        [Sequelize.Op.in]: [
-          "approve_restaurant",
-          "reject_restaurant",
-          "update_restaurant",
-          "delete_restaurant",
-        ],
-      },
+      seed_identifier: "admin_logs_seeder_20260729153012",
     });
-  },
+  }
 };
