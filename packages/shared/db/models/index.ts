@@ -5,8 +5,8 @@ import { Session } from "./Session";
 import { RefreshToken } from "./RefreshToken";
 import { EmailVerificationToken } from "./EmailVerificationToken";
 import { PasswordResetToken } from "./PasswordResetToken";
-
-export { User, Restaurant, Session, RefreshToken, EmailVerificationToken, PasswordResetToken};
+import { AdminLog } from "./AdminLog";
+export { User, Restaurant, Session, RefreshToken, EmailVerificationToken, PasswordResetToken, AdminLog };
 
 export function initModels(sequelize: Sequelize): void {
   User.initModel(sequelize);
@@ -15,6 +15,7 @@ export function initModels(sequelize: Sequelize): void {
   RefreshToken.initModel(sequelize);
   EmailVerificationToken.initModel(sequelize);
   PasswordResetToken.initModel(sequelize);
+  AdminLog.initModel(sequelize);
   // Associations
   User.hasMany(Session, { foreignKey: "userId", as: "sessions" });
   Session.belongsTo(User, { foreignKey: "userId", as: "user" });
@@ -38,11 +39,21 @@ export function initModels(sequelize: Sequelize): void {
   });
 
   User.hasMany(PasswordResetToken, {
-  foreignKey: "userId",
-  as: "passwordResetTokens",
+    foreignKey: "userId",
+    as: "passwordResetTokens",
   });
 
   PasswordResetToken.belongsTo(User, {
+    foreignKey: "userId",
+    as: "user",
+  });
+  
+  User.hasMany(AdminLog, {
+    foreignKey: "userId",
+    as: "adminLogs",
+  });
+
+  AdminLog.belongsTo(User, {
     foreignKey: "userId",
     as: "user",
   });

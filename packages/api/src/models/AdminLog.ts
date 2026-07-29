@@ -1,0 +1,1 @@
+export {AdminLog} from "@fp_restaurant/shared";
