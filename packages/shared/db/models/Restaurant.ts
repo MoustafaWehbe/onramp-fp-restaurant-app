@@ -6,8 +6,8 @@ export interface RestaurantAttributes {
   description: string;
   address: string;
   city: string;
-  latitude: number;
-  longitude: number;
+  latitude: string;
+  longitude: string;
   phone: string;
   image_url: string;
 }
@@ -24,8 +24,8 @@ export class Restaurant
   declare description: string;
   declare address: string;
   declare city: string;
-  declare latitude: number;
-  declare longitude: number;
+  declare latitude: string;
+  declare longitude: string;
   declare phone: string;
   declare image_url: string;
 
@@ -54,11 +54,11 @@ export class Restaurant
           allowNull: false,
         },
         latitude: {
-          type: DataTypes.DOUBLE,
+          type: DataTypes.DECIMAL(10,8),
           allowNull: false,
         },
         longitude: {
-          type: DataTypes.DOUBLE,
+          type: DataTypes.DECIMAL(11,8),
           allowNull: false,
         },
         phone: {
