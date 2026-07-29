@@ -45,16 +45,4 @@ export class Favorite
       }
     );
   }
-
-  static associate(models: any) {
-    Favorite.belongsTo(models.User, {
-      foreignKey: "user_id",
-      as: "user",
-    });
-
-    Favorite.belongsTo(models.Restaurant, {
-      foreignKey: "restaurant_id",
-      as: "restaurant",
-    });
-  }
 }

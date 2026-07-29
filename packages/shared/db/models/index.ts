@@ -70,12 +70,12 @@ Favorite.belongsTo(User, {
 });
 
 Restaurant.hasMany(Favorite, {
-  foreignKey: "restaurant_id",
+  foreignKey: "restaurantId",
   as: "favorites",
 });
 
 Favorite.belongsTo(Restaurant, {
-  foreignKey: "restaurant_id",
+  foreignKey: "restaurantId",
   as: "restaurant",
 });
 }
