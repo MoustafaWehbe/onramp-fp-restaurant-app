@@ -60,16 +60,4 @@ export class RestaurantClaim
       }
     );
   }
-
-  static associate(models: any) {
-    RestaurantClaim.belongsTo(models.Restaurant, {
-      foreignKey: "restaurant_id",
-      as: "restaurant",
-    });
-
-    RestaurantClaim.belongsTo(models.User, {
-      foreignKey: "user_id",
-      as: "user",
-    });
-  }
 }
