@@ -4,12 +4,11 @@ export interface RestaurantAttributes {
   id: string;
   name: string;
   description: string;
-  address: string;
-  city: string;
-  latitude: string;
-  longitude: string;
+  cuisine_type: string;
+  ambiance_tags: string[];
+  price_range: string;
+  email: string;
   phone: string;
-  image_url: string;
 }
 
 export interface RestaurantCreationAttributes
@@ -22,12 +21,11 @@ export class Restaurant
   declare id: string;
   declare name: string;
   declare description: string;
-  declare address: string;
-  declare city: string;
-  declare latitude: string;
-  declare longitude: string;
+  declare cuisine_type: string;
+  declare ambiance_tags: string[];
+  declare price_range: string;
+  declare email: string;
   declare phone: string;
-  declare image_url: string;
 
   static initModel(sequelize: Sequelize) {
     Restaurant.init(
@@ -45,27 +43,23 @@ export class Restaurant
           type: DataTypes.TEXT,
           allowNull: false,
         },
-        address: {
+        cuisine_type: {
           type: DataTypes.STRING,
           allowNull: false,
         },
-        city: {
+        ambiance_tags: {
+          type: DataTypes.JSON,
+          allowNull: false,
+        },
+        price_range: {
           type: DataTypes.STRING,
           allowNull: false,
         },
-        latitude: {
-          type: DataTypes.DECIMAL(10,8),
-          allowNull: false,
-        },
-        longitude: {
-          type: DataTypes.DECIMAL(11,8),
+        email: {
+          type: DataTypes.STRING,
           allowNull: false,
         },
         phone: {
-          type: DataTypes.STRING,
-          allowNull: false,
-        },
-        image_url: {
           type: DataTypes.STRING,
           allowNull: false,
         },

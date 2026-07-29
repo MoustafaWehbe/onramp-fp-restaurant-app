@@ -17,29 +17,29 @@ module.exports = {
         type: Sequelize.TEXT,
         allowNull: false,
       },
-      address: {
+      cuisine_type: {
         type: Sequelize.STRING,
         allowNull: false,
       },
-      city: {
+      ambiance_tags: {
+        type: Sequelize.JSON,
+        allowNull: false,
+      },
+      price_range: {
         type: Sequelize.STRING,
         allowNull: false,
       },
-      latitude: {
-        type: Sequelize.DECIMAL(10, 8),
-        allowNull: false,
-      },
-      longitude: {
-        type: Sequelize.DECIMAL(11, 8),
+      email: {
+        type: Sequelize.STRING,
         allowNull: false,
       },
       phone: {
         type: Sequelize.STRING,
         allowNull: false,
       },
-      image_url: {
-        type: Sequelize.STRING,
-        allowNull: false,
+      verified_at: {
+        type: Sequelize.DATE,
+        allowNull: true,
       },
       created_at: {
         type: Sequelize.DATE,
