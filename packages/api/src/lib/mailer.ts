@@ -45,9 +45,13 @@ const isLocalhost =
   parsedAppUrl.hostname === "127.0.0.1";
 
 if (isDevelopment) {
-  if (!isLocalhost) {
+  const isValidDevelopmentProtocol =
+    parsedAppUrl.protocol === "http:" ||
+    parsedAppUrl.protocol === "https:";
+
+  if (!isLocalhost || !isValidDevelopmentProtocol) {
     throw new Error(
-      "APP_URL must point to localhost or 127.0.0.1 in development",
+      "APP_URL must point to localhost or 127.0.0.1 using http or https in development",
     );
   }
 } else {
@@ -98,7 +102,7 @@ export async function sendPasswordResetEmail(
 ): Promise<void> {
   const resetUrl = `${resolvedAppUrl}/reset-password?token=${rawToken}`;
 
- const html = await renderPasswordResetEmail(resetUrl);
+  const html = await renderPasswordResetEmail(resetUrl);
 
   await sendEmail({
     to,
