@@ -23,12 +23,10 @@ module.exports = {
         latitude: faker.location.latitude({
           max: 34.7,
           min: 33.0,
-          precision: 0.000001,
         }),
         longitude: faker.location.longitude({
           max: 36.7,
           min: 35.0,
-          precision: 0.000001,
         }),
         phone: faker.phone.number(),
         opening_hours: "09:00 - 23:00",
