@@ -24,8 +24,41 @@ const transporter = nodemailer.createTransport({
   socketTimeout: 15_000,
 });
 
-const fromAddress = process.env.SMTP_FROM ?? "no-reply@example.com";
-const appUrl = process.env.APP_URL ?? "http://localhost:3000";
+const isDevelopment = process.env.NODE_ENV === "development";
+
+const fromAddress = process.env.SMTP_FROM;
+if (!fromAddress && !isDevelopment) {
+  throw new Error("SMTP_FROM is not configured");
+}
+
+const appUrl = process.env.APP_URL;
+if (!appUrl && !isDevelopment) {
+  throw new Error("APP_URL is not configured");
+}
+
+const resolvedFromAddress = fromAddress ?? "no-reply@example.com";
+const resolvedAppUrl = appUrl ?? "http://localhost:3000";
+
+const parsedAppUrl = new URL(resolvedAppUrl);
+const isLocalhost =
+  parsedAppUrl.hostname === "localhost" ||
+  parsedAppUrl.hostname === "127.0.0.1";
+
+if (isDevelopment) {
+  if (!isLocalhost) {
+    throw new Error(
+      "APP_URL must point to localhost or 127.0.0.1 in development",
+    );
+  }
+} else {
+  if (parsedAppUrl.protocol !== "https:") {
+    throw new Error("APP_URL must use HTTPS outside development");
+  }
+
+  if (isLocalhost) {
+    throw new Error("APP_URL cannot use localhost outside development");
+  }
+}
 
 async function sendEmail({
   to,
@@ -37,7 +70,7 @@ async function sendEmail({
   html: string;
 }) {
   await transporter.sendMail({
-    from: fromAddress,
+    from: resolvedFromAddress,
     to,
     subject,
     html,
@@ -48,7 +81,7 @@ export async function sendVerificationEmail(
   to: string,
   rawToken: string,
 ): Promise<void> {
-  const verifyUrl = `${appUrl}/verify-email?token=${rawToken}`;
+  const verifyUrl = `${resolvedAppUrl}/verify-email?token=${rawToken}`;
 
   const html = await renderVerificationEmail(verifyUrl);
 
@@ -63,7 +96,7 @@ export async function sendPasswordResetEmail(
   to: string,
   rawToken: string,
 ): Promise<void> {
-  const resetUrl = `${appUrl}/reset-password?token=${rawToken}`;
+  const resetUrl = `${resolvedAppUrl}/reset-password?token=${rawToken}`;
 
  const html = await renderPasswordResetEmail(resetUrl);
 

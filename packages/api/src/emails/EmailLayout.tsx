@@ -10,6 +10,7 @@ import {
   Section,
   Tailwind,
   Text,
+  pixelBasedPreset,
 } from "@react-email/components";
 
 interface EmailLayoutProps {
@@ -33,7 +34,9 @@ export function EmailLayout({
 
       <Preview>{preview}</Preview>
 
-      <Tailwind>
+      <Tailwind config={{
+        presets: [pixelBasedPreset],
+      }}>
         <Body className="bg-gray-100 py-10">
           <Container className="mx-auto max-w-xl rounded-lg bg-white p-10 shadow-md">
 
