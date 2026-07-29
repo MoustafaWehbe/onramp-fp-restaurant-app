@@ -29,6 +29,8 @@ Represents restaurant brands or chains.
 * description
 * cuisine_type
 * price_range
+* email
+* phone
 * ambiance_tags (JSON)
 
   * Possible values:
@@ -38,7 +40,7 @@ Represents restaurant brands or chains.
     * romantic
     * outdoor
     * loud
-* verified (boolean)
+* verified_at (Date)
 * created_at
 * updated_at
 

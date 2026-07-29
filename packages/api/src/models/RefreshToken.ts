@@ -1,1 +1,1 @@
-export { RefreshToken } from "@starter-kit/shared";
+export { RefreshToken } from "@fp_restaurant/shared";
