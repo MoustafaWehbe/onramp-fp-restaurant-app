@@ -2,7 +2,18 @@
 
 const { QueryTypes } = require("sequelize");
 const { faker } = require("@faker-js/faker");
-
+const claimIds = [
+  "00000000-0000-0000-0000-000000000001",
+  "00000000-0000-0000-0000-000000000002",
+  "00000000-0000-0000-0000-000000000003",
+  "00000000-0000-0000-0000-000000000004",
+  "00000000-0000-0000-0000-000000000005",
+  "00000000-0000-0000-0000-000000000006",
+  "00000000-0000-0000-0000-000000000007",
+  "00000000-0000-0000-0000-000000000008",
+  "00000000-0000-0000-0000-000000000009",
+  "00000000-0000-0000-0000-000000000010",
+];
 module.exports = {
   async up(queryInterface) {
     const restaurants = await queryInterface.sequelize.query(
@@ -35,7 +46,7 @@ module.exports = {
 
     for (let i = 0; i < 10; i++) {
       claims.push({
-        id: faker.string.uuid(),
+        id: claimIds[i],
         restaurant_id: restaurants[i % restaurants.length].id,
         user_id: users[i % users.length].id,
         status: faker.helpers.arrayElement([
@@ -51,7 +62,11 @@ module.exports = {
     await queryInterface.bulkInsert("restaurant_claims", claims);
   },
 
-  async down(queryInterface) {
-    await queryInterface.bulkDelete("restaurant_claims", null, {});
-  },
+  async down(queryInterface, Sequelize) {
+    await queryInterface.bulkDelete("restaurant_claims", {
+      id: {
+        [Sequelize.Op.in]: claimIds,
+      },
+    });
+  }
 };
