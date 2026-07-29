@@ -1,0 +1,1 @@
+export {RestaurantClaim} from "@fp_restaurant/shared"
