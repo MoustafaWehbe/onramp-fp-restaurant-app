@@ -1,5 +1,6 @@
 "use strict";
 
+const { QueryTypes } = require("sequelize");
 const { faker } = require("@faker-js/faker");
 
 module.exports = {
