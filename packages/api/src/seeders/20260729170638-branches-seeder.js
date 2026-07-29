@@ -8,14 +8,20 @@ const restaurantIds = [
   "00000000-0000-0000-0000-000000000003",
 ];
 
-const branches = [];
+const BRANCH_COUNT = 10;
+
+const getBranchId = (index) =>
+  `10000000-0000-0000-0000-${String(index + 1).padStart(12, "0")}`;
+
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up (queryInterface, Sequelize) {
+    const branches = [];
+
     for(let i = 0 ; i < 10 ; i ++) {
       branches.push({
-        id: faker.string.uuid(),
+        id: getBranchId(i),
         restaurant_id: restaurantIds[i % restaurantIds.length],
         name: `${faker.location.city()} Branch`,
         city: faker.location.city(),
@@ -40,7 +46,7 @@ module.exports = {
   async down (queryInterface, Sequelize) {
     if (branches.length === 0) return;
     await queryInterface.bulkDelete("branches", {
-      id: branches.map((branch) => branch.id),
+      id: Array.from({ length: BRANCH_COUNT }, (_, i) => getBranchId(i)),
     });
   }
 };
