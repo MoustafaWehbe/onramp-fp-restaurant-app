@@ -1,0 +1,1 @@
+export { BranchImage } from "@fp_restaurant/shared";

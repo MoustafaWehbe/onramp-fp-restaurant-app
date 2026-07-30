@@ -6,3 +6,4 @@ export { Branch } from "./Branch";
 export {Menu} from './Menu';
 export {MenuItem} from './MenuItem';
 export { Review } from "./Review";
+export { BranchImage } from "./BranchImage";

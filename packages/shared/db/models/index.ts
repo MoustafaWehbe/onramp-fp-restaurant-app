@@ -12,7 +12,8 @@ import { Favorite } from "./Favorite";
 import { RestaurantClaim } from "./RestaurantClaim";
 import { Menu } from "./Menu";
 import { MenuItem } from "./MenuItem";
-export { User, Restaurant, Branch, Review, Session, RefreshToken, EmailVerificationToken, PasswordResetToken, AdminLog, Favorite, RestaurantClaim, Menu, MenuItem };
+import { BranchImage } from "./BranchImage";
+export { User, Restaurant, Branch, BranchImage, Review, Session, RefreshToken, EmailVerificationToken, PasswordResetToken, AdminLog, Favorite, RestaurantClaim, Menu, MenuItem };
 
 export function initModels(sequelize: Sequelize): void {
   User.initModel(sequelize);
@@ -28,6 +29,7 @@ export function initModels(sequelize: Sequelize): void {
   RestaurantClaim.initModel(sequelize);
   Menu.initModel(sequelize);
   MenuItem.initModel(sequelize);
+  BranchImage.initModel(sequelize);
   // Associations
   User.hasMany(Session, { foreignKey: "userId", as: "sessions" });
   Session.belongsTo(User, { foreignKey: "userId", as: "user" });
@@ -150,6 +152,16 @@ export function initModels(sequelize: Sequelize): void {
   });
 
   Review.belongsTo(Branch, {
+    foreignKey: "branchId",
+    as: "branch",
+  });
+
+  Branch.hasMany(BranchImage, {
+    foreignKey: "branchId",
+    as: "images",
+  });
+
+  BranchImage.belongsTo(Branch, {
     foreignKey: "branchId",
     as: "branch",
   });
