@@ -9,7 +9,9 @@ import { PasswordResetToken } from "./PasswordResetToken";
 import { AdminLog } from "./AdminLog";
 import { Favorite } from "./Favorite";
 import { RestaurantClaim } from "./RestaurantClaim";
-export { User, Restaurant, Session, RefreshToken, EmailVerificationToken, PasswordResetToken, AdminLog,Favorite, RestaurantClaim};
+import { Menu } from "./Menu";
+import { MenuItem } from "./MenuItem";
+export { User, Restaurant, Session, RefreshToken, EmailVerificationToken, PasswordResetToken, AdminLog, Favorite, RestaurantClaim, Menu, MenuItem };
 
 export function initModels(sequelize: Sequelize): void {
   User.initModel(sequelize);
@@ -22,6 +24,8 @@ export function initModels(sequelize: Sequelize): void {
   AdminLog.initModel(sequelize);
   Favorite.initModel(sequelize);
   RestaurantClaim.initModel(sequelize);
+  Menu.initModel(sequelize);
+  MenuItem.initModel(sequelize);
   // Associations
   User.hasMany(Session, { foreignKey: "userId", as: "sessions" });
   Session.belongsTo(User, { foreignKey: "userId", as: "user" });
@@ -64,24 +68,24 @@ export function initModels(sequelize: Sequelize): void {
     as: "user",
   });
   User.hasMany(Favorite, {
-  foreignKey: "userId",
-  as: "favorites",
-});
+    foreignKey: "userId",
+    as: "favorites",
+  });
 
-Favorite.belongsTo(User, {
-  foreignKey: "userId",
-  as: "user",
-});
+  Favorite.belongsTo(User, {
+    foreignKey: "userId",
+    as: "user",
+  });
 
-Restaurant.hasMany(Favorite, {
-  foreignKey: "restaurantId",
-  as: "favorites",
-});
+  Restaurant.hasMany(Favorite, {
+    foreignKey: "restaurantId",
+    as: "favorites",
+  });
 
-Favorite.belongsTo(Restaurant, {
-  foreignKey: "restaurantId",
-  as: "restaurant",
-});
+  Favorite.belongsTo(Restaurant, {
+    foreignKey: "restaurantId",
+    as: "restaurant",
+  });
 
   User.hasMany(RestaurantClaim, {
     foreignKey: "userId",
@@ -99,7 +103,7 @@ Favorite.belongsTo(Restaurant, {
 
   RestaurantClaim.belongsTo(Restaurant, {
     foreignKey: "restaurantId",
-    as:"restaurant",
+    as: "restaurant",
   });
   Restaurant.hasMany(Branch, {
     foreignKey: "restaurantId",
@@ -109,5 +113,22 @@ Favorite.belongsTo(Restaurant, {
   Branch.belongsTo(Restaurant, {
     foreignKey: "restaurantId",
     as: "restaurant",
+  });
+
+  Menu.belongsTo(Restaurant, {
+    foreignKey: "restaurantId",
+  });
+
+  Restaurant.hasMany(Menu, {
+    foreignKey: "restaurantId",
+  });
+
+
+  MenuItem.belongsTo(Menu, {
+    foreignKey: "menuId",
+  });
+
+  Menu.hasMany(MenuItem, {
+    foreignKey: "menuId",
   });
 }
