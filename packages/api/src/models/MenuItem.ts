@@ -1,0 +1,1 @@
+export {MenuItem} from "@fp_restaurant/shared";
