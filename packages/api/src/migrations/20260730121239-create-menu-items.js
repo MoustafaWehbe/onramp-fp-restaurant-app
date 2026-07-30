@@ -73,9 +73,24 @@ module.exports = {
     });
 
     await queryInterface.addIndex("menu_items", ["menu_id"]);
+    await queryInterface.addConstraint("menu_items", {
+      fields: ["base_price"],
+      type: "check",
+      where: {
+        base_price: {
+          [Sequelize.Op.gte]: 0,
+        },
+      },
+      name: "menu_items_base_price_non_negative",
+    });
   },
 
-  async down(queryInterface) {
+   async down(queryInterface) {
+    await queryInterface.removeConstraint(
+      "menu_items",
+      "menu_items_base_price_non_negative"
+    );
+
     await queryInterface.dropTable("menu_items");
   },
 };

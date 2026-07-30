@@ -12,22 +12,21 @@ const menuItemIds = [
 module.exports = {
   async up(queryInterface) {
     const menus = await queryInterface.sequelize.query(
-      "SELECT id, name FROM menus",
+      `SELECT id FROM menus WHERE id IN (
+    '20000000-0000-0000-0000-000000000001',
+    '20000000-0000-0000-0000-000000000002'
+  )`,
       {
         type: QueryTypes.SELECT,
       }
     );
 
-    if (!menus.length) {
-      throw new Error("Cannot seed menu items: no menus found.");
-    }
-
     const mainMenu = menus.find(
-      (menu) => menu.name === "Main Menu"
+      (menu) => menu.id === "20000000-0000-0000-0000-000000000001"
     );
 
     const drinksMenu = menus.find(
-      (menu) => menu.name === "Drinks Menu"
+      (menu) => menu.id === "20000000-0000-0000-0000-000000000002"
     );
 
     if (!mainMenu || !drinksMenu) {

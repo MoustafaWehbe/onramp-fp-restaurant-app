@@ -11,14 +11,16 @@ const menuIds = [
 module.exports = {
   async up(queryInterface) {
     const restaurants = await queryInterface.sequelize.query(
-      "SELECT id FROM restaurants",
+      "SELECT id FROM restaurants ORDER BY created_at LIMIT 2",
       {
         type: QueryTypes.SELECT,
       }
     );
 
-    if (!restaurants.length) {
-      throw new Error("Cannot seed menus: no restaurants found.");
+    if (restaurants.length < 2) {
+      throw new Error(
+        "Cannot seed menus: at least two restaurants are required."
+      );
     }
 
     const menus = [
