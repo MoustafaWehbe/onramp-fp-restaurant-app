@@ -11,7 +11,8 @@ import { Favorite } from "./Favorite";
 import { RestaurantClaim } from "./RestaurantClaim";
 import { Menu } from "./Menu";
 import { MenuItem } from "./MenuItem";
-export { User, Restaurant, Session, RefreshToken, EmailVerificationToken, PasswordResetToken, AdminLog, Favorite, RestaurantClaim, Menu, MenuItem };
+import { BranchMenuItem } from "./BranchMenuItem";
+export { User, Restaurant, Session, RefreshToken, EmailVerificationToken, PasswordResetToken, AdminLog, Favorite, RestaurantClaim, Menu, MenuItem, BranchMenuItem };
 
 export function initModels(sequelize: Sequelize): void {
   User.initModel(sequelize);
@@ -26,6 +27,7 @@ export function initModels(sequelize: Sequelize): void {
   RestaurantClaim.initModel(sequelize);
   Menu.initModel(sequelize);
   MenuItem.initModel(sequelize);
+  BranchMenuItem.initModel(sequelize);
   // Associations
   User.hasMany(Session, { foreignKey: "userId", as: "sessions" });
   Session.belongsTo(User, { foreignKey: "userId", as: "user" });
@@ -130,5 +132,22 @@ export function initModels(sequelize: Sequelize): void {
 
   Menu.hasMany(MenuItem, {
     foreignKey: "menuId",
+  });
+
+  Branch.hasMany(BranchMenuItem, {
+    foreignKey: "branchId",
+  });
+
+  BranchMenuItem.belongsTo(Branch, {
+    foreignKey: "branchId",
+  });
+
+
+  MenuItem.hasMany(BranchMenuItem, {
+    foreignKey: "menuItemId",
+  });
+
+  BranchMenuItem.belongsTo(MenuItem, {
+    foreignKey: "menuItemId",
   });
 }
