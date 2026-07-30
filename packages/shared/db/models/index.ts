@@ -166,6 +166,8 @@ export function initModels(sequelize: Sequelize): void {
   BranchImage.belongsTo(Branch, {
     foreignKey: "branchId",
     as: "branch",
+  });
+  
   Branch.hasMany(BranchMenuItem, {
     foreignKey: "branchId",
   });
