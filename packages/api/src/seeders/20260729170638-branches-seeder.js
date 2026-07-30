@@ -16,10 +16,10 @@ const getBranchId = (index) =>
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
-  async up (queryInterface, Sequelize) {
+  async up(queryInterface, Sequelize) {
     const branches = [];
 
-    for(let i = 0 ; i < 10 ; i ++) {
+    for (let i = 0; i < 10; i++) {
       branches.push({
         id: getBranchId(i),
         restaurant_id: restaurantIds[i % restaurantIds.length],
@@ -40,13 +40,15 @@ module.exports = {
         updated_at: new Date(),
       });
     }
-    await queryInterface.bulkInsert("branches",branches);
+    await queryInterface.bulkInsert("branches", branches);
   },
 
-  async down (queryInterface, Sequelize) {
-    if (branches.length === 0) return;
+  async down(queryInterface, Sequelize) {
     await queryInterface.bulkDelete("branches", {
-      id: Array.from({ length: BRANCH_COUNT }, (_, i) => getBranchId(i)),
+      id: Array.from(
+        { length: BRANCH_COUNT },
+        (_, i) => getBranchId(i)
+      ),
     });
   }
 };
