@@ -2,7 +2,7 @@
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
-  async up (queryInterface, Sequelize) {
+  async up(queryInterface, Sequelize) {
     await queryInterface.createTable("reviews", {
       id: {
         type: Sequelize.UUID,
@@ -64,9 +64,15 @@ module.exports = {
         },
       },
     });
+
+    await queryInterface.addConstraint("reviews", {
+      fields: ["user_id", "branch_id"],
+      type: "unique",
+      name: "reviews_user_id_branch_id_unique",
+    });
   },
 
-  async down (queryInterface, Sequelize) {
+  async down(queryInterface, Sequelize) {
     await queryInterface.dropTable("reviews");
   }
 };
