@@ -1,0 +1,1 @@
+export {BranchMenuItem} from "@fp_restaurant/shared";
