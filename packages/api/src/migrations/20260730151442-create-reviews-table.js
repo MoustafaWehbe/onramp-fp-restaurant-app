@@ -37,7 +37,6 @@ module.exports = {
       rating: {
         type: Sequelize.SMALLINT,
         allowNull: false,
-        validate: {min: 1, max: 5},
       },
       created_at: {
         type: Sequelize.DATE,
@@ -53,7 +52,18 @@ module.exports = {
         type: Sequelize.DATE,
         allowNull: true,
       },
-    })
+    });
+
+    await queryInterface.addConstraint("reviews", {
+      fields: ["rating"],
+      type: "check",
+      name: "reviews_rating_between_1_and_5",
+      where: {
+        rating: {
+          [Sequelize.Op.between]: [1, 5],
+        },
+      },
+    });
   },
 
   async down (queryInterface, Sequelize) {

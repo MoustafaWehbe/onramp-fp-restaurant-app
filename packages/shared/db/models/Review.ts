@@ -2,8 +2,8 @@ import { Model, DataTypes, type Sequelize, type Optional } from "sequelize";
 
 export interface ReviewAttributes {
     id: string,
-    user_id : string,
-    branch_id : string,
+    userId: string,
+    branchId: string,
     comment: string,
     rating: number,
 }
@@ -16,8 +16,8 @@ export class Review
   implements ReviewAttributes
 {
     declare id: string;
-    declare user_id: string;
-    declare branch_id: string;
+    declare userId: string;
+    declare branchId: string;
     declare comment: string;
     declare rating: number;
 
@@ -29,11 +29,11 @@ export class Review
               defaultValue: DataTypes.UUIDV4,
               primaryKey: true,
             },
-            user_id: {
+            userId: {
               type: DataTypes.UUID,
               allowNull: false,
             },
-            branch_id: {
+            branchId: {
               type: DataTypes.UUID,
               allowNull: false,
             },
@@ -44,6 +44,10 @@ export class Review
             rating: {
                 type: DataTypes.TINYINT,
                 allowNull: false,
+                validate: {
+                    min: 1,
+                    max: 5
+                },
             },
           },
           {
