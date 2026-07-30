@@ -65,10 +65,15 @@ module.exports = {
     await queryInterface.addIndex("branch_menu_items", ["branch_id"]);
     await queryInterface.addIndex("branch_menu_items", ["menu_item_id"]);
 
-    await queryInterface.addConstraint("branch_menu_items", {
-      fields: ["branch_id", "menu_item_id"],
-      type: "unique",
-      name: "unique_branch_menu_item",
+    await queryInterface.addIndex("branch_menu_items", [
+      "branch_id",
+      "menu_item_id",
+    ], {
+      unique: true,
+      name: "unique_branch_menu_item_active",
+      where: {
+        deleted_at: null,
+      },
     });
 
     await queryInterface.addConstraint("branch_menu_items", {
@@ -81,19 +86,55 @@ module.exports = {
       },
       name: "branch_menu_items_custom_price_non_negative",
     });
+
+    await queryInterface.sequelize.query(`
+      CREATE OR REPLACE FUNCTION validate_branch_menu_item_restaurant()
+      RETURNS TRIGGER AS $$
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1
+          FROM branches b
+          JOIN menu_items mi ON mi.id = NEW.menu_item_id
+          JOIN menus m ON m.id = mi.menu_id
+          WHERE b.id = NEW.branch_id
+          AND b.restaurant_id = m.restaurant_id
+        ) THEN
+          RAISE EXCEPTION 'Branch and menu item must belong to the same restaurant';
+        END IF;
+
+        RETURN NEW;
+      END;
+      $$ LANGUAGE plpgsql;
+    `);
+
+    await queryInterface.sequelize.query(`
+      CREATE TRIGGER branch_menu_item_restaurant_check
+      BEFORE INSERT OR UPDATE ON branch_menu_items
+      FOR EACH ROW
+      EXECUTE FUNCTION validate_branch_menu_item_restaurant();
+    `);
   },
 
   async down(queryInterface) {
+    await queryInterface.sequelize.query(`
+    DROP TRIGGER IF EXISTS branch_menu_item_restaurant_check
+    ON branch_menu_items;
+  `);
+
+    await queryInterface.sequelize.query(`
+    DROP FUNCTION IF EXISTS validate_branch_menu_item_restaurant();
+  `);
+
     await queryInterface.removeConstraint(
       "branch_menu_items",
       "branch_menu_items_custom_price_non_negative"
     );
 
-    await queryInterface.removeConstraint(
+    await queryInterface.removeIndex(
       "branch_menu_items",
-      "unique_branch_menu_item"
+      "unique_branch_menu_item_active"
     );
 
     await queryInterface.dropTable("branch_menu_items");
-  },
+  }
 };
