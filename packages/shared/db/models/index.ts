@@ -2,6 +2,7 @@ import type { Sequelize } from "sequelize";
 import { User } from "./User";
 import { Restaurant } from "./Restaurant";
 import { Branch } from "./Branch";
+import { Review } from "./Review";
 import { Session } from "./Session";
 import { RefreshToken } from "./RefreshToken";
 import { EmailVerificationToken } from "./EmailVerificationToken";
@@ -11,12 +12,13 @@ import { Favorite } from "./Favorite";
 import { RestaurantClaim } from "./RestaurantClaim";
 import { Menu } from "./Menu";
 import { MenuItem } from "./MenuItem";
-export { User, Restaurant, Session, RefreshToken, EmailVerificationToken, PasswordResetToken, AdminLog, Favorite, RestaurantClaim, Menu, MenuItem };
+export { User, Restaurant, Branch, Review, Session, RefreshToken, EmailVerificationToken, PasswordResetToken, AdminLog, Favorite, RestaurantClaim, Menu, MenuItem };
 
 export function initModels(sequelize: Sequelize): void {
   User.initModel(sequelize);
   Restaurant.initModel(sequelize);
   Branch.initModel(sequelize);
+  Review.initModel(sequelize);
   Session.initModel(sequelize);
   RefreshToken.initModel(sequelize);
   EmailVerificationToken.initModel(sequelize);
@@ -130,5 +132,25 @@ export function initModels(sequelize: Sequelize): void {
 
   Menu.hasMany(MenuItem, {
     foreignKey: "menuId",
+  });
+
+  User.hasMany(Review, {
+    foreignKey: "userId",
+    as: "reviews",
+  });
+
+  Review.belongsTo(User, {
+    foreignKey: "userId",
+    as: "user",
+  });
+
+  Branch.hasMany(Review, {
+    foreignKey: "branchId",
+    as: "reviews",
+  });
+
+  Review.belongsTo(Branch, {
+    foreignKey: "branchId",
+    as: "branch",
   });
 }
