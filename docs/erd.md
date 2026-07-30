@@ -183,6 +183,30 @@ Restaurants saved by users.
 
 ---
 
+---
+
+## Branch Menu Items
+
+Represents branch-level overrides for menu items.
+
+Used when a branch needs to customize menu item availability or pricing without duplicating menu item data.
+
+* id (PK)
+* branch_id (FK)
+* menu_item_id (FK)
+* custom_price (nullable)
+* is_available (boolean)
+* created_at
+* updated_at
+* deleted_at
+
+**Behavior:**
+
+* If `custom_price` is NULL → use the menu item's `base_price`.
+* If `custom_price` exists → use the branch-specific price.
+* If `is_available` is false → the item is unavailable for that branch.
+
+
 # 2. Relationships
 
 ### Users
@@ -203,11 +227,15 @@ Restaurants saved by users.
 
 * Branches 1 → N Reviews
 * Branches 1 → N Images
+* Branches 1 → N Branch Menu Items
 
 ### Menus
 
 * Menus 1 → N Menu Items
 
+### MenuItems
+
+** Menu Items 1 → N Branch Menu Items
 ---
 
 # 3. Notes
@@ -222,6 +250,8 @@ Restaurants saved by users.
 * Restaurant claims handle ownership verification workflow.
 * Admin logs track important administrative actions.
 * Favorites provide a simple user → restaurant bookmarking system.
+* Branch menu items allow branches to override menu item prices and availability.
+* Branches do not duplicate menu item data; they only store branch-specific changes.
 
 ---
 
@@ -247,4 +277,8 @@ Restaurants saved by users.
 
 * Branches (1) ─── (N) Images
 
+* Branches (1) ─── (N) Branch Menu Items
+
 * Menus (1) ─── (N) Menu Items
+
+* Menu Items (1) ─── (N) Branch Menu Items
