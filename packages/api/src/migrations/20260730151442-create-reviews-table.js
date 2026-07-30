@@ -35,8 +35,9 @@ module.exports = {
         allowNull: false,
       },
       rating: {
-        type: Sequelize.TINYINT,
+        type: Sequelize.SMALLINT,
         allowNull: false,
+        validate: {min: 1, max: 5},
       },
       created_at: {
         type: Sequelize.DATE,
