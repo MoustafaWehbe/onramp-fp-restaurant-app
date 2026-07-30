@@ -235,7 +235,7 @@ Used when a branch needs to customize menu item availability or pricing without 
 
 ### MenuItems
 
-** Menu Items 1 → N Branch Menu Items
+* Menu Items 1 → N Branch Menu Items
 ---
 
 # 3. Notes
