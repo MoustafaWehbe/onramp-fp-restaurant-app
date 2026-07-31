@@ -23,4 +23,4 @@ export const updateReviewSchema = createReviewSchema
   );
 
 export type CreateReviewInput = z.infer<typeof createReviewSchema>;
-export type UpdateReviewInput=z.infer<typeof createReviewSchema>;
+export type UpdateReviewInput=z.infer<typeof updateReviewSchema>;
