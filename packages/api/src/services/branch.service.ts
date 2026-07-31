@@ -6,7 +6,7 @@ import { MenuItem } from "../models/MenuItem";
 import { Review } from "../models/Review";
 import { User } from "../models/User";
 import { createError } from "../middleware/error-handler";
-
+import { validate as isUUID } from "uuid";
 interface ReviewSummary {
     averageRating: string | null;
     totalReviews: string | null;
@@ -14,6 +14,9 @@ interface ReviewSummary {
 
 export class BranchService {
     async getById(branchId: string) {
+        if (!isUUID(branchId)) {
+        throw createError("Invalid branch id", 400);
+    }
         const branch = await Branch.findByPk(branchId, {
             include: [
                 {

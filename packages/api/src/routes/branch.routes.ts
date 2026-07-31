@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { branchController } from "../controllers/branch.controller";
-import { authenticate } from "src/middleware/authenticate";
-import { rateLimiter } from "src/middleware/rate-limiter";
+import { authenticate } from "../middleware/authenticate";
+import { rateLimiter } from "../middleware/rate-limiter";
 
 const router = Router();
 
