@@ -9,6 +9,10 @@ interface CreateReviewInput {
     rating: number;
     comment: string;
 }
+interface UpdateReviewInput {
+    rating?: number;
+    comment?: string;
+}
 
 export class ReviewService {
     async create(input: CreateReviewInput) {
@@ -53,6 +57,62 @@ export class ReviewService {
 
             throw error;
         }
+    }
+    async update(
+        reviewId: string,
+        userId: string,
+        input: UpdateReviewInput,
+    ) {
+        const review = await Review.findByPk(reviewId);
+
+        if (!review) {
+            throw createError("Review not found", 404);
+        }
+
+        if (review.userId !== userId) {
+            throw createError(
+                "You are not authorized to update this review",
+                403,
+            );
+        }
+
+        await review.update(input);
+
+        return review;
+    }
+
+    async delete(reviewId: string, userId: string) {
+        const review = await Review.findByPk(reviewId);
+
+        if (!review) {
+            throw createError("Review not found", 404);
+        }
+
+        if (review.userId !== userId) {
+            throw createError(
+                "You are not authorized to delete this review",
+                403,
+            );
+        }
+
+        await review.destroy();
+    }
+
+    async getBranchReviews(branchId: string) {
+        const branch = await Branch.findByPk(branchId);
+
+        if (!branch) {
+            throw createError("Branch not found", 404);
+        }
+
+        const reviews = await Review.findAll({
+            where: {
+                branchId,
+            },
+            order: [["createdAt", "DESC"]],
+        });
+
+        return reviews;
     }
 }
 
