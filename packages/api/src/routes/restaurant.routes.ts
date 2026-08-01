@@ -9,8 +9,8 @@ const router = Router();
 router.get(
     "/:id",
     rateLimiter,
-    restaurantController.getRestaurantById,
     validate(restaurantParamsSchema),
+    restaurantController.getRestaurantById,
 );
 
 export { router as restaurantRouter };
