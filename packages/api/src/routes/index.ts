@@ -1,11 +1,11 @@
 import { Router } from "express";
 import { authRouter } from "./auth.routes";
+import { restaurantRouter } from "./restaurant.routes";
 
 const router = Router();
 
 router.use("/auth", authRouter);
 
-// Add more routers here:
-// router.use('/users', usersRouter);
+router.use("/restaurants", restaurantRouter);
 
 export { router };

@@ -123,19 +123,23 @@ export function initModels(sequelize: Sequelize): void {
 
   Menu.belongsTo(Restaurant, {
     foreignKey: "restaurantId",
+    as: "restaurant",
   });
 
   Restaurant.hasMany(Menu, {
     foreignKey: "restaurantId",
+    as: "menus"
   });
 
 
   MenuItem.belongsTo(Menu, {
     foreignKey: "menuId",
+    as: "menu",
   });
 
   Menu.hasMany(MenuItem, {
     foreignKey: "menuId",
+    as: "menuItems",
   });
 
   User.hasMany(Review, {
@@ -170,18 +174,22 @@ export function initModels(sequelize: Sequelize): void {
   
   Branch.hasMany(BranchMenuItem, {
     foreignKey: "branchId",
+    as: "branchMenuItems",
   });
 
   BranchMenuItem.belongsTo(Branch, {
     foreignKey: "branchId",
+    as: "branch",
   });
 
 
   MenuItem.hasMany(BranchMenuItem, {
     foreignKey: "menuItemId",
+    as: "branchMenuItems",
   });
 
   BranchMenuItem.belongsTo(MenuItem, {
     foreignKey: "menuItemId",
+    as: "menuItem"
   });
 }
