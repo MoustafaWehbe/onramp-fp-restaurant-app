@@ -1,5 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
 import { branchService } from "../services/branch.service";
+import { branchIdSchema } from "../schemas/branch.schema";
 
 export const branchController = {
     async getById(
@@ -8,9 +9,9 @@ export const branchController = {
         next: NextFunction,
     ): Promise<void> {
         try {
-            const branchId = req.params.branchId as string;
+            const { branchId } = branchIdSchema.parse(req.params);
 
-            const branch = await branchService.getById(branchId);
+            const branch = await branchService.getBranchById(branchId);
 
             res.status(200).json({
                 message: "Branch details retrieved successfully",

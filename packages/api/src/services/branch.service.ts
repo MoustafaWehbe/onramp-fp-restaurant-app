@@ -5,29 +5,65 @@ import { BranchMenuItem } from "../models/BranchMenuItem";
 import { MenuItem } from "../models/MenuItem";
 import { Review } from "../models/Review";
 import { User } from "../models/User";
-import { createError } from "../middleware/error-handler";
-import { validate as isUUID } from "uuid";
-interface ReviewSummary {
-    averageRating: string | null;
-    totalReviews: string | null;
-}
 
-export class BranchService {
-    async getById(branchId: string) {
-        if (!isUUID(branchId)) {
-        throw createError("Invalid branch id", 400);
-    }
+export const branchService = {
+    getBranchById: async (branchId: string) => {
         const branch = await Branch.findByPk(branchId, {
+            attributes: [
+                "id",
+                "restaurantId",
+                "name",
+                "city",
+                "address",
+                "latitude",
+                "longitude",
+                "phone",
+                "opening_hours",
+            ],
             include: [
                 {
                     model: BranchImage,
                     as: "images",
+                    attributes: [
+                        "url",
+                        "type",
+                    ],
                 },
                 {
                     model: BranchMenuItem,
+                    attributes: [],
                     include: [
                         {
                             model: MenuItem,
+                            attributes: [
+                                "id",
+                                "name",
+                                "description",
+                                "base_price",
+                            ],
+                        },
+                    ],
+                },
+                {
+                    model: Review,
+                    as: "reviews",
+                    separate: true,
+                    limit: 3,
+                    order: [["createdAt", "DESC"]],
+                    attributes: [
+                        "id",
+                        "rating",
+                        "comment",
+                        "createdAt",
+                    ],
+                    include: [
+                        {
+                            model: User,
+                            as: "user",
+                            attributes: [
+                                "id",
+                                "name",
+                            ],
                         },
                     ],
                 },
@@ -35,23 +71,8 @@ export class BranchService {
         });
 
         if (!branch) {
-            throw createError("Branch not found", 404);
+            throw new Error("Branch not found");
         }
-
-        const latestReviews = await Review.findAll({
-            where: {
-                branchId,
-            },
-            include: [
-                {
-                    model: User,
-                    as: "user",
-                    attributes: ["id", "name"],
-                },
-            ],
-            order: [["createdAt", "DESC"]],
-            limit: 3,
-        });
 
         const reviewSummary = await Review.findOne({
             where: {
@@ -62,21 +83,18 @@ export class BranchService {
                 [fn("COUNT", col("id")), "totalReviews"],
             ],
             raw: true,
-        }) as unknown as ReviewSummary;
+        });
 
         return {
             branch,
             reviewSummary: {
                 averageRating: Number(
-                    reviewSummary?.averageRating ?? 0,
+                    (reviewSummary as any)?.averageRating ?? 0,
                 ).toFixed(1),
-
                 totalReviews: Number(
-                    reviewSummary?.totalReviews ?? 0,
+                    (reviewSummary as any)?.totalReviews ?? 0,
                 ),
             },
-            latestReviews,
         };
-    }
-}
-export const branchService = new BranchService();
+    },
+};
