@@ -10,6 +10,7 @@ router.get(
     "/:id",
     rateLimiter,
     restaurantController.getRestaurantById,
+    validate(restaurantParamsSchema),
 );
 
 export { router as restaurantRouter };
