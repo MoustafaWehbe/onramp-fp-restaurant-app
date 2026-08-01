@@ -22,6 +22,7 @@ export const getRestaurantById = async (id: string) => {
         as: "branches",
         attributes: [
           "id",
+          "restaurantId",
           "name",
           "city",
           "address",
@@ -37,6 +38,8 @@ export const getRestaurantById = async (id: string) => {
             order: [["created_at", "DESC"]],
             attributes: [
               "id",
+              "userId",
+              "branchId",
               "rating",
               "comment",
               "createdAt",
