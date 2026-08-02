@@ -5,6 +5,7 @@ import { BranchMenuItem } from "../models/BranchMenuItem";
 import { MenuItem } from "../models/MenuItem";
 import { Review } from "../models/Review";
 import { User } from "../models/User";
+import { createError } from "src/middleware/error-handler";
 
 export const branchService = {
     getBranchById: async (branchId: string) => {
@@ -79,7 +80,7 @@ export const branchService = {
         });
 
         if (!branch) {
-            throw new Error("Branch not found");
+                throw createError("Branch not found", 404);
         }
         return {
             branch,
