@@ -16,6 +16,8 @@ export const restaurantService = {
         "cuisine_type",
         "email",
         "phone",
+        "review_count",
+        "average_rating",
       ],
       include: [
         {
@@ -29,6 +31,8 @@ export const restaurantService = {
             "address",
             "phone",
             "opening_hours",
+            "review_count",
+            "average_rating",
           ],
           include: [
             {

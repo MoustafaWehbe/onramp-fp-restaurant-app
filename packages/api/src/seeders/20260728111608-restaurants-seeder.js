@@ -57,6 +57,15 @@ module.exports = {
       price_range: faker.helpers.arrayElement(priceRanges),
       email: faker.internet.email(),
       phone: faker.phone.number(),
+      review_count: faker.number.int({
+        min: 0,
+        max: 5000,
+      }),
+      average_rating: faker.number.float({
+        min: 0,
+        max: 5,
+        fractionDigits: 2,
+      }),
       verified_at: faker.datatype.boolean() ? new Date() : null,
       created_at: new Date(),
       updated_at: new Date(),
