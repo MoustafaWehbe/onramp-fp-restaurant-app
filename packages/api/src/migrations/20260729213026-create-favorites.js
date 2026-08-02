@@ -44,6 +44,12 @@ module.exports = {
         defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
       },
     });
+
+    await queryInterface.addConstraint("favorites", {
+      fields: ["user_id", "restaurant_id"],
+      type: "unique",
+      name: "favorites_user_restaurant_unique",
+    });
   },
 
   async down(queryInterface) {

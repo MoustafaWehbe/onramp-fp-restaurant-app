@@ -42,6 +42,12 @@ export class Favorite
         modelName: "Favorite",
         underscored: true,
         timestamps: true,
+        indexes: [
+          {
+            unique: true,
+            fields: ["user_id", "restaurant_id"],
+          },
+        ],
       }
     );
   }

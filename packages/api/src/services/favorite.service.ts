@@ -2,8 +2,8 @@ import { Restaurant } from "../models/Restaurant";
 import { Favorite } from "../models/Favorite";
 import { createError } from "src/middleware/error-handler";
 
-export class FavoriteService {
-  async create(userId: string, restaurantId: string) {
+export const favoriteService = {
+  create: async (userId: string, restaurantId: string) => {
     const restaurant = await Restaurant.findByPk(restaurantId);
 
     if (!restaurant) {
@@ -25,9 +25,9 @@ export class FavoriteService {
       userId,
       restaurantId,
     });
-  }
+  },
 
-  async delete(userId: string, restaurantId: string) {
+  delete: async (userId: string, restaurantId: string) => {
     const deleted = await Favorite.destroy({
       where: {
         userId,
@@ -41,13 +41,27 @@ export class FavoriteService {
         404,
       );
     }
-  }
+  },
 
-  async get(userId: string) {
+  getFavorites: async (userId: string) => {
     return Favorite.findAll({
       where: { userId },
+      include: [
+        {
+          model: Restaurant,
+          as: "restaurant",
+          attributes: [
+            "id",
+            "name",
+            "description",
+            "cuisine_type",
+            "price_range",
+            "email",
+            "phone",
+            "ambiance_tags",
+          ]
+        }
+      ]
     });
-  }
+  },
 }
-
-export const favoriteService = new FavoriteService();
