@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import {Home, LayoutDashboard, Settings } from "lucide-react";
+import { Home, LayoutDashboard, Settings } from "lucide-react";
 
 interface SidebarProps {
   open: boolean;
@@ -27,11 +27,13 @@ const links = [
 export function Sidebar({ open, onClose }: SidebarProps) {
   return (
     <aside
+      aria-hidden={!open}
+      tabIndex={open ? 0 : -1}
       className={`
-        fixed left-0 top-0 z-50 h-full w-64 bg-background border-r
-        transition-transform
-        ${open ? "translate-x-0" : "-translate-x-full"}
-      `}
+    fixed left-0 top-0 z-50 h-full w-64 bg-background border-r
+    transition-transform
+    ${open ? "translate-x-0" : "-translate-x-full"}
+  `}
     >
       <button
         onClick={onClose}
@@ -52,10 +54,9 @@ export function Sidebar({ open, onClose }: SidebarProps) {
               className={({ isActive }) =>
                 `
                 flex items-center gap-3 rounded-md px-3 py-2 text-sm
-                ${
-                  isActive
-                    ? "bg-primary text-primary-foreground"
-                    : "hover:bg-muted"
+                ${isActive
+                  ? "bg-primary text-primary-foreground"
+                  : "hover:bg-muted"
                 }
                 `
               }
