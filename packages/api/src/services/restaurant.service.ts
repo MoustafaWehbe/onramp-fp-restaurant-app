@@ -3,6 +3,7 @@ import { Branch } from "../models/Branch";
 import { Review } from "../models/Review";
 import { User } from "../models/User";
 import { Menu } from "../models/Menu";
+import { createError } from "src/middleware/error-handler";
 
 export const restaurantService = {
   getRestaurantBySlug: async (slug: string) => {
@@ -79,7 +80,7 @@ export const restaurantService = {
     });
 
     if (!restaurant) {
-      throw new Error("Restaurant not found");
+      throw createError("Restaurant not found", 404);
     }
 
     return restaurant;

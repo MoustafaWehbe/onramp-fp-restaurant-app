@@ -3,7 +3,6 @@ import { authRouter } from "./auth.routes";
 import { restaurantRouter } from "./restaurant.routes";
 import { reviewRouter } from "./review.routes";
 import { favoriteRouter } from "./favorite.routes";
-import { branchRouter } from "./branch.routes";
 
 const router = Router();
 

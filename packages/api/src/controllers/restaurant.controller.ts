@@ -15,6 +15,14 @@ export const restaurantController = {
         data: restaurant,
       });
     } catch (error) {
+      if (
+        error instanceof Error &&
+        error.message === "Restaurant not found"
+      ) {
+        return res.status(404).json({
+          message: error.message,
+        });
+      }
       return res.status(400).json({
         message:
           error instanceof Error
