@@ -19,6 +19,8 @@ export const branchService = {
                 "longitude",
                 "phone",
                 "opening_hours",
+                "review_count",
+                "average_rating",
             ],
             include: [
                 {
@@ -31,10 +33,16 @@ export const branchService = {
                 },
                 {
                     model: BranchMenuItem,
-                    attributes: [],
+                    as: "branchMenuItems",
+                    attributes: [
+                        "id",
+                        "branchId",
+                        "menuItemId",
+                    ],
                     include: [
                         {
                             model: MenuItem,
+                            as: "menuItem",
                             attributes: [
                                 "id",
                                 "name",
@@ -73,27 +81,11 @@ export const branchService = {
         if (!branch) {
             throw new Error("Branch not found");
         }
-
-        const reviewSummary = await Review.findOne({
-            where: {
-                branchId,
-            },
-            attributes: [
-                [fn("AVG", col("rating")), "averageRating"],
-                [fn("COUNT", col("id")), "totalReviews"],
-            ],
-            raw: true,
-        });
-
         return {
             branch,
             reviewSummary: {
-                averageRating: Number(
-                    (reviewSummary as any)?.averageRating ?? 0,
-                ).toFixed(1),
-                totalReviews: Number(
-                    (reviewSummary as any)?.totalReviews ?? 0,
-                ),
+                averageRating: Number(branch.average_rating).toFixed(1),
+                totalReviews: branch.review_count,
             },
         };
     },

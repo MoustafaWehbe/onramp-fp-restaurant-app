@@ -3,6 +3,17 @@ import type { Request, Response, NextFunction } from "express";
 export interface AppError extends Error {
   statusCode?: number;
   isOperational?: boolean;
+  parent?: {
+    message?: string;
+    detail?: string;
+    code?: string;
+  };
+  original?: {
+    message?: string;
+    detail?: string;
+    code?: string;
+  };
+  sql?: string;
 }
 
 export function createError(message: string, statusCode = 500): AppError {
@@ -24,10 +35,16 @@ export function errorHandler(
 
   if (process.env.NODE_ENV !== "test") {
     console.error("[Error]", err);
+    console.error("[DB Error]", err.parent?.message);
+    console.error("[SQL]", err.sql);
   }
 
   res.status(statusCode).json({
     error: message,
-    ...(process.env.NODE_ENV === "development" && { stack: err.stack }),
+    ...(process.env.NODE_ENV === "development" && {
+      stack: err.stack,
+      dbError: err.parent?.message ?? err.original?.message,
+      sql: err.sql,
+    }),
   });
 }
