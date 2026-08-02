@@ -36,6 +36,15 @@ module.exports = {
         }),
         phone: faker.phone.number(),
         opening_hours: "09:00 - 23:00",
+        review_count: faker.number.int({
+          min: 0,
+          max: 5000,
+        }),
+        average_rating: faker.number.float({
+          min: 0,
+          max: 5,
+          fractionDigits: 2,
+        }),
         created_at: new Date(),
         updated_at: new Date(),
       });

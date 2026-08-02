@@ -10,6 +10,8 @@ export interface BranchAttributes {
     longitude: string,
     phone: string | null,
     opening_hours: string,
+    review_count: number,
+    average_rating: number,
 }
 
 export interface BranchCreationAttributes
@@ -28,6 +30,8 @@ export class Branch
   declare longitude: string;
   declare phone: string | null;
   declare opening_hours: string;
+  declare review_count: number;
+  declare average_rating: number;
 
   static initModel(sequelize: Sequelize) {
       Branch.init(
@@ -68,6 +72,16 @@ export class Branch
           opening_hours: {
             type: DataTypes.STRING,
             allowNull: false,
+          },
+          review_count: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            defaultValue: 0,
+          },
+          average_rating: {
+            type: DataTypes.DECIMAL(3,2),
+            allowNull: false,
+            defaultValue: 0.00,
           },
         },
         {

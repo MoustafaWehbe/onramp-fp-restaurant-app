@@ -1,5 +1,6 @@
 import { Review } from "../models/Review";
 import { Branch } from "../models/Branch";
+import { Restaurant } from "../models/Restaurant";
 import { createError } from "../middleware/error-handler";
 import { UniqueConstraintError } from "sequelize";
 

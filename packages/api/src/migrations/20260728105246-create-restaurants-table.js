@@ -37,6 +37,16 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false,
       },
+      review_count: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        defaultValue: 0,
+      },
+      average_rating: {
+        type: Sequelize.DECIMAL(3,2),
+        allowNull: false,
+        defaultValue: 0.00,
+      },
       verified_at: {
         type: Sequelize.DATE,
         allowNull: true,
@@ -52,6 +62,17 @@ module.exports = {
         defaultValue: Sequelize.fn('NOW'),
       },
 
+  });
+
+  await queryInterface.addConstraint("restaurants", {
+    fields: ["average_rating"],
+    type: "check",
+    where: {
+      average_rating: {
+        [Sequelize.Op.between]: [0, 5],
+      },
+    },
+    name: "restaurants_average_rating_range",
   });
 },
 

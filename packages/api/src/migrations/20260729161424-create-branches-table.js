@@ -46,6 +46,16 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false,
       },
+      review_count: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        defaultValue: 0,
+      },
+      average_rating: {
+        type: Sequelize.DECIMAL(3,2),
+        allowNull: false,
+        defaultValue: 0.00,
+      },
       created_at: {
         type: Sequelize.DATE,
         allowNull: false,

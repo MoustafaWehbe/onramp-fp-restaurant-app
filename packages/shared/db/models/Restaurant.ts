@@ -9,6 +9,8 @@ export interface RestaurantAttributes {
   price_range: string;
   email: string;
   phone: string;
+  review_count: number,
+  average_rating: number,
 }
 
 export interface RestaurantCreationAttributes
@@ -26,6 +28,8 @@ export class Restaurant
   declare price_range: string;
   declare email: string;
   declare phone: string;
+  declare review_count: number;
+  declare average_rating: number;
 
   static initModel(sequelize: Sequelize) {
     Restaurant.init(
@@ -62,6 +66,16 @@ export class Restaurant
         phone: {
           type: DataTypes.STRING,
           allowNull: false,
+        },
+        review_count: {
+          type: DataTypes.INTEGER,
+          allowNull: false,
+          defaultValue: 0,
+        },
+        average_rating: {
+          type: DataTypes.DECIMAL(3,2),
+          allowNull: false,
+          defaultValue: 0.00,
         },
       },
       {
