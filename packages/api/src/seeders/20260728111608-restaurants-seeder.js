@@ -46,31 +46,38 @@ const priceRanges = ['Budget', 'Average', 'Expensive', 'Luxury'];
 
 module.exports = {
   async up(queryInterface) {
-    const restaurants = restaurantIds.map((id) => ({
-      id,
-      name: faker.company.name(),
-      description: faker.lorem.sentence(),
-      cuisine_type: faker.helpers.arrayElement(cuisineTypes),
-      ambiance_tags: JSON.stringify(
-        faker.helpers.arrayElements(ambianceTags, {min: 1,max: 3,}),
-      ),
-      price_range: faker.helpers.arrayElement(priceRanges),
-      email: faker.internet.email(),
-      phone: faker.phone.number(),
-      review_count: faker.number.int({
-        min: 0,
-        max: 5000,
-      }),
-      average_rating: faker.number.float({
-        min: 0,
-        max: 5,
-        fractionDigits: 2,
-      }),
-      verified_at: faker.datatype.boolean() ? new Date() : null,
-      created_at: new Date(),
-      updated_at: new Date(),
-    }));
+    const restaurants = restaurantIds.map((id) => {
+      const name = faker.company.name();
 
+      return {
+        id,
+        name,
+        slug: `${name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${id.slice(-4)}`,
+        description: faker.lorem.sentence(),
+        cuisine_type: faker.helpers.arrayElement(cuisineTypes),
+        ambiance_tags: JSON.stringify(
+          faker.helpers.arrayElements(ambianceTags, {
+            min: 1,
+            max: 3,
+          }),
+        ),
+        price_range: faker.helpers.arrayElement(priceRanges),
+        email: faker.internet.email(),
+        phone: faker.phone.number(),
+        review_count: faker.number.int({
+          min: 0,
+          max: 5000,
+        }),
+        average_rating: faker.number.float({
+          min: 0,
+          max: 5,
+          fractionDigits: 2,
+        }),
+        verified_at: faker.datatype.boolean() ? new Date() : null,
+        created_at: new Date(),
+        updated_at: new Date(),
+      };
+    });
     await queryInterface.bulkInsert('restaurants', restaurants);
   },
 

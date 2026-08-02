@@ -2,7 +2,7 @@
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
-  async up (queryInterface, Sequelize) {
+  async up(queryInterface, Sequelize) {
     await queryInterface.createTable('restaurants', {
       id: {
         type: Sequelize.UUID,
@@ -10,6 +10,10 @@ module.exports = {
         allowNull: false,
       },
       name: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
+      slug: {
         type: Sequelize.STRING,
         allowNull: false,
       },
@@ -43,7 +47,7 @@ module.exports = {
         defaultValue: 0,
       },
       average_rating: {
-        type: Sequelize.DECIMAL(3,2),
+        type: Sequelize.DECIMAL(3, 2),
         allowNull: false,
         defaultValue: 0.00,
       },
@@ -62,21 +66,27 @@ module.exports = {
         defaultValue: Sequelize.fn('NOW'),
       },
 
-  });
+    });
 
-  await queryInterface.addConstraint("restaurants", {
-    fields: ["average_rating"],
-    type: "check",
-    where: {
-      average_rating: {
-        [Sequelize.Op.between]: [0, 5],
+    await queryInterface.addConstraint("restaurants", {
+      fields: ["average_rating"],
+      type: "check",
+      where: {
+        average_rating: {
+          [Sequelize.Op.between]: [0, 5],
+        },
       },
-    },
-    name: "restaurants_average_rating_range",
-  });
-},
+      name: "restaurants_average_rating_range",
+    });
 
-  async down (queryInterface, Sequelize) {
+    await queryInterface.addConstraint("restaurants", {
+      fields: ["slug"],
+      type: "unique",
+      name: "restaurants_slug_unique",
+    });
+  },
+
+  async down(queryInterface, Sequelize) {
     await queryInterface.dropTable('restaurants');
   }
 };

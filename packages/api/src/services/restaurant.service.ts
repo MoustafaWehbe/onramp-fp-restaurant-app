@@ -5,11 +5,15 @@ import { User } from "../models/User";
 import { Menu } from "../models/Menu";
 
 export const restaurantService = {
-  getRestaurantById: async (id: string) => {
-    const restaurant = await Restaurant.findByPk(id, {
+  getRestaurantBySlug: async (slug: string) => {
+    const restaurant = await Restaurant.findOne({
+    where: {
+      slug,
+    },
       attributes: [
         "id",
         "name",
+        "slug",
         "description",
         "price_range",
         "ambiance_tags",
@@ -27,6 +31,7 @@ export const restaurantService = {
             "id",
             "restaurantId",
             "name",
+            "slug",
             "city",
             "address",
             "phone",
