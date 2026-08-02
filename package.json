@@ -13,6 +13,7 @@
     "clean": "turbo run clean && rm -rf node_modules"
   },
   "devDependencies": {
+    "@types/uuid": "^10.0.0",
     "turbo": "^2.3.0"
   },
   "engines": {

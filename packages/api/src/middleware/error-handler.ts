@@ -23,11 +23,13 @@ export function errorHandler(
   const message = err.isOperational ? err.message : "Internal server error";
 
   if (process.env.NODE_ENV !== "test") {
-    console.error("[Error]", err);
+    console.error("[Error]", {
+      message: err.message,
+      statusCode,
+    });
   }
 
   res.status(statusCode).json({
     error: message,
-    ...(process.env.NODE_ENV === "development" && { stack: err.stack }),
   });
 }
