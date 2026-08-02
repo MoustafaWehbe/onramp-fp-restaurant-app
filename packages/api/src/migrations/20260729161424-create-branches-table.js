@@ -66,8 +66,19 @@ module.exports = {
         allowNull: false,
         defaultValue: Sequelize.fn('NOW'),
       }
-    })
+    });
     await queryInterface.addIndex("branches", ["restaurant_id"]);
+
+    await queryInterface.addConstraint("branches", {
+      fields: ["average_rating"],
+      type: "check",
+      where: {
+        average_rating: {
+          [Sequelize.Op.between]: [0, 5],
+        },
+      },
+      name: "branches_average_rating_range",
+    });
   },
 
   async down (queryInterface, Sequelize) {
