@@ -40,6 +40,9 @@ Represents restaurant brands or chains.
     * romantic
     * outdoor
     * loud
+
+* review_count
+* average_rating
 * verified_at (Date)
 * created_at
 * updated_at
@@ -68,6 +71,8 @@ Physical locations of restaurants.
 * longitude
 * phone
 * opening_hours
+* review_count
+* average_rating
 * created_at
 * updated_at
 
