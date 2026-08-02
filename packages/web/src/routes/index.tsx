@@ -18,6 +18,7 @@ import AuthCenteredLayout from "../layouts/AuthCenteredLayout";
 import ForgotPassword from "../pages/auth/ForgotPassword";
 import { VerifyEmailToken } from "../pages/auth/VerifyEmailToken";
 import ResetPassword from "../pages/auth/ResetPassword";
+import Home from "@/pages/home/Home";
 
 
 export function AppRoutes() {
@@ -39,7 +40,8 @@ export function AppRoutes() {
       {/* Protected app routes */}
       <Route element={<ProtectedRoute />}>
         <Route element={<AppLayout />}>
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route path="/" element={<Navigate to="/home" replace />} />
+          <Route path="/home" element={<Home/>}/>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/restaurants" element={<Restaurants />} />

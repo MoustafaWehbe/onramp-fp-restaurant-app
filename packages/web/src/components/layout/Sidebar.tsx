@@ -1,36 +1,70 @@
 import { NavLink } from "react-router-dom";
-import { LayoutDashboard, Settings } from "lucide-react";
-import { cn } from "../../lib/utils";
+import {Home, LayoutDashboard, Settings } from "lucide-react";
 
-const navItems = [
-  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/settings", label: "Settings", icon: Settings },
+interface SidebarProps {
+  open: boolean;
+  onClose: () => void;
+}
+
+const links = [
+  {
+    label: "Home",
+    path: "/",
+    icon: Home,
+  },
+  {
+    label: "Dashboard",
+    path: "/dashboard",
+    icon: LayoutDashboard,
+  },
+  {
+    label: "Settings",
+    path: "/settings",
+    icon: Settings,
+  },
 ];
 
-export function Sidebar() {
+export function Sidebar({ open, onClose }: SidebarProps) {
   return (
-    <aside className="flex w-60 flex-col border-r bg-card">
-      <div className="flex h-14 items-center border-b px-6">
-        <span className="font-semibold">Starter Kit</span>
-      </div>
-      <nav className="flex-1 space-y-1 p-3">
-        {navItems.map(({ to, label, icon: Icon }) => (
-          <NavLink
-            key={to}
-            to={to}
-            className={({ isActive }) =>
-              cn(
-                "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                isActive
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
-              )
-            }
-          >
-            <Icon className="h-4 w-4" />
-            {label}
-          </NavLink>
-        ))}
+    <aside
+      className={`
+        fixed left-0 top-0 z-50 h-full w-64 bg-background border-r
+        transition-transform
+        ${open ? "translate-x-0" : "-translate-x-full"}
+      `}
+    >
+      <button
+        onClick={onClose}
+        className="p-4"
+      >
+        Close
+      </button>
+
+      <nav className="mt-6 flex flex-col gap-2 px-4">
+        {links.map((link) => {
+          const Icon = link.icon;
+
+          return (
+            <NavLink
+              key={link.path}
+              to={link.path}
+              onClick={onClose}
+              className={({ isActive }) =>
+                `
+                flex items-center gap-3 rounded-md px-3 py-2 text-sm
+                ${
+                  isActive
+                    ? "bg-primary text-primary-foreground"
+                    : "hover:bg-muted"
+                }
+                `
+              }
+            >
+              <Icon className="h-5 w-5" />
+              {link.label}
+            </NavLink>
+          );
+        })}
       </nav>
     </aside>
   );
