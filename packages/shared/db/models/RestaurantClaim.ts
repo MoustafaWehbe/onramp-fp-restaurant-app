@@ -2,8 +2,8 @@ import { Model, DataTypes, type Sequelize, type Optional } from "sequelize";
 
 export interface RestaurantClaimAttributes {
   id: string;
-  restaurant_id: string;
-  user_id: string;
+  restaurantId: string;
+  userId: string;
   status: "pending" | "approved" | "rejected";
 }
 
@@ -18,8 +18,8 @@ export class RestaurantClaim
   implements RestaurantClaimAttributes
 {
   declare id: string;
-  declare restaurant_id: string;
-  declare user_id: string;
+  declare restaurantId: string;
+  declare userId: string;
   declare status: "pending" | "approved" | "rejected";
 
   static initModel(sequelize: Sequelize) {
@@ -31,12 +31,12 @@ export class RestaurantClaim
           primaryKey: true,
         },
 
-        restaurant_id: {
+        restaurantId: {
           type: DataTypes.UUID,
           allowNull: false,
         },
 
-        user_id: {
+        userId: {
           type: DataTypes.UUID,
           allowNull: false,
         },

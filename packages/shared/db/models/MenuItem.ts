@@ -2,7 +2,7 @@ import { Model, DataTypes, type Sequelize, type Optional } from "sequelize";
 
 export interface MenuItemAttributes {
   id: string;
-  menu_id: string;
+  menuId: string;
   name: string;
   description?: string | null;
   base_price: number;
@@ -22,7 +22,7 @@ export class MenuItem
   implements MenuItemAttributes
 {
   declare id: string;
-  declare menu_id: string;
+  declare menuId: string;
   declare name: string;
   declare description: string | null;
   declare base_price: number;
@@ -39,7 +39,7 @@ export class MenuItem
           primaryKey: true,
         },
 
-        menu_id: {
+        menuId: {
           type: DataTypes.UUID,
           allowNull: false,
         },

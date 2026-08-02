@@ -2,8 +2,8 @@ import { Model, DataTypes, type Sequelize, type Optional } from "sequelize";
 
 export interface FavoriteAttributes {
   id: string;
-  user_id: string;
-  restaurant_id: string;
+  userId: string;
+  restaurantId: string;
 }
 
 export interface FavoriteCreationAttributes
@@ -14,8 +14,8 @@ export class Favorite
   implements FavoriteAttributes
 {
   declare id: string;
-  declare user_id: string;
-  declare restaurant_id: string;
+  declare userId: string;
+  declare restaurantId: string;
 
   static initModel(sequelize: Sequelize) {
     Favorite.init(
@@ -26,12 +26,12 @@ export class Favorite
           primaryKey: true,
         },
 
-        user_id: {
+        userId: {
           type: DataTypes.UUID,
           allowNull: false,
         },
 
-        restaurant_id: {
+        restaurantId: {
           type: DataTypes.UUID,
           allowNull: false,
         },
@@ -42,6 +42,12 @@ export class Favorite
         modelName: "Favorite",
         underscored: true,
         timestamps: true,
+        indexes: [
+          {
+            unique: true,
+            fields: ["user_id", "restaurant_id"],
+          },
+        ],
       }
     );
   }
