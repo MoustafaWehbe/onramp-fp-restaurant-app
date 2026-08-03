@@ -18,12 +18,24 @@ const getBranchId = (index) =>
 module.exports = {
   async up(queryInterface, Sequelize) {
     const branches = [];
-
+    const branchNames = [
+      "Hamra",
+      "Verdun",
+      "Downtown",
+      "Achrafieh",
+      "Jounieh",
+    ];
     for (let i = 0; i < 10; i++) {
+      const restaurantId = restaurantIds[i % restaurantIds.length];
+      const name = branchNames[i % branchNames.length];
       branches.push({
         id: getBranchId(i),
-        restaurant_id: restaurantIds[i % restaurantIds.length],
-        name: `${faker.location.city()} Branch`,
+        restaurant_id: restaurantId,
+        name,
+        slug: name
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-|-$/g, ""),
         city: faker.location.city(),
         address: faker.location.streetAddress(),
         latitude: faker.location.latitude({

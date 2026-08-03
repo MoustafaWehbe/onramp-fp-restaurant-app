@@ -12,7 +12,7 @@ router.use("/", reviewRouter);
 router.use("/", favoriteRouter);
 
 router.use("/restaurants", restaurantRouter);
-router.use("/branches",branchRouter);
+router.use("/restaurants", branchRouter);
 // Add more routers here:
 // router.use('/users', usersRouter);
 
