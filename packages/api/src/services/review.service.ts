@@ -1,25 +1,29 @@
-import { Review } from "../models/Review";
-import { Branch } from "../models/Branch";
-import { Restaurant } from "../models/Restaurant";
-import { createError } from "../middleware/error-handler";
 import { UniqueConstraintError } from "sequelize";
+import { createError } from "../middleware/error-handler";
+import { Branch } from "../models/Branch";
+import { Review } from "../models/Review";
 
 interface CreateReviewInput {
     userId: string;
-    branchId: string;
+    branchSlug: string;
     rating: number;
     comment: string;
 }
+
 interface UpdateReviewInput {
     rating?: number;
     comment?: string;
 }
 
-export class ReviewService {
-    async create(input: CreateReviewInput) {
-        const { userId, branchId, rating, comment } = input;
+export const reviewService = {
+    create: async (input: CreateReviewInput) => {
+        const { userId, branchSlug, rating, comment } = input;
 
-        const branch = await Branch.findByPk(branchId);
+        const branch = await Branch.findOne({
+            where: {
+                slug: branchSlug,
+            },
+        });
 
         if (!branch) {
             throw createError("Branch not found", 404);
@@ -28,11 +32,22 @@ export class ReviewService {
         const existingReview = await Review.findOne({
             where: {
                 userId,
-                branchId,
+                branchId: branch.id,
             },
+            paranoid: false,
         });
-
         if (existingReview) {
+            if (existingReview.toJSON()) {
+                await existingReview.restore();
+
+                await existingReview.update({
+                    rating,
+                    comment,
+                });
+
+                return existingReview;
+            }
+
             throw createError(
                 "You have already reviewed this branch",
                 409,
@@ -42,7 +57,7 @@ export class ReviewService {
         try {
             const review = await Review.create({
                 userId,
-                branchId,
+                branchId: branch.id,
                 rating,
                 comment,
             });
@@ -58,12 +73,13 @@ export class ReviewService {
 
             throw error;
         }
-    }
-    async update(
+    },
+
+    update: async (
         reviewId: string,
         userId: string,
         input: UpdateReviewInput,
-    ) {
+    ) => {
         const review = await Review.findByPk(reviewId);
 
         if (!review) {
@@ -80,11 +96,11 @@ export class ReviewService {
         await review.update(input);
 
         return review;
-    }
+    },
 
-    async delete(reviewId: string, userId: string) {
+    delete: async (reviewId: string, userId: string) => {
         const review = await Review.findByPk(reviewId);
-
+        console.log("Before delete:", review?.toJSON());
         if (!review) {
             throw createError("Review not found", 404);
         }
@@ -95,12 +111,20 @@ export class ReviewService {
                 403,
             );
         }
+        await review.reload({
+            paranoid: false,
+        });
 
-        await review.destroy();
-    }
+        return review;
 
-    async getBranchReviews(branchId: string) {
-        const branch = await Branch.findByPk(branchId);
+    },
+
+    getBranchReviews: async (branchSlug: string) => {
+        const branch = await Branch.findOne({
+            where: {
+                slug: branchSlug,
+            },
+        });
 
         if (!branch) {
             throw createError("Branch not found", 404);
@@ -108,13 +132,11 @@ export class ReviewService {
 
         const reviews = await Review.findAll({
             where: {
-                branchId,
+                branchId: branch.id,
             },
             order: [["createdAt", "DESC"]],
         });
 
         return reviews;
-    }
-}
-
-export const reviewService = new ReviewService();
+    },
+};

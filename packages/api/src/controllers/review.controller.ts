@@ -1,5 +1,7 @@
 import type { Request, Response, NextFunction } from "express";
 import { reviewService } from "../services/review.service";
+import { branchParamsSchema } from "src/schemas/branch.schema";
+import { reviewBranchParamsSchema } from "src/schemas/review.schema";
 
 export const reviewController = {
   async create(
@@ -8,7 +10,7 @@ export const reviewController = {
     next: NextFunction,
   ): Promise<void> {
     try {
-      const { branchId } = req.params;
+      const { branchSlug } = reviewBranchParamsSchema.parse(req.params);
 
       const userId = req.user?.userId;
 
@@ -19,7 +21,7 @@ export const reviewController = {
 
       const review = await reviewService.create({
         userId,
-        branchId,
+        branchSlug,
         ...req.body,
       });
 
@@ -31,6 +33,7 @@ export const reviewController = {
       next(err);
     }
   },
+
   async update(
     req: Request,
     res: Response,
@@ -85,20 +88,19 @@ export const reviewController = {
   },
 
   async getBranchReviews(
-  req: Request,
-  res: Response,
-  next: NextFunction,
-): Promise<void> {
-  try {
-    const branchId = req.params.branchId as string;
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> {
+    try {
+      const { branchSlug } = reviewBranchParamsSchema.parse(req.params);
+      const reviews = await reviewService.getBranchReviews(branchSlug);
 
-    const reviews = await reviewService.getBranchReviews(branchId);
-
-    res.status(200).json({
-      data: reviews,
-    });
-  } catch (err) {
-    next(err);
-  }
-},
+      res.status(200).json({
+        data: reviews,
+      });
+    } catch (err) {
+      next(err);
+    }
+  },
 };

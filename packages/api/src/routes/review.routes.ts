@@ -3,15 +3,17 @@ import { reviewController } from "../controllers/review.controller";
 import { authenticate } from "../middleware/authenticate";
 import { rateLimiter } from "../middleware/rate-limiter";
 import { validate } from "../middleware/validate";
-import { createReviewSchema, updateReviewSchema } from "../schemas/review.schema";
+import { createReviewSchema, reviewBranchParamsSchema, updateReviewSchema } from "../schemas/review.schema";
+import { branchParamsSchema } from "src/schemas/branch.schema";
 
 const router = Router();
 
 router.post(
-    "/branches/:branchId/reviews",
+    "/branches/:branchSlug/reviews",
     rateLimiter,
     authenticate,
     validate(createReviewSchema),
+    validate(reviewBranchParamsSchema,"params"),
     reviewController.create,
 );
 
@@ -29,8 +31,9 @@ router.delete(
 );
 
 router.get(
-  "/branches/:branchId/reviews",
+  "/branches/:branchSlug/reviews",
   authenticate,
+  validate(reviewBranchParamsSchema,"params"),
   reviewController.getBranchReviews,
 );
 export { router as reviewRouter };
