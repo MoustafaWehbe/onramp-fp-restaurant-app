@@ -1,5 +1,6 @@
- import { z } from "zod";
+import { z } from "zod";
 
-export const branchIdSchema = z.object({
-    branchId: z.string().uuid("Invalid branch id"),
+export const branchParamsSchema = z.object({
+  restaurantSlug: z.string().min(1, "Invalid restaurant slug"),
+  branchSlug: z.string().min(1, "Invalid branch slug"),
 });

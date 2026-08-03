@@ -2,7 +2,7 @@
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
-  async up (queryInterface, Sequelize) {
+  async up(queryInterface, Sequelize) {
     await queryInterface.createTable('branches', {
       id: {
         type: Sequelize.UUID,
@@ -22,6 +22,11 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false,
       },
+      slug: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
+
       city: {
         type: Sequelize.STRING,
         allowNull: false,
@@ -31,11 +36,11 @@ module.exports = {
         allowNull: false,
       },
       latitude: {
-        type: Sequelize.DECIMAL(10,8),
+        type: Sequelize.DECIMAL(10, 8),
         allowNull: false,
       },
       longitude: {
-        type: Sequelize.DECIMAL(11,8),
+        type: Sequelize.DECIMAL(11, 8),
         allowNull: false,
       },
       phone: {
@@ -52,7 +57,7 @@ module.exports = {
         defaultValue: 0,
       },
       average_rating: {
-        type: Sequelize.DECIMAL(3,2),
+        type: Sequelize.DECIMAL(3, 2),
         allowNull: false,
         defaultValue: 0.00,
       },
@@ -70,6 +75,12 @@ module.exports = {
     await queryInterface.addIndex("branches", ["restaurant_id"]);
 
     await queryInterface.addConstraint("branches", {
+      fields: ["restaurant_id", "slug"],
+      type: "unique",
+      name: "branches_restaurant_id_slug_unique",
+    });
+    
+    await queryInterface.addConstraint("branches", {
       fields: ["average_rating"],
       type: "check",
       where: {
@@ -81,7 +92,7 @@ module.exports = {
     });
   },
 
-  async down (queryInterface, Sequelize) {
+  async down(queryInterface, Sequelize) {
     await queryInterface.dropTable("branches");
   }
 };

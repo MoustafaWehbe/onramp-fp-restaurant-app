@@ -3,6 +3,7 @@ import { Model, DataTypes, type Sequelize, type Optional } from "sequelize";
 export interface RestaurantAttributes {
   id: string;
   name: string;
+  slug:string;
   description: string;
   cuisine_type: string;
   ambiance_tags: string[];
@@ -22,6 +23,7 @@ export class Restaurant
 {
   declare id: string;
   declare name: string;
+  declare slug: string;
   declare description: string;
   declare cuisine_type: string;
   declare ambiance_tags: string[];
@@ -42,6 +44,11 @@ export class Restaurant
         name: {
           type: DataTypes.STRING,
           allowNull: false,
+        },
+        slug: {
+          type: DataTypes.STRING,
+          allowNull:false,
+          unique:true,
         },
         description: {
           type: DataTypes.TEXT,

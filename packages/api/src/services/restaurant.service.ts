@@ -3,13 +3,18 @@ import { Branch } from "../models/Branch";
 import { Review } from "../models/Review";
 import { User } from "../models/User";
 import { Menu } from "../models/Menu";
+import { createError } from "src/middleware/error-handler";
 
 export const restaurantService = {
-  getRestaurantById: async (id: string) => {
-    const restaurant = await Restaurant.findByPk(id, {
+  getRestaurantBySlug: async (slug: string) => {
+    const restaurant = await Restaurant.findOne({
+    where: {
+      slug,
+    },
       attributes: [
         "id",
         "name",
+        "slug",
         "description",
         "price_range",
         "ambiance_tags",
@@ -27,6 +32,7 @@ export const restaurantService = {
             "id",
             "restaurantId",
             "name",
+            "slug",
             "city",
             "address",
             "phone",
@@ -75,7 +81,7 @@ export const restaurantService = {
     });
 
     if (!restaurant) {
-      throw new Error("Restaurant not found");
+      throw createError("Restaurant not found", 404);
     }
 
     return restaurant;
