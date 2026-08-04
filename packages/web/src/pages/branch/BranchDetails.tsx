@@ -46,18 +46,23 @@ interface BranchDetailsResponse {
 
 const BranchDetailsPage = () => {
     const { restaurantSlug, branchSlug } = useParams();
-
+    const [hasError, setHasError] = useState(false);
     const [data, setData] = useState<BranchDetailsResponse | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         const fetchBranch = async () => {
             try {
+                setIsLoading(true);
+                setHasError(false);
                 const response = await apiClient.get(
                     `/restaurants/${restaurantSlug}/branches/${branchSlug}`
                 );
 
                 setData(response.data.data);
+            } catch {
+                setData(null);
+                setHasError(true);
             } finally {
                 setIsLoading(false);
             }
@@ -71,7 +76,13 @@ const BranchDetailsPage = () => {
     if (isLoading) {
         return <LoadingSpinner />;
     }
-
+    if (hasError) {
+        return (
+            <p className="text-destructive">
+                Failed to load branch details.
+            </p>
+        );
+    }
     if (!data) {
         return (
             <p className="text-destructive">
@@ -91,7 +102,6 @@ const BranchDetailsPage = () => {
             <BranchGallery
                 images={branch.images}
             />
-
 
             {/* Info + Sidebar */}
             <div className="grid gap-10 lg:grid-cols-3">
@@ -121,7 +131,7 @@ const BranchDetailsPage = () => {
                 title={`${branch.name} Menus`}
                 description="Browse all available menus from this restaurant."
             />
-            
+
             {/* Reviews Section */}
             <section className="space-y-6">
 

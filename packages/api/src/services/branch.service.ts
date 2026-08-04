@@ -19,6 +19,10 @@ export const branchService = {
         {
           model: Menu,
           as: "menus",
+          where: {
+            is_active: true,
+          },
+          required: false,
           attributes: [
             "id",
             "name",

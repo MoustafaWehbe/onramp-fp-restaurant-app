@@ -1,33 +1,31 @@
-import { Card } from "@/components/ui/card";
-import { MapPin } from "lucide-react";
-
 interface BranchMapProps {
-  latitude: number;
-  longitude: number;
+    latitude: number;
+    longitude: number;
 }
 
 const BranchMap = ({ latitude, longitude }: BranchMapProps) => {
-  return (
-    <Card className="mx-auto w-full max-w-5xl overflow-hidden">
-      <div className="flex h-80 flex-col items-center justify-center gap-4 bg-muted">
-        <MapPin size={40} className="text-primary" />
+    const mapUrl = `https://www.google.com/maps?q=${latitude},${longitude}`;
 
-        <h3 className="text-xl font-semibold">
-          Location Map
-        </h3>
+    return (
+        <div className="space-y-4 rounded-3xl border p-6">
+            <h3 className="text-xl font-semibold">
+                Location
+            </h3>
 
-        <p className="text-sm text-muted-foreground">
-          Map integration coming soon
-        </p>
+            <p className="text-sm text-muted-foreground">
+                Coordinates: {latitude}, {longitude}
+            </p>
 
-        <div className="rounded-lg bg-background px-4 py-2 text-sm">
-          Coordinates:
-          <br />
-          {latitude}, {longitude}
+            <a
+                href={mapUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex rounded-xl border px-5 py-3 font-medium transition hover:bg-muted"
+            >
+                Open in Google Maps
+            </a>
         </div>
-      </div>
-    </Card>
-  );
+    );
 };
 
 export default BranchMap;
