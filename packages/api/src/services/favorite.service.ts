@@ -3,12 +3,19 @@ import { Favorite } from "../models/Favorite";
 import { createError } from "src/middleware/error-handler";
 
 export const favoriteService = {
-  create: async (userId: string, restaurantId: string) => {
-    const restaurant = await Restaurant.findByPk(restaurantId);
+  create: async (userId: string, restaurantSlug: string) => {
+    const restaurant = await Restaurant.findOne({
+      where: {
+        slug: restaurantSlug,
+      },
+      attributes:["id"],
+    });
 
     if (!restaurant) {
-      throw createError("This restaurant does not exist", 404);
+      throw createError("Restaurant not found", 404);
     }
+
+    const restaurantId = restaurant.id;
 
     const existingFavorite = await Favorite.findOne({
       where: { userId, restaurantId },
@@ -27,7 +34,21 @@ export const favoriteService = {
     });
   },
 
-  delete: async (userId: string, restaurantId: string) => {
+  delete: async (userId: string, restaurantSlug: string) => {
+
+    const restaurant = await Restaurant.findOne({
+      where: {
+        slug: restaurantSlug,
+      },
+      attributes: ["id"],
+    });
+
+    if(!restaurant) {
+      throw createError("Restaurant not found", 404);
+    }
+
+    const restaurantId = restaurant.id;
+
     const deleted = await Favorite.destroy({
       where: {
         userId,
@@ -37,14 +58,14 @@ export const favoriteService = {
 
     if (!deleted) {
       throw createError(
-        "This restaurant does not exist in your favorites list",
+        "Restaurant not found",
         404,
       );
     }
   },
 
   getFavorites: async (userId: string) => {
-    return Favorite.findAll({
+    const favorites = await Favorite.findAll({
       where: { userId },
       include: [
         {
@@ -52,6 +73,7 @@ export const favoriteService = {
           as: "restaurant",
           attributes: [
             "id",
+            "slug",
             "name",
             "description",
             "cuisine_type",
@@ -63,5 +85,7 @@ export const favoriteService = {
         }
       ]
     });
+
+    return favorites.map(favorite => favorite.restaurant);
   },
 }

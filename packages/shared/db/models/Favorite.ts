@@ -1,4 +1,5 @@
-import { Model, DataTypes, type Sequelize, type Optional } from "sequelize";
+import { Model, DataTypes, type Sequelize, type Optional, type NonAttribute } from "sequelize";
+import { Restaurant } from "./Restaurant";
 
 export interface FavoriteAttributes {
   id: string;
@@ -16,6 +17,8 @@ export class Favorite
   declare id: string;
   declare userId: string;
   declare restaurantId: string;
+
+  declare restaurant?: NonAttribute<Restaurant>;
 
   static initModel(sequelize: Sequelize) {
     Favorite.init(

@@ -1,5 +1,5 @@
 import { z } from "zod";
 
 export const favoriteParamsSchema = z.object({
-    restaurantId: z.string().uuid(),
+    restaurantSlug: z.string().min(1, "Invalid restaurant slug"),
 });
