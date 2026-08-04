@@ -74,6 +74,7 @@ export const restaurantService = {
           attributes: [
             "id",
             "name",
+            "description",
           ],
         },
       ],
