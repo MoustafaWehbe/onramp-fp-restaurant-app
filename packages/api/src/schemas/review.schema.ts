@@ -22,5 +22,17 @@ export const updateReviewSchema = createReviewSchema
     },
   );
 
+export const branchParamsSchema = z.object({
+  slug: z
+    .string()
+    .regex(
+      /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
+      "Invalid branch slug",
+    ),
+});
+export const reviewBranchParamsSchema = z.object({
+  branchSlug: z.string().min(1, "Invalid branch slug"),
+});
+export type BranchParams = z.infer<typeof branchParamsSchema>;
 export type CreateReviewInput = z.infer<typeof createReviewSchema>;
-export type UpdateReviewInput=z.infer<typeof updateReviewSchema>;
+export type UpdateReviewInput = z.infer<typeof updateReviewSchema>;
