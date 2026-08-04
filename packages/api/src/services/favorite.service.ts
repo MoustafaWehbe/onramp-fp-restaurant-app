@@ -73,6 +73,7 @@ export const favoriteService = {
           as: "restaurant",
           attributes: [
             "id",
+            "slug",
             "name",
             "description",
             "cuisine_type",
