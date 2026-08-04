@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { restaurantController } from "src/controllers/restaurant.controller";
 import { rateLimiter } from "src/middleware/rate-limiter";
-import { restaurantParamsSchema } from "src/schemas/restaurant.schemas";
+import { restaurantParamsSchema, restaurantQuerySchema } from "src/schemas/restaurant.schemas";
 import { validate } from "src/middleware/validate";
 import { authenticate } from "src/middleware/authenticate";
 import { branchParamsSchema } from "src/schemas/branch.schema";
@@ -22,4 +22,11 @@ router.get(
   validate(branchParamsSchema, "params"),
   branchController.getBranchBySlug,
 );
+
+router.get(
+  "/",
+  rateLimiter,
+  validate(restaurantQuerySchema, "query"),
+  restaurantController.getRestaurants,
+)
 export { router as restaurantRouter };

@@ -31,4 +31,36 @@ export const restaurantController = {
       });
     }
   },
+
+  getRestaurants: async (req: Request, res: Response) => {
+    try {
+      const {
+        search,
+        cuisine,
+        city,
+        page,
+        limit,
+      } = req.query;
+
+      const restaurants = await restaurantService.getRestaurants({
+        search: search as string | undefined,
+        cuisine: cuisine as string | undefined,
+        city : city as string | undefined,
+        page: Number(page),
+        limit: Number(limit),
+      });
+
+      return res.status(200).json({
+        restaurants,
+        message: "Restaurants retrieved successfully",
+      });
+    } catch(error) {
+      return res.status(400).json({
+        message:
+          error instanceof Error
+            ? error.message
+            : "Failed to get restaurants",
+      });
+    }
+  }
 };
