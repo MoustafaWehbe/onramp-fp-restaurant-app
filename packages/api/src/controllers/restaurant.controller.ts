@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { restaurantService } from "../services/restaurant.service";
 
 export const restaurantController = {
@@ -32,7 +32,7 @@ export const restaurantController = {
     }
   },
 
-  getRestaurants: async (req: Request, res: Response) => {
+  getRestaurants: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const {
         search,
@@ -51,16 +51,11 @@ export const restaurantController = {
       });
 
       return res.status(200).json({
-        restaurants,
+        ...restaurants,
         message: "Restaurants retrieved successfully",
       });
     } catch(error) {
-      return res.status(400).json({
-        message:
-          error instanceof Error
-            ? error.message
-            : "Failed to get restaurants",
-      });
+      next(error);
     }
   }
 };
