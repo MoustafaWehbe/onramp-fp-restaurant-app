@@ -1,26 +1,37 @@
-import { Model, DataTypes, type Sequelize, type Optional } from "sequelize";
+import {
+  Model,
+  DataTypes,
+  type Sequelize,
+  type Optional,
+  type NonAttribute,
+} from "sequelize";
+
+import { Restaurant } from "./Restaurant";
+import { BranchImage } from "./BranchImage";
+import { Review } from "./Review";
 
 export interface BranchAttributes {
-  id: string,
-  restaurantId: string,
-  name: string,
-  slug: string,
-  city: string,
-  address: string,
-  latitude: string,
-  longitude: string,
-  phone: string | null,
-  opening_hours: string,
-  review_count: number,
-  average_rating: number,
+  id: string;
+  restaurantId: string;
+  name: string;
+  slug: string;
+  city: string;
+  address: string;
+  latitude: string;
+  longitude: string;
+  phone: string | null;
+  opening_hours: string;
+  review_count: number;
+  average_rating: number;
 }
 
 export interface BranchCreationAttributes
-  extends Optional<BranchAttributes, "id" | "phone"> { }
+  extends Optional<BranchAttributes, "id" | "phone"> {}
 
 export class Branch
   extends Model<BranchAttributes, BranchCreationAttributes>
   implements BranchAttributes {
+  
   declare id: string;
   declare restaurantId: string;
   declare name: string;
@@ -34,13 +45,18 @@ export class Branch
   declare review_count: number;
   declare average_rating: number;
 
+  // Associations
+  declare restaurant?: NonAttribute<Restaurant>;
+  declare images?: NonAttribute<BranchImage[]>;
+  declare reviews?: NonAttribute<Review[]>;
+
   static initModel(sequelize: Sequelize) {
     Branch.init(
       {
         id: {
           type: DataTypes.UUID,
           defaultValue: DataTypes.UUIDV4,
-          primaryKey: true
+          primaryKey: true,
         },
         restaurantId: {
           type: DataTypes.UUID,
@@ -86,7 +102,7 @@ export class Branch
         average_rating: {
           type: DataTypes.DECIMAL(3, 2),
           allowNull: false,
-          defaultValue: 0.00,
+          defaultValue: 0.0,
         },
       },
       {
