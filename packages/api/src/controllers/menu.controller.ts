@@ -14,7 +14,7 @@ export const menuController = {
 
             res.status(200).json({
                 data: menu,
-                message: "Menu retreived successfully",
+                message: "Menu retrieved successfully",
             });
         } catch(error) {
             next(error);
