@@ -2,7 +2,7 @@ import { favoriteService } from "src/services/favorite.service";
 import type { Request, Response, NextFunction } from "express";
 
 type FavoriteParams = {
-  restaurantId: string;
+  restaurantSlug: string;
 };
 
 
@@ -15,9 +15,9 @@ export const favoriteController = {
                 return next();
             }
 
-            const { restaurantId } = req.params;
+            const { restaurantSlug } = req.params;
 
-            const favorite = await favoriteService.create(userId, restaurantId);
+            const favorite = await favoriteService.create(userId, restaurantSlug);
 
             res.status(201).json({
                 data: favorite,
@@ -36,9 +36,9 @@ export const favoriteController = {
                 return next();
             }
 
-            const { restaurantId } = req.params;
+            const { restaurantSlug } = req.params;
 
-            await favoriteService.delete(userId, restaurantId);
+            await favoriteService.delete(userId, restaurantSlug);
 
             res.status(200).json({
                 message: "Restaurant removed from your favorites list",

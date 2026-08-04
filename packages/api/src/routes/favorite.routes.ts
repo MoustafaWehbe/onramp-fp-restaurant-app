@@ -8,7 +8,7 @@ import { favoriteParamsSchema } from "src/schemas/favorite.schema";
 const router = Router();
 
 router.post(
-    "/restaurants/:restaurantId/favorites",
+    "/restaurants/:restaurantSlug/favorites",
     rateLimiter,
     authenticate,
     validate(favoriteParamsSchema, "params"),
@@ -16,7 +16,7 @@ router.post(
 );
 
 router.delete(
-    "/restaurants/:restaurantId/favorites",
+    "/restaurants/:restaurantSlug/favorites",
     rateLimiter,
     authenticate,
     validate(favoriteParamsSchema, "params"),
