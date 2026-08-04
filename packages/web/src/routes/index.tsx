@@ -13,6 +13,7 @@ import { RestaurantDetails } from "../pages/restaurants/RestaurantDetails";
 import { Profile } from "../pages/profile/Profile";
 import { OwnerDashboard } from "../pages/dashboard/OwnerDashboard";
 import { AdminDashboard } from "../pages/dashboard/AdminDashboard";
+import BranchDetails  from "../pages/branch/BranchDetails";
 import { Search } from "../pages/restaurants/Search";
 import AuthCenteredLayout from "../layouts/AuthCenteredLayout";
 import ForgotPassword from "../pages/auth/ForgotPassword";
@@ -32,7 +33,7 @@ export function AppRoutes() {
 
       <Route element={<AuthCenteredLayout />}>
         <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/verify-email" element={<VerifyEmailToken />}/>
+        <Route path="/verify-email" element={<VerifyEmailToken />} />
         <Route path="/email-verification" element={<EmailVerification />} />
         <Route path="/reset-password" element={<ResetPassword />} />
       </Route>
@@ -41,7 +42,7 @@ export function AppRoutes() {
       <Route element={<ProtectedRoute />}>
         <Route element={<AppLayout />}>
           <Route path="/" element={<Navigate to="/home" replace />} />
-          <Route path="/home" element={<Home/>}/>
+          <Route path="/home" element={<Home />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/restaurants" element={<Restaurants />} />
@@ -50,6 +51,11 @@ export function AppRoutes() {
           <Route path="/owner/dashboard" element={<OwnerDashboard />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/search" element={<Search />} />
+          <Route
+            path="/restaurants/:restaurantSlug/branches/:branchSlug"
+            element={<BranchDetails />}
+          />
+
         </Route>
       </Route>
 

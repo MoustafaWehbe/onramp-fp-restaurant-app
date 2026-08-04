@@ -1,10 +1,9 @@
 import { Restaurant } from "../models/Restaurant";
 import { Branch } from "../models/Branch";
 import { BranchImage } from "../models/BranchImage";
-import { BranchMenuItem } from "../models/BranchMenuItem";
-import { MenuItem } from "../models/MenuItem";
 import { Review } from "../models/Review";
 import { User } from "../models/User";
+import { Menu } from "../models/Menu";
 import { createError } from "src/middleware/error-handler";
 
 export const branchService = {
@@ -16,6 +15,16 @@ export const branchService = {
       where: {
         slug: restaurantSlug,
       },
+      include: [
+        {
+          model: Menu,
+          as: "menus",
+          attributes: [
+            "id",
+            "name",
+          ],
+        },
+      ],
     });
 
     if (!restaurant) {
@@ -51,27 +60,6 @@ export const branchService = {
           ],
         },
         {
-          model: BranchMenuItem,
-          as: "branchMenuItems",
-          attributes: [
-            "id",
-            "branchId",
-            "menuItemId",
-          ],
-          include: [
-            {
-              model: MenuItem,
-              as: "menuItem",
-              attributes: [
-                "id",
-                "name",
-                "description",
-                "base_price",
-              ],
-            },
-          ],
-        },
-        {
           model: Review,
           as: "reviews",
           separate: true,
@@ -102,7 +90,10 @@ export const branchService = {
     }
 
     return {
-      branch,
+      branch: {
+        ...branch.toJSON(),
+        menus: restaurant.menus ?? [],
+      },
       reviewSummary: {
         averageRating: Number(branch.average_rating).toFixed(1),
         totalReviews: branch.review_count,

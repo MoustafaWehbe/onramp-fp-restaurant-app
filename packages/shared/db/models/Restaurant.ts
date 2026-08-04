@@ -1,5 +1,5 @@
-import { Model, DataTypes, type Sequelize, type Optional } from "sequelize";
-
+import { Model, DataTypes, type Sequelize, type Optional, type NonAttribute } from "sequelize";
+import { Menu } from "./Menu";
 export interface RestaurantAttributes {
   id: string;
   name: string;
@@ -12,6 +12,7 @@ export interface RestaurantAttributes {
   phone: string;
   review_count: number,
   average_rating: number,
+
 }
 
 export interface RestaurantCreationAttributes
@@ -32,7 +33,7 @@ export class Restaurant
   declare phone: string;
   declare review_count: number;
   declare average_rating: number;
-
+  declare menus?: NonAttribute<Menu[]>;
   static initModel(sequelize: Sequelize) {
     Restaurant.init(
       {
