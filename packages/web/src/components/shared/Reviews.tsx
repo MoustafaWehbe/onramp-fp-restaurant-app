@@ -29,8 +29,12 @@ const Reviews = ({
 
     return (
         <div className="space-y-6">
-            {reviews.map((review) => {
-                return (
+            {reviews.length === 0 ? (
+                <p className="text-center text-gray-500">
+                    This branch has no reviews yet.
+                </p>
+            ) : (
+                reviews.map((review) => (
                     <ReviewCard
                         key={review.id}
                         review={review}
@@ -43,10 +47,9 @@ const Reviews = ({
                         onUpdate={onUpdate}
                         onDelete={() => onDelete(review.id)}
                     />
-                );
-            })}
+                ))
+            )}
         </div>
     );
 };
-
 export default Reviews;

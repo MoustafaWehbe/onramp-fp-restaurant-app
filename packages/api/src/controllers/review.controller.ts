@@ -17,11 +17,7 @@ export const reviewController = {
         res.status(401).json({ error: "Authentication required" });
         return;
       }
-      console.log({
-    params: req.params,
-    body: req.body,
-    userId,
-});
+      
       const review = await reviewService.create({
         userId,
         restaurantSlug,

@@ -110,44 +110,38 @@ const BranchDetailsPage = () => {
         );
     }
 
-
-    const { branch, reviewSummary } = data;
-
-
-    const handleCreateReview = async () => {
+    const refreshBranch = async () => {
         const response = await apiClient.get(
             `/restaurants/${restaurantSlug}/branches/${branchSlug}`
         );
 
-        setReviews(response.data.data.branch.reviews);
+        const branchData = response.data.data;
+
+        setData(branchData);
+        setReviews(branchData.branch.reviews);
+    };
+    const { branch, reviewSummary } = data;
+
+
+    const handleCreateReview = async () => {
+        await refreshBranch();
     };
 
-    const handleUpdateReview = (updatedReview?: Review) => {
-    if (!updatedReview) return;
-
-    setReviews((prev) =>
-        prev.map((review) =>
-            review.id === updatedReview.id
-                ? updatedReview
-                : review
-        )
-    );
-};
+    const handleUpdateReview = async () => {
+        await refreshBranch();
+    };
 
 
     const handleDeleteReview = async (reviewId: string) => {
         try {
             await apiClient.delete(`/reviews/${reviewId}`);
 
-            setReviews((prev) =>
-                prev.filter((review) => review.id !== reviewId)
-            );
+            await refreshBranch();
 
         } catch (error) {
             console.error("Failed to delete review", error);
         }
-    };
-
+    }; 
 
     return (
         <div className="space-y-10">
