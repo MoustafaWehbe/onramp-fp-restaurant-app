@@ -1,41 +1,52 @@
 import ReviewCard from "./ReviewCard";
 
 interface ReviewUser {
-  id: string;
-  name: string;
+    id: string;
+    name: string;
 }
 
 interface Review {
-  id: string;
-  rating: number;
-  comment: string;
-  createdAt: string;
-  user: ReviewUser;
+    id: string;
+    rating: number;
+    comment: string;
+    createdAt: string;
+    user: ReviewUser;
 }
 
 interface ReviewsProps {
-  reviews: Review[];
+    reviews: Review[];
+    currentUserId?: string;
+    onUpdate: (review: Review) => void;
+    onDelete: (reviewId: string) => void;
 }
 
-const Reviews = ({ reviews }: ReviewsProps) => {
-  if (!reviews.length) {
-    return (
-      <p className="text-muted-foreground">
-        No reviews yet.
-      </p>
-    );
-  }
+const Reviews = ({
+    reviews,
+    currentUserId,
+    onUpdate,
+    onDelete,
+}: ReviewsProps) => {
 
-  return (
-    <div className="space-y-4">
-      {reviews.map((review) => (
-        <ReviewCard
-          key={review.id}
-          review={review}
-        />
-      ))}
-    </div>
-  );
+    return (
+        <div className="space-y-6">
+            {reviews.map((review) => {
+                return (
+                    <ReviewCard
+                        key={review.id}
+                        review={review}
+                        canEdit={
+                            Boolean(
+                                currentUserId &&
+                                review.user.id === currentUserId
+                            )
+                        }
+                        onUpdate={onUpdate}
+                        onDelete={() => onDelete(review.id)}
+                    />
+                );
+            })}
+        </div>
+    );
 };
 
 export default Reviews;

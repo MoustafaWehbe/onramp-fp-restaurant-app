@@ -7,6 +7,20 @@ import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
 import BranchMap from "@/components/shared/BranchMap";
 import { apiClient } from "@/lib/api-client";
 import MenusSection from "@/components/shared/MenuSection";
+import ReviewForm from "@/components/shared/ReviewForm";
+import { useAuth } from "@/hooks/useAuth";
+
+interface Review {
+    id: string;
+    rating: number;
+    comment: string;
+    createdAt: string;
+    user: {
+        id: string;
+        name: string;
+    };
+}
+
 interface BranchDetailsResponse {
     branch: {
         id: string;
@@ -27,16 +41,7 @@ interface BranchDetailsResponse {
             id: string;
             name: string;
         }[];
-        reviews: {
-            id: string;
-            rating: number;
-            comment: string;
-            createdAt: string;
-            user: {
-                id: string;
-                name: string;
-            };
-        }[];
+        reviews: Review[];
     };
     reviewSummary: {
         averageRating: string;
@@ -46,20 +51,30 @@ interface BranchDetailsResponse {
 
 const BranchDetailsPage = () => {
     const { restaurantSlug, branchSlug } = useParams();
+    const { user } = useAuth();
+
     const [hasError, setHasError] = useState(false);
     const [data, setData] = useState<BranchDetailsResponse | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+
+    const [reviews, setReviews] = useState<Review[]>([]);
+
 
     useEffect(() => {
         const fetchBranch = async () => {
             try {
                 setIsLoading(true);
                 setHasError(false);
+
                 const response = await apiClient.get(
                     `/restaurants/${restaurantSlug}/branches/${branchSlug}`
                 );
 
-                setData(response.data.data);
+                const branchData = response.data.data;
+
+                setData(branchData);
+                setReviews(branchData.branch.reviews);
+
             } catch {
                 setData(null);
                 setHasError(true);
@@ -71,11 +86,14 @@ const BranchDetailsPage = () => {
         if (restaurantSlug && branchSlug) {
             fetchBranch();
         }
+
     }, [restaurantSlug, branchSlug]);
+
 
     if (isLoading) {
         return <LoadingSpinner />;
     }
+
     if (hasError) {
         return (
             <p className="text-destructive">
@@ -83,6 +101,7 @@ const BranchDetailsPage = () => {
             </p>
         );
     }
+
     if (!data) {
         return (
             <p className="text-destructive">
@@ -91,22 +110,53 @@ const BranchDetailsPage = () => {
         );
     }
 
+
     const { branch, reviewSummary } = data;
 
+
+    const handleCreateReview = async () => {
+        const response = await apiClient.get(
+            `/restaurants/${restaurantSlug}/branches/${branchSlug}`
+        );
+
+        setReviews(response.data.data.branch.reviews);
+    };
+
+    const handleUpdateReview = (updatedReview?: Review) => {
+    if (!updatedReview) return;
+
+    setReviews((prev) =>
+        prev.map((review) =>
+            review.id === updatedReview.id
+                ? updatedReview
+                : review
+        )
+    );
+};
+
+
+    const handleDeleteReview = async (reviewId: string) => {
+        try {
+            await apiClient.delete(`/reviews/${reviewId}`);
+
+            setReviews((prev) =>
+                prev.filter((review) => review.id !== reviewId)
+            );
+
+        } catch (error) {
+            console.error("Failed to delete review", error);
+        }
+    };
 
 
     return (
         <div className="space-y-10">
 
-            {/* Hero image */}
-            <BranchGallery
-                images={branch.images}
-            />
+            <BranchGallery images={branch.images} />
 
-            {/* Info + Sidebar */}
+
             <div className="grid gap-10 lg:grid-cols-3">
 
-                {/* Main information */}
                 <div className="lg:col-span-2">
                     <BranchInfo
                         branch={branch}
@@ -115,9 +165,7 @@ const BranchDetailsPage = () => {
                 </div>
 
 
-                {/* Right sidebar */}
                 <aside className="space-y-6">
-
                     <BranchMap
                         latitude={Number(branch.latitude)}
                         longitude={Number(branch.longitude)}
@@ -126,33 +174,39 @@ const BranchDetailsPage = () => {
 
             </div>
 
+
             <MenusSection
                 menus={branch.menus}
                 title={`${branch.name} Menus`}
                 description="Browse all available menus from this restaurant."
             />
 
-            {/* Reviews Section */}
+
             <section className="space-y-6">
 
-                <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
+                <div>
+                    <h2 className="text-3xl font-bold">
+                        Reviews
+                    </h2>
 
-                    <div>
-                        <h2 className="text-3xl font-bold">
-                            Reviews
-                        </h2>
-
-                        <p className="mt-2 text-muted-foreground">
-                            See what visitors think about this branch
-                        </p>
-                    </div>
-
+                    <p className="mt-2 text-muted-foreground">
+                        See what visitors think about this branch
+                    </p>
                 </div>
 
-                <Reviews
-                    reviews={branch.reviews}
+
+                <ReviewForm
+                    restaurantSlug={restaurantSlug!}
+                    branchSlug={branch.slug}
+                    onCreated={handleCreateReview}
                 />
 
+                <Reviews
+                    reviews={reviews}
+                    currentUserId={user?.id}
+                    onUpdate={handleUpdateReview}
+                    onDelete={handleDeleteReview}
+                />
             </section>
 
         </div>

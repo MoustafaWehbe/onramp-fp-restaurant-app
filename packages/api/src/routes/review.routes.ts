@@ -4,12 +4,11 @@ import { authenticate } from "../middleware/authenticate";
 import { rateLimiter } from "../middleware/rate-limiter";
 import { validate } from "../middleware/validate";
 import { createReviewSchema, reviewBranchParamsSchema, updateReviewSchema } from "../schemas/review.schema";
-import { branchParamsSchema } from "src/schemas/branch.schema";
 
 const router = Router();
 
 router.post(
-    "/branches/:branchSlug/reviews",
+    "/restaurants/:restaurantSlug/branches/:branchSlug/reviews",
     rateLimiter,
     authenticate,
     validate(createReviewSchema),
@@ -31,7 +30,7 @@ router.delete(
 );
 
 router.get(
-  "/branches/:branchSlug/reviews",
+  "/restaurants/:restaurantSlug/branches/:branchSlug/reviews",
   authenticate,
   validate(reviewBranchParamsSchema,"params"),
   reviewController.getBranchReviews,
