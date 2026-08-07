@@ -7,9 +7,14 @@ import { createError } from "src/middleware/error-handler";
 import { type Includeable, Op, type WhereOptions } from "sequelize";
 
 interface GetRestaurantsOptions {
-  search?: string,
-  cuisine?: string,
-  city?: string,
+  page: number,
+  limit: number,
+}
+
+interface SearchRestaurantsOptions {
+  search: string,
+  city?: string | null,
+  cuisine?: string | null,
   page: number,
   limit: number,
 }
@@ -96,55 +101,11 @@ export const restaurantService = {
     return restaurant;
   },
 
-  getRestaurants: async({
-    search,
-    cuisine,
-    city,
-    page,
-    limit,
-  }: GetRestaurantsOptions) => {
-    const include: Includeable[] = [];
-
-    const where: WhereOptions = {
-      ...(search && {
-        [Op.or]: [
-          {
-            name: {
-              [Op.iLike]: `%${search}%`,
-            },
-          },
-          {
-            description: {
-              [Op.iLike]: `%${search}%`,
-            },
-          },
-        ],
-      }),
-
-      ...(cuisine && {
-        cuisine_type: cuisine,
-      }),
-    };
-
-    if(city) {
-      include.push({
-        model: Branch,
-        as: "branches",
-        where: {
-          city: {
-            [Op.iLike]: city,
-          }
-        },
-        attributes: [],
-        required: true,
-      });
-    }
+  getRestaurants: async({page,limit}: GetRestaurantsOptions) => {
 
     const offset = (page - 1) * limit;
 
     const { rows, count } = await Restaurant.findAndCountAll({
-      where,
-      include,
       attributes: [
         "id",
         "name",
@@ -160,6 +121,87 @@ export const restaurantService = {
       offset,
       distinct: true,
       order: [["createdAt", "DESC"]],
+    });
+
+    return {
+      data: rows,
+      meta: {
+        page,
+        limit,
+        total: count,
+        totalPages: Math.ceil(count / limit),
+      },
+    };
+  },
+
+  searchRestaurants: async({
+    search,
+    cuisine,
+    city,
+    page,
+    limit,
+  }: SearchRestaurantsOptions) => {
+    const include: Includeable[] = [];
+
+    const query = search.trim();
+
+    const where: WhereOptions = {
+      ...(query && {
+        [Op.or]: [
+          {
+            name: {
+              [Op.iLike]: `%${query}%`,
+            },
+          },
+          {
+            description: {
+              [Op.iLike]: `%${query}%`,
+            },
+          },
+        ],
+      }),
+
+      ...(cuisine && {
+        cuisine_type: {
+          [Op.iLike]: `%${cuisine}%`
+        },
+      }),
+    };
+
+    if(city) {
+      include.push({
+        model: Branch,
+        as: "branches",
+        where: {
+          city: {
+            [Op.iLike]: `%${city}%`,
+          },
+        },
+        attributes: [],
+        required: true,
+      });
+    }
+
+    const offset = (page - 1) * limit;
+
+    const { rows, count } = await Restaurant.findAndCountAll({
+      where,
+      include,
+      attributes: [
+        "id",
+        "slug", 
+        "name",
+        "description",
+        "price_range",
+        "cuisine_type",
+        "review_count",
+        "average_rating",
+        "createdAt",
+      ],
+      limit,
+      offset,
+      distinct: true,
+      order: [["createdAt" , "DESC"]],
     });
 
     return {
