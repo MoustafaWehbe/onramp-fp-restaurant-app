@@ -21,6 +21,7 @@ export const restaurantQuerySchema = z.object({
   search: z.string(),
   cuisine: z.string().optional(),
   city: z.string().optional(),
+  priceRange: z.string().optional(),
 
   page: z.coerce.number()
     .int()

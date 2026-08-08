@@ -59,6 +59,7 @@ export const restaurantController = {
         search,
         city,
         cuisine,
+        priceRange,
         page,
         limit,
       } = req.query;
@@ -67,6 +68,7 @@ export const restaurantController = {
         search: search as string,
         city: city as string,
         cuisine: cuisine as string,
+        priceRange: priceRange as string,
         page: Number(page),
         limit: Number(limit),
       });
@@ -76,7 +78,7 @@ export const restaurantController = {
         message: "Restaurants retrieved successfully",
       });
     } catch(error) {
-      return next(error)
+      next(error)
     }
   }
 };

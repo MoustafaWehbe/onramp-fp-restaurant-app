@@ -15,6 +15,7 @@ interface SearchRestaurantsOptions {
   search: string,
   city?: string | null,
   cuisine?: string | null,
+  priceRange?: string | null,
   page: number,
   limit: number,
 }
@@ -138,6 +139,7 @@ export const restaurantService = {
     search,
     cuisine,
     city,
+    priceRange,
     page,
     limit,
   }: SearchRestaurantsOptions) => {
@@ -164,6 +166,12 @@ export const restaurantService = {
       ...(cuisine && {
         cuisine_type: {
           [Op.iLike]: `%${cuisine}%`
+        },
+      }),
+
+      ...(priceRange && {
+        price_range: {
+          [Op.iLike]: `%${priceRange}%`
         },
       }),
     };
