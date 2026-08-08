@@ -31,6 +31,7 @@ export const branchParamsSchema = z.object({
     ),
 });
 export const reviewBranchParamsSchema = z.object({
+  restaurantSlug: z.string().min(1, "Invalid branch slug"),
   branchSlug: z.string().min(1, "Invalid branch slug"),
 });
 export type BranchParams = z.infer<typeof branchParamsSchema>;

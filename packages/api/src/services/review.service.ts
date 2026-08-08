@@ -2,9 +2,11 @@ import { UniqueConstraintError } from "sequelize";
 import { createError } from "../middleware/error-handler";
 import { Branch } from "../models/Branch";
 import { Review } from "../models/Review";
+import { Restaurant } from "../models/Restaurant";
 
 interface CreateReviewInput {
     userId: string;
+    restaurantSlug: string;
     branchSlug: string;
     rating: number;
     comment: string;
@@ -17,12 +19,27 @@ interface UpdateReviewInput {
 
 export const reviewService = {
     create: async (input: CreateReviewInput) => {
-        const { userId, branchSlug, rating, comment } = input;
+        const {
+            userId,
+            restaurantSlug,
+            branchSlug,
+            rating,
+            comment,
+        } = input;
 
         const branch = await Branch.findOne({
             where: {
                 slug: branchSlug,
             },
+            include: [
+                {
+                    model: Restaurant,
+                    as: "restaurant",
+                    where: {
+                        slug: restaurantSlug,
+                    },
+                },
+            ],
         });
 
         if (!branch) {
@@ -36,8 +53,9 @@ export const reviewService = {
             },
             paranoid: false,
         });
+
         if (existingReview) {
-            if (existingReview.toJSON()) {
+            if (existingReview.deletedAt) {
                 await existingReview.restore();
 
                 await existingReview.update({
@@ -63,6 +81,7 @@ export const reviewService = {
             });
 
             return review;
+
         } catch (error) {
             if (error instanceof UniqueConstraintError) {
                 throw createError(
@@ -99,8 +118,12 @@ export const reviewService = {
     },
 
     delete: async (reviewId: string, userId: string) => {
-        const review = await Review.findByPk(reviewId);
+        const review = await Review.findByPk(reviewId, {
+            paranoid: false,
+        });
+
         console.log("Before delete:", review?.toJSON());
+
         if (!review) {
             throw createError("Review not found", 404);
         }
@@ -111,19 +134,26 @@ export const reviewService = {
                 403,
             );
         }
-        await review.reload({
-            paranoid: false,
-        });
+
+        await review.destroy();
 
         return review;
-
     },
 
-    getBranchReviews: async (branchSlug: string) => {
+    getBranchReviews: async (restaurantSlug: string, branchSlug: string) => {
         const branch = await Branch.findOne({
             where: {
                 slug: branchSlug,
             },
+            include: [
+                {
+                    model: Restaurant,
+                    as: "restaurant",
+                    where: {
+                        slug: restaurantSlug,
+                    },
+                },
+            ],
         });
 
         if (!branch) {

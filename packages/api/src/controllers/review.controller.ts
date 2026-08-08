@@ -1,6 +1,5 @@
 import type { Request, Response, NextFunction } from "express";
 import { reviewService } from "../services/review.service";
-import { branchParamsSchema } from "src/schemas/branch.schema";
 import { reviewBranchParamsSchema } from "src/schemas/review.schema";
 
 export const reviewController = {
@@ -10,7 +9,7 @@ export const reviewController = {
     next: NextFunction,
   ): Promise<void> {
     try {
-      const { branchSlug } = reviewBranchParamsSchema.parse(req.params);
+      const { restaurantSlug, branchSlug } = reviewBranchParamsSchema.parse(req.params);
 
       const userId = req.user?.userId;
 
@@ -18,9 +17,10 @@ export const reviewController = {
         res.status(401).json({ error: "Authentication required" });
         return;
       }
-
+      
       const review = await reviewService.create({
         userId,
+        restaurantSlug,
         branchSlug,
         ...req.body,
       });
@@ -93,8 +93,13 @@ export const reviewController = {
     next: NextFunction,
   ): Promise<void> {
     try {
-      const { branchSlug } = reviewBranchParamsSchema.parse(req.params);
-      const reviews = await reviewService.getBranchReviews(branchSlug);
+      const { restaurantSlug, branchSlug } =
+        reviewBranchParamsSchema.parse(req.params);
+
+      const reviews = await reviewService.getBranchReviews(
+        restaurantSlug,
+        branchSlug
+      );
 
       res.status(200).json({
         data: reviews,
