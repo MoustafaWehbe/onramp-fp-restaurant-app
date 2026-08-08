@@ -6,22 +6,17 @@ interface BranchCardProps {
 }
 
 export function BranchCard({ branch }: BranchCardProps) {
-  const { name, address, city, phone, opening_hours, reviews } = branch;
-
-  const avgRating =
-    reviews.length > 0
-      ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
-      : null;
+  const { name, address, city, phone, opening_hours, review_count, average_rating } = branch;
 
   return (
     <div className="rounded-xl border border-border bg-card p-5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md">
       <div className="flex items-center justify-between gap-3">
         <h3 className="font-semibold text-foreground">{name}</h3>
-        {avgRating !== null && (
+        {review_count > 0 && (
           <span className="flex items-center gap-1 text-sm font-medium text-primary">
             <Star className="h-4 w-4 fill-primary text-primary" />
-            {avgRating.toFixed(1)}
-            <span className="text-muted-foreground">({reviews.length})</span>
+            {Number(average_rating).toFixed(1)}
+            <span className="text-muted-foreground">({review_count})</span>
           </span>
         )}
       </div>
