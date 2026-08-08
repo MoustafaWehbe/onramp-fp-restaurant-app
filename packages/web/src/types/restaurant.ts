@@ -43,28 +43,35 @@ export interface BranchReview {
 export interface Branch {
   id: string;
   restaurantId: string;
+  slug: string;
   name: string;
   city: string;
   address: string;
   phone: string;
   opening_hours: string;
+  review_count: number;
+  average_rating: string;
   reviews: BranchReview[];
 }
 
 export interface MenuSummary {
   id: string;
   name: string;
+  description: string;
 }
 
 export interface RestaurantDetails {
   id: string;
   name: string;
+  slug: string;
   description: string;
   price_range: string;
   ambiance_tags: string[];
   cuisine_type: string;
   email: string;
   phone: string;
+  review_count: number;
+  average_rating: string;
   branches: Branch[];
   menus: MenuSummary[];
 }

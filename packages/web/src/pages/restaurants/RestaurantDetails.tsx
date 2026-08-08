@@ -67,13 +67,17 @@ export function RestaurantDetails() {
     );
   }
 
-  const { name, description, cuisine_type, branches, menus } = restaurant;
+  const {
+    name,
+    description,
+    cuisine_type,
+    review_count,
+    average_rating,
+    branches,
+    menus,
+  } = restaurant;
 
   const allReviews = branches.flatMap((b) => b.reviews);
-  const avgRating =
-    allReviews.length > 0
-      ? allReviews.reduce((sum, r) => sum + r.rating, 0) / allReviews.length
-      : null;
 
   return (
     <div className="mx-auto max-w-7xl px-6 py-8">
@@ -93,10 +97,12 @@ export function RestaurantDetails() {
           <Badge variant="secondary">{cuisine_type}</Badge>
         </div>
 
-        {avgRating !== null && (
+        {review_count > 0 && (
           <p className="mt-3 text-sm text-muted-foreground">
-            <span className="font-semibold text-foreground">{avgRating.toFixed(1)}</span>{" "}
-            average rating · {allReviews.length} reviews across {branches.length} branches
+            <span className="font-semibold text-foreground">
+              {Number(average_rating).toFixed(1)}
+            </span>{" "}
+            average rating · {review_count} reviews across {branches.length} branches
           </p>
         )}
 
@@ -107,14 +113,12 @@ export function RestaurantDetails() {
         <div className="space-y-10 lg:col-span-2">
           <section>
             <h2 className="mb-4 text-xl font-semibold text-foreground">Menu</h2>
-            <div className="flex flex-wrap gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               {menus.map((menu) => (
-                <span
-                  key={menu.id}
-                  className="rounded-full border border-border bg-card px-5 py-2.5 text-sm font-medium text-foreground shadow-sm"
-                >
-                  {menu.name}
-                </span>
+                <div key={menu.id} className="rounded-xl border border-border bg-card p-4">
+                  <p className="font-medium text-foreground">{menu.name}</p>
+                  <p className="mt-1 text-sm text-muted-foreground">{menu.description}</p>
+                </div>
               ))}
             </div>
           </section>
