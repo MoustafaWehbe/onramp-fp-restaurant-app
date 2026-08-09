@@ -2,14 +2,36 @@ export interface Restaurant {
   id: string;
   slug: string;
   name: string;
-  cuisine: string;
-  city: string;
-  address: string;
-  priceLevel: 1 | 2 | 3 | 4; // maps to $ - $$$$
-  rating: number;
-  reviewCount: number;
-  imageUrl: string;
+  description: string;
+  cuisine_type: string;
+  price_range: string;
+  average_rating: number;
+  review_count: number;
+  createdAt: string;
 }
+
+export interface PaginationMeta {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+export interface RestaurantListResponse {
+  data: Restaurant[];
+  meta: PaginationMeta;
+  message: string;
+}
+
+export interface RestaurantSearchParams {
+  search?: string;
+  city?: string;
+  cuisine?: string;
+  priceRange?: string;
+  page?: number;
+  limit?: number;
+}
+
 
 export interface SiteStat {
   id: string;
