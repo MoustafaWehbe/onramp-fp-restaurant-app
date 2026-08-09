@@ -25,6 +25,7 @@ Represents system users (diners, restaurant owners, admins).
 Represents restaurant brands or chains.
 
 * id (PK)
+* owner_id (FK → Users, nullable)
 * name
 * description
 * cuisine_type
@@ -215,14 +216,14 @@ Used when a branch needs to customize menu item availability or pricing without 
 # 2. Relationships
 
 ### Users
-
+* Users 1 → 0..1 Restaurants (owns)
 * Users 1 → N Admin Logs
 * Users 1 → N Favorites
 * Users 1 → N Reviews
 * Users 1 → N Restaurant Claims
 
 ### Restaurants
-
+* Restaurants 0..1 → 1 User (owner)
 * Restaurants 1 → N Branches
 * Restaurants 1 → N Favorites
 * Restaurants 1 → N Restaurant Claims
@@ -257,7 +258,9 @@ Used when a branch needs to customize menu item availability or pricing without 
 * Favorites provide a simple user → restaurant bookmarking system.
 * Branch menu items allow branches to override menu item prices and availability.
 * Branches do not duplicate menu item data; they only store branch-specific changes.
-
+* Each restaurant can have at most one owner.
+* Each restaurant owner can own at most one restaurant.
+* A restaurant may have no owner if it has not been claimed.
 ---
 
 # 4. Cardinality Summary
