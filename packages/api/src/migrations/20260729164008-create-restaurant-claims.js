@@ -12,7 +12,7 @@ module.exports = {
 
       restaurant_id: {
         type: Sequelize.UUID,
-        allowNull: false,
+        allowNull: true,
         references: {
           model: "restaurants",
           key: "id",
@@ -30,6 +30,20 @@ module.exports = {
         },
         onUpdate: "CASCADE",
         onDelete: "CASCADE",
+      },
+      restaurant_name: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
+
+      email: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
+
+      phone: {
+        type: Sequelize.STRING,
+        allowNull: false,
       },
 
       status: {
