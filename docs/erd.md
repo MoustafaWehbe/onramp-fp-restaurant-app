@@ -149,18 +149,31 @@ Items inside a restaurant menu.
 
 ---
 
-### Restaurant Claims (Pivot)
+### Restaurant Claims
 
-Represents ownership/claim requests between users and restaurants.
+Represents restaurant ownership requests submitted by restaurant owners and reviewed by administrators.
 
-* user_id (FK)
-* restaurant_id (FK)
-* status (enum: pending, approved, rejected)
-* claimed_at
-* reviewed_by (FK → Users)
-* reviewed_at
+A claim can reference an existing restaurant or request ownership for a restaurant that does not yet exist.
 
-**Primary Key:** (user_id, restaurant_id)
+- id (PK)
+- user_id (FK → Users)
+- restaurant_id (FK → Restaurants, nullable)
+- restaurant_name
+- email
+- phone
+- status (enum: pending, approved, rejected)
+- created_at
+- updated_at
+
+**Notes:**
+
+- `restaurant_id` is nullable because the restaurant may not exist yet.
+- If `restaurant_id` is provided, the owner is requesting ownership of an existing restaurant.
+- If `restaurant_id` is NULL, the owner is requesting to register a new restaurant.
+- An administrator reviews and approves or rejects the claim.
+- An approved claim establishes the ownership relationship between the user and restaurant.
+- A user can have at most one approved restaurant.
+- A restaurant can have at most one approved owner.
 
 ---
 
@@ -223,10 +236,11 @@ Used when a branch needs to customize menu item availability or pricing without 
 
 ### Restaurants
 
-* Restaurants 1 → N Branches
-* Restaurants 1 → N Favorites
-* Restaurants 1 → N Restaurant Claims
-* Restaurants 1 → N Menus
+- Restaurants 1 → N Branches
+- Restaurants 1 → N Favorites
+- Restaurants 1 → N Restaurant Claims
+- Restaurants 1 → N Menus
+- Restaurants 1 → 0..1 approved owner
 
 ### Branches
 
@@ -257,7 +271,14 @@ Used when a branch needs to customize menu item availability or pricing without 
 * Favorites provide a simple user → restaurant bookmarking system.
 * Branch menu items allow branches to override menu item prices and availability.
 * Branches do not duplicate menu item data; they only store branch-specific changes.
-
+* Restaurant claims handle the restaurant ownership verification workflow.
+* A restaurant claim may reference an existing restaurant or request the creation of a new restaurant.
+* Administrators approve or reject restaurant ownership requests after verification.
+* An approved claim establishes the owner's authorization to manage the restaurant.
+* A user can submit multiple claims over time, but can have at most one approved restaurant.
+* A restaurant can have multiple claim requests over time, but can have at most one approved owner.
+* A restaurant may have no owner if it has not been claimed or its claim has not been approved.
+* Restaurant ownership is determined through approved Restaurant Claims; restaurants do not store an `owner_id`.
 ---
 
 # 4. Cardinality Summary
@@ -268,7 +289,13 @@ Used when a branch needs to customize menu item availability or pricing without 
 
 * Users (1) ─── (N) Admin Logs
 
-* Users (N) ─── (N) Restaurants (via Restaurant Claims)
+* Users (1) ─── (N) Restaurant Claims
+
+* Restaurants (1) ─── (N) Restaurant Claims
+
+* Users (1) ─── (0..1) approved Restaurant
+
+* Restaurants (1) ─── (0..1) approved Owner
 
 * Restaurants (1) ─── (N) Branches
 
