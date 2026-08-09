@@ -266,6 +266,7 @@ export function RestaurantDetails() {
                 <BranchCard
                   key={branch.id}
                   branch={branch}
+                  restaurantSlug={restaurant.slug}
                 />
               ))}
             </div>
