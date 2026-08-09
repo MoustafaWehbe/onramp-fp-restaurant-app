@@ -1,5 +1,5 @@
-import { useState, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useCallback, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,22 +15,57 @@ import { CITY_OPTIONS, CUISINE_FILTERS } from "@/data/mockRestaurants";
 
 export function HeroSearch() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const [query, setQuery] = useState("");
   const [city, setCity] = useState<string>(CITY_OPTIONS[0]);
   const [activeCuisine, setActiveCuisine] = useState<string | null>(null);
-  const [price, setPrice] = useState("");
+  const [priceRange, setPriceRange] = useState("");
+
+  // Sync the search UI with the current URL.
+  // This is important when HeroSearch is rendered on /restaurants.
+  useEffect(() => {
+    setQuery(searchParams.get("search") ?? "");
+
+    setCity(
+      searchParams.get("city") ?? CITY_OPTIONS[0]
+    );
+
+    setActiveCuisine(
+      searchParams.get("cuisine")
+    );
+
+    setPriceRange(
+      searchParams.get("priceRange") ?? ""
+    );
+  }, [searchParams]);
 
   const handleSearch = useCallback(() => {
     const params = new URLSearchParams();
 
-    if (query) params.set("q", query);
-    if (city !== CITY_OPTIONS[0]) params.set("city", city);
-    if (activeCuisine) params.set("cuisine", activeCuisine);
-    if (price) params.set("price", price);
+    const trimmedQuery = query.trim();
+
+    if (trimmedQuery) {
+      params.set("search", trimmedQuery);
+    }
+
+    if (city !== CITY_OPTIONS[0]) {
+      params.set("city", city);
+    }
+
+    if (activeCuisine) {
+      params.set("cuisine", activeCuisine);
+    }
+
+    if (priceRange) {
+      params.set("priceRange", priceRange);
+    }
+
+    // Always start from the first page when a new search is made.
+    params.set("page", "1");
 
     navigate(`/restaurants?${params.toString()}`);
-  }, [query, city, activeCuisine, price, navigate]);
+  }, [query, city, activeCuisine, priceRange, navigate]);
 
   const handleCuisineSelect = useCallback((cuisine: string) => {
     setActiveCuisine((current) =>
@@ -46,11 +81,9 @@ export function HeroSearch() {
         text-background
       "
       style={{
-        backgroundImage:
-          "url('/images/searchBackground.jpg')",
+        backgroundImage: "url('/images/searchBackground.jpg')",
       }}
     >
-      {/* Overlay */}
       <div className="absolute inset-0 bg-foreground/70" />
 
       <div className="relative mx-auto max-w-7xl px-6 py-20 sm:py-28">
@@ -76,11 +109,10 @@ export function HeroSearch() {
         </h1>
 
         <p className="mt-5 max-w-xl text-lg text-background/80">
-          Discover restaurants, explore menus, and find the perfect place for your next meal.
+          Discover restaurants, explore menus, and find the perfect place
+          for your next meal.
         </p>
 
-
-        {/* Search Box */}
         <div
           className="
             mt-8 flex max-w-5xl
@@ -93,32 +125,42 @@ export function HeroSearch() {
             sm:flex-row
           "
         >
-
           <div className="flex flex-1 items-center gap-2 px-3">
             <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
 
             <Input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              onKeyDown={(e) =>
-                e.key === "Enter" && handleSearch()
-              }
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  handleSearch();
+                }
+              }}
               placeholder="Search cuisine, dish, or restaurant"
               className="
-                  h-12
-                  border-0
-                  p-0
-                  text-base
-                  text-foreground
-                  shadow-none
-                  focus-visible:ring-0
-                "
+                h-12
+                border-0
+                p-0
+                text-base
+                text-foreground
+                shadow-none
+                focus-visible:ring-0
+              "
             />
           </div>
 
-
           <Select value={city} onValueChange={setCity}>
-            <SelectTrigger className="h-12 w-full border-0 text-base text-foreground sm:w-44">              <SelectValue placeholder="City" />
+            <SelectTrigger
+              className="
+                h-12
+                w-full
+                border-0
+                text-base
+                text-foreground
+                sm:w-44
+              "
+            >
+              <SelectValue placeholder="City" />
             </SelectTrigger>
 
             <SelectContent>
@@ -130,19 +172,27 @@ export function HeroSearch() {
             </SelectContent>
           </Select>
 
-
-          <Select value={price} onValueChange={setPrice}>
-            <SelectTrigger className="h-12 w-full border-0 text-base text-foreground sm:w-32">              <SelectValue placeholder="Price" />
+          <Select value={priceRange} onValueChange={setPriceRange}>
+            <SelectTrigger
+              className="
+                h-12
+                w-full
+                border-0
+                text-base
+                text-foreground
+                sm:w-32
+              "
+            >
+              <SelectValue placeholder="Price" />
             </SelectTrigger>
 
             <SelectContent>
-              <SelectItem value="$">$</SelectItem>
-              <SelectItem value="$$">$$</SelectItem>
-              <SelectItem value="$$$">$$$</SelectItem>
-              <SelectItem value="$$$$">$$$$</SelectItem>
+              <SelectItem value="Budget">Budget</SelectItem>
+              <SelectItem value="Average">Average</SelectItem>
+              <SelectItem value="Expensive">Expensive</SelectItem>
+              <SelectItem value="Luxury">Luxury</SelectItem>
             </SelectContent>
           </Select>
-
 
           <Button
             onClick={handleSearch}
@@ -151,9 +201,7 @@ export function HeroSearch() {
           >
             Search
           </Button>
-
         </div>
-
 
         <div className="mt-4">
           <CuisineFilterChips
@@ -162,7 +210,6 @@ export function HeroSearch() {
             onSelect={handleCuisineSelect}
           />
         </div>
-
       </div>
     </section>
   );
