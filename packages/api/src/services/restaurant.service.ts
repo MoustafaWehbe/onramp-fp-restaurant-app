@@ -38,6 +38,7 @@ export const restaurantService = {
         "phone",
         "review_count",
         "average_rating",
+        "image_url",
       ],
       include: [
         {
@@ -99,7 +100,7 @@ export const restaurantService = {
       throw createError("Restaurant not found", 404);
     }
 
-    return restaurant;
+    return serializeRestaurant(restaurant);
   },
 
   getRestaurants: async({page,limit}: GetRestaurantsOptions) => {
@@ -116,6 +117,7 @@ export const restaurantService = {
         "cuisine_type",
         "review_count",
         "average_rating",
+        "image_url",
         "createdAt",
       ],
       limit,
@@ -125,7 +127,7 @@ export const restaurantService = {
     });
 
     return {
-      data: rows,
+      data: rows.map(serializeRestaurant),
       meta: {
         page,
         limit,
@@ -204,6 +206,7 @@ export const restaurantService = {
         "cuisine_type",
         "review_count",
         "average_rating",
+        "image_url",
         "createdAt",
       ],
       limit,
@@ -213,7 +216,7 @@ export const restaurantService = {
     });
 
     return {
-      data: rows,
+      data: rows.map(serializeRestaurant),
       meta: {
         page,
         limit,
@@ -223,3 +226,15 @@ export const restaurantService = {
     };
   }
 };
+
+//helper function to normalize the values of average_rating and review_count to numbers
+
+const serializeRestaurant = (restaurant: Restaurant) => {
+  const data = restaurant.toJSON();
+
+  return {
+    ...data,
+    average_rating: Number(data.average_rating),
+    review_count: Number(data.review_count),
+  }
+}

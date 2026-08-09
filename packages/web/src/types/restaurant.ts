@@ -7,7 +7,7 @@ export interface Restaurant {
   price_range: string;
   average_rating: number;
   review_count: number;
-  createdAt: string;
+  image_url: string;
 }
 
 export interface PaginationMeta {
@@ -94,6 +94,7 @@ export interface RestaurantDetails {
   phone: string;
   review_count: number;
   average_rating: string;
+  image_url: string;
   branches: Branch[];
   menus: MenuSummary[];
 }

@@ -2,6 +2,7 @@ import { Model, DataTypes, type Sequelize, type Optional, type NonAttribute } fr
 import { Menu } from "./Menu";
 export interface RestaurantAttributes {
   id: string;
+  image_url: string;
   name: string;
   slug:string;
   description: string;
@@ -23,6 +24,7 @@ export class Restaurant
   implements RestaurantAttributes
 {
   declare id: string;
+  declare image_url: string;
   declare name: string;
   declare slug: string;
   declare description: string;
@@ -41,6 +43,10 @@ export class Restaurant
           type: DataTypes.UUID,
           defaultValue: DataTypes.UUIDV4,
           primaryKey: true,
+        },
+        image_url: {
+          type: DataTypes.STRING,
+          allowNull: false,
         },
         name: {
           type: DataTypes.STRING,
