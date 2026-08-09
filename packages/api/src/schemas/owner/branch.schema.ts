@@ -14,15 +14,33 @@ export const createBranchSchema = z.object({
   city: z.string().min(1, "City is required"),
   address: z.string().min(1, "Address is required"),
 
-  latitude: z.string().regex(
-    /^-?\d+(\.\d+)?$/,
-    "Latitude must be a valid number",
-  ),
+  latitude: z
+    .string()
+    .regex(
+      /^-?\d+(\.\d+)?$/,
+      "Latitude must be a valid number",
+    )
+    .refine(
+      (value) => {
+        const latitude = Number(value);
+        return latitude >= -90 && latitude <= 90;
+      },
+      "Latitude must be between -90 and 90",
+    ),
 
-  longitude: z.string().regex(
-    /^-?\d+(\.\d+)?$/,
-    "Longitude must be a valid number",
-  ),
+  longitude: z
+    .string()
+    .regex(
+      /^-?\d+(\.\d+)?$/,
+      "Longitude must be a valid number",
+    )
+    .refine(
+      (value) => {
+        const longitude = Number(value);
+        return longitude >= -180 && longitude <= 180;
+      },
+      "Longitude must be between -180 and 180",
+    ),
 
   phone: z.string().optional().nullable(),
 
@@ -36,15 +54,35 @@ export const updateBranchSchema = z.object({
 
   address: z.string().min(1, "Address is required").optional(),
 
-  latitude: z.string().regex(
-    /^-?\d+(\.\d+)?$/,
-    "Latitude must be a valid number",
-  ).optional(),
+  latitude: z
+    .string()
+    .regex(
+      /^-?\d+(\.\d+)?$/,
+      "Latitude must be a valid number",
+    )
+    .refine(
+      (value) => {
+        const latitude = Number(value);
+        return latitude >= -90 && latitude <= 90;
+      },
+      "Latitude must be between -90 and 90",
+    )
+    .optional(),
 
-  longitude: z.string().regex(
-    /^-?\d+(\.\d+)?$/,
-    "Longitude must be a valid number",
-  ).optional(),
+  longitude: z
+    .string()
+    .regex(
+      /^-?\d+(\.\d+)?$/,
+      "Longitude must be a valid number",
+    )
+    .refine(
+      (value) => {
+        const longitude = Number(value);
+        return longitude >= -180 && longitude <= 180;
+      },
+      "Longitude must be between -180 and 180",
+    )
+    .optional(),
 
   phone: z.string().optional().nullable(),
 

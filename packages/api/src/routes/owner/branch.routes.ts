@@ -16,9 +16,9 @@ const router = Router();
 router.post(
     "/:restaurantId/branches",
     authenticate,
-    verifyRestaurantOwnership,
     rateLimiter,
     validate(ownerBranchParamsSchema, "params"),
+    verifyRestaurantOwnership,
     validate(createBranchSchema, "body"),
     branchController.create,
 );
@@ -26,9 +26,9 @@ router.post(
 router.patch(
     "/:restaurantId/branches/:branchId",
     authenticate,
+    rateLimiter,
     validate(ownerBranchUpdateParamsSchema, "params"),
     verifyRestaurantOwnership,
-    rateLimiter,
     validate(updateBranchSchema, "body"),
     branchController.update,
 );
@@ -36,27 +36,27 @@ router.patch(
 router.delete(
     "/:restaurantId/branches/:branchId",
     authenticate,
+    rateLimiter,
     validate(ownerBranchUpdateParamsSchema, "params"),
     verifyRestaurantOwnership,
-    rateLimiter,
     branchController.delete,
 );
 
 router.get(
     "/:restaurantId/branches",
     authenticate,
+    rateLimiter,
     validate(ownerBranchParamsSchema, "params"),
     verifyRestaurantOwnership,
-    rateLimiter,
     branchController.getAll,
 );
 
 router.get(
     "/:restaurantId/branches/:branchId",
     authenticate,
+    rateLimiter,
     validate(ownerBranchUpdateParamsSchema, "params"),
     verifyRestaurantOwnership,
-    rateLimiter,
     branchController.getById,
 );
 

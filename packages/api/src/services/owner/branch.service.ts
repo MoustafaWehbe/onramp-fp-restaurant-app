@@ -2,6 +2,7 @@ import { Branch } from "src/models/Branch";
 import { generateSlug } from "src/lib/slug";
 import { createError } from "src/middleware/error-handler";
 import { Menu, Restaurant, Review, User } from "@starter-kit/shared";
+import { UniqueConstraintError } from "sequelize";
 
 interface CreateBranchData {
     restaurantId: string;
@@ -26,47 +27,62 @@ export const branchService = {
         opening_hours,
     }: CreateBranchData) => {
         const baseSlug = generateSlug(name);
-        let slug = baseSlug;
 
-        const existingBranch = await Branch.findOne({
-            where: {
-                restaurantId,
-                slug,
-            },
-        });
-
-        if (existingBranch) {
-            let counter = 2;
-
-            while (
-                await Branch.findOne({
-                    where: {
-                        restaurantId,
-                        slug: `${baseSlug}-${counter}`,
-                    },
-                })
-            ) {
-                counter++;
-            }
-
-            slug = `${baseSlug}-${counter}`;
+        if (!baseSlug) {
+            throw createError(
+                "Branch name must contain at least one alphanumeric character",
+                400,
+            );
         }
 
-        const branch = await Branch.create({
-            restaurantId,
-            name,
-            slug,
-            city,
-            address,
-            latitude,
-            longitude,
-            phone: phone ?? null,
-            opening_hours,
-            review_count: 0,
-            average_rating: 0,
-        });
+        let slug = baseSlug;
+        let counter = 2;
 
-        return branch;
+        while (true) {
+            const existingBranch = await Branch.findOne({
+                where: {
+                    restaurantId,
+                    slug,
+                },
+            });
+
+            if (existingBranch) {
+                slug = `${baseSlug}-${counter}`;
+                counter++;
+                continue;
+            }
+
+            try {
+                const branch = await Branch.create({
+                    restaurantId,
+                    name,
+                    slug,
+                    city,
+                    address,
+                    latitude,
+                    longitude,
+                    phone: phone ?? null,
+                    opening_hours,
+                    review_count: 0,
+                    average_rating: 0,
+                });
+
+                return branch;
+            } catch (error) {
+                if (!(error instanceof UniqueConstraintError)) {
+                    throw error;
+                }
+
+                const constraint = (error.parent as { constraint?: string })?.constraint;
+
+                if (constraint !== "branches_restaurant_id_slug_unique") {
+                    throw error;
+                }
+
+                slug = `${baseSlug}-${counter}`;
+                counter++;
+            }
+        }
     },
 
     update: async (
