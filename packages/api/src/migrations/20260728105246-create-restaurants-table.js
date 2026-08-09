@@ -9,6 +9,17 @@ module.exports = {
         primaryKey: true,
         allowNull: false,
       },
+      ownerId: {
+        type: Sequelize.UUID,
+        allowNull: true,
+        unique: true,
+        references: {
+          model: "users",
+          key: "id",
+        },
+        onUpdate: "CASCADE",
+        onDelete: "SET NULL",
+      },
       name: {
         type: Sequelize.STRING,
         allowNull: false,

@@ -2,8 +2,9 @@ import { Model, DataTypes, type Sequelize, type Optional, type NonAttribute } fr
 import { Menu } from "./Menu";
 export interface RestaurantAttributes {
   id: string;
+  ownerId: string
   name: string;
-  slug:string;
+  slug: string;
   description: string;
   cuisine_type: string;
   ambiance_tags: string[];
@@ -16,13 +17,13 @@ export interface RestaurantAttributes {
 }
 
 export interface RestaurantCreationAttributes
-  extends Optional<RestaurantAttributes, "id"> {}
+  extends Optional<RestaurantAttributes, "id"> { }
 
 export class Restaurant
   extends Model<RestaurantAttributes, RestaurantCreationAttributes>
-  implements RestaurantAttributes
-{
+  implements RestaurantAttributes {
   declare id: string;
+  declare ownerId: string;
   declare name: string;
   declare slug: string;
   declare description: string;
@@ -42,14 +43,26 @@ export class Restaurant
           defaultValue: DataTypes.UUIDV4,
           primaryKey: true,
         },
+        ownerId: {
+          type: DataTypes.UUID,
+          allowNull: true,
+          unique: true,
+          field: "ownerId",
+          references: {
+            model: "users",
+            key: "id",
+          },
+          onUpdate: "CASCADE",
+          onDelete: "SET NULL",
+        },
         name: {
           type: DataTypes.STRING,
           allowNull: false,
         },
         slug: {
           type: DataTypes.STRING,
-          allowNull:false,
-          unique:true,
+          allowNull: false,
+          unique: true,
         },
         description: {
           type: DataTypes.TEXT,
@@ -81,7 +94,7 @@ export class Restaurant
           defaultValue: 0,
         },
         average_rating: {
-          type: DataTypes.DECIMAL(3,2),
+          type: DataTypes.DECIMAL(3, 2),
           allowNull: false,
           defaultValue: 0.00,
         },

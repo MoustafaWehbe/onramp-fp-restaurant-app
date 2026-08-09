@@ -42,16 +42,35 @@ const ambianceTags = [
   'Rooftop',
 ];
 
+const ownerIds = [
+  '00000000-0000-0000-0000-000000000002',
+  '00000000-0000-0000-0000-000000000003',
+  '00000000-0000-0000-0000-000000000004',
+  '00000000-0000-0000-0000-000000000005',
+  '00000000-0000-0000-0000-000000000015',
+  '00000000-0000-0000-0000-000000000016',
+  '00000000-0000-0000-0000-000000000011',
+  '00000000-0000-0000-0000-000000000012',
+  '00000000-0000-0000-0000-000000000013',
+  '00000000-0000-0000-0000-000000000014',
+  '00000000-0000-0000-0000-000000000006',
+  '00000000-0000-0000-0000-000000000007',
+  '00000000-0000-0000-0000-000000000008',
+  '00000000-0000-0000-0000-000000000009',
+  '00000000-0000-0000-0000-000000000010',
+];
+
 const priceRanges = ['Budget', 'Average', 'Expensive', 'Luxury'];
 
 module.exports = {
   async up(queryInterface) {
-    const restaurants = restaurantIds.map((id) => {
+    const restaurants = restaurantIds.map((id,index) => {
       const name = faker.company.name();
 
       return {
         id,
         name,
+        ownerId: ownerIds[index],
         slug: `${name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${id.slice(-4)}`,
         description: faker.lorem.sentence(),
         cuisine_type: faker.helpers.arrayElement(cuisineTypes),

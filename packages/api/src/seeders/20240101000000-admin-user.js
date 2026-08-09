@@ -1,12 +1,15 @@
 "use strict";
 
-const { hashPassword } = require("bcryptjs");
+const bcrypt = require("bcryptjs");
 
 /** @type {import('sequelize-cli').Migration} */
+
 module.exports = {
   async up(queryInterface) {
-    const passwordHash = await require("bcryptjs").hash("Admin1234!", 12);
+    const passwordHash = await bcrypt.hash("Admin1234!", 12);
+
     await queryInterface.bulkInsert("users", [
+      // Admin
       {
         id: "00000000-0000-0000-0000-000000000001",
         email: "admin@example.com",
@@ -17,10 +20,183 @@ module.exports = {
         created_at: new Date(),
         updated_at: new Date(),
       },
+
+      // Restaurant Owners
+      {
+        id: "00000000-0000-0000-0000-000000000002",
+        email: "owner1@example.com",
+        password_hash: passwordHash,
+        name: "Restaurant Owner 1",
+        role: "owner",
+        email_verified: true,
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
+      {
+        id: "00000000-0000-0000-0000-000000000003",
+        email: "owner2@example.com",
+        password_hash: passwordHash,
+        name: "Restaurant Owner 2",
+        role: "owner",
+        email_verified: true,
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
+      {
+        id: "00000000-0000-0000-0000-000000000004",
+        email: "owner3@example.com",
+        password_hash: passwordHash,
+        name: "Restaurant Owner 3",
+        role: "owner",
+        email_verified: true,
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
+      {
+        id: "00000000-0000-0000-0000-000000000005",
+        email: "owner4@example.com",
+        password_hash: passwordHash,
+        name: "Restaurant Owner 4",
+        role: "owner",
+        email_verified: true,
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
+      {
+        id: "00000000-0000-0000-0000-000000000006",
+        email: "owner5@example.com",
+        password_hash: passwordHash,
+        name: "Restaurant Owner 5",
+        role: "owner",
+        email_verified: true,
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
+      {
+        id: "00000000-0000-0000-0000-000000000007",
+        email: "owner6@example.com",
+        password_hash: passwordHash,
+        name: "Restaurant Owner 6",
+        role: "owner",
+        email_verified: true,
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
+      {
+        id: "00000000-0000-0000-0000-000000000008",
+        email: "owner7@example.com",
+        password_hash: passwordHash,
+        name: "Restaurant Owner 7",
+        role: "owner",
+        email_verified: true,
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
+      {
+        id: "00000000-0000-0000-0000-000000000009",
+        email: "owner8@example.com",
+        password_hash: passwordHash,
+        name: "Restaurant Owner 8",
+        role: "owner",
+        email_verified: true,
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
+      {
+        id: "00000000-0000-0000-0000-000000000010",
+        email: "owner9@example.com",
+        password_hash: passwordHash,
+        name: "Restaurant Owner 9",
+        role: "owner",
+        email_verified: true,
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
+      {
+        id: "00000000-0000-0000-0000-000000000011",
+        email: "owner10@example.com",
+        password_hash: passwordHash,
+        name: "Restaurant Owner 10",
+        role: "owner",
+        email_verified: true,
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
+      {
+        id: "00000000-0000-0000-0000-000000000012",
+        email: "owner11@example.com",
+        password_hash: passwordHash,
+        name: "Restaurant Owner 11",
+        role: "owner",
+        email_verified: true,
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
+      {
+        id: "00000000-0000-0000-0000-000000000013",
+        email: "owner12@example.com",
+        password_hash: passwordHash,
+        name: "Restaurant Owner 12",
+        role: "owner",
+        email_verified: true,
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
+      {
+        id: "00000000-0000-0000-0000-000000000014",
+        email: "owner13@example.com",
+        password_hash: passwordHash,
+        name: "Restaurant Owner 13",
+        role: "owner",
+        email_verified: true,
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
+      {
+        id: "00000000-0000-0000-0000-000000000015",
+        email: "owner14@example.com",
+        password_hash: passwordHash,
+        name: "Restaurant Owner 14",
+        role: "owner",
+        email_verified: true,
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
+      {
+        id: "00000000-0000-0000-0000-000000000016",
+        email: "owner15@example.com",
+        password_hash: passwordHash,
+        name: "Restaurant Owner 15",
+        role: "owner",
+        email_verified: true,
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
     ]);
   },
 
   async down(queryInterface) {
-    await queryInterface.bulkDelete("users", { email: "admin@example.com" });
+    await queryInterface.bulkDelete("users", {
+      id: {
+        [require("sequelize").Op.in]: [
+          "00000000-0000-0000-0000-000000000001",
+          "00000000-0000-0000-0000-000000000002",
+          "00000000-0000-0000-0000-000000000003",
+          "00000000-0000-0000-0000-000000000004",
+          "00000000-0000-0000-0000-000000000005",
+          "00000000-0000-0000-0000-000000000006",
+          "00000000-0000-0000-0000-000000000007",
+          "00000000-0000-0000-0000-000000000008",
+          "00000000-0000-0000-0000-000000000009",
+          "00000000-0000-0000-0000-000000000010",
+          "00000000-0000-0000-0000-000000000011",
+          "00000000-0000-0000-0000-000000000012",
+          "00000000-0000-0000-0000-000000000013",
+          "00000000-0000-0000-0000-000000000014",
+          "00000000-0000-0000-0000-000000000015",
+          "00000000-0000-0000-0000-000000000016",
+        ],
+      },
+    });
   },
 };
