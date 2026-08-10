@@ -46,92 +46,87 @@ export const branchService = {
         opening_hours,
         images,
     }: CreateBranchData) => {
-        const baseSlug = generateSlug(name);
+        const slug = generateSlug(name);
 
-        if (!baseSlug) {
+        if (!slug) {
             throw createError(
                 "Branch name must contain at least one alphanumeric character",
                 400,
             );
         }
 
-        let slug = baseSlug;
-        let counter = 2;
+        const existingBranch = await Branch.findOne({
+            where: {
+                restaurantId,
+                slug,
+            },
+        });
 
-        while (true) {
-            const existingBranch = await Branch.findOne({
-                where: {
-                    restaurantId,
-                    slug,
-                },
+        if (existingBranch) {
+            throw createError(
+                "A branch with this name already exists in this restaurant",
+                409,
+            );
+        }
+
+        try {
+            const branch = await Branch.create({
+                restaurantId,
+                name,
+                slug,
+                city,
+                address,
+                latitude,
+                longitude,
+                phone: phone ?? null,
+                opening_hours,
+                review_count: 0,
+                average_rating: 0,
             });
 
-            if (existingBranch) {
-                throw createError(
-                    "A branch with this name already exists in this restaurant",
-                    409,
+            if (images?.length) {
+                await BranchImage.bulkCreate(
+                    images.map((image) => ({
+                        branchId: branch.id,
+                        url: image.url,
+                        type: image.type,
+                    })),
                 );
             }
 
-            try {
-                const branch = await Branch.create({
-                    restaurantId,
-                    name,
-                    slug,
-                    city,
-                    address,
-                    latitude,
-                    longitude,
-                    phone: phone ?? null,
-                    opening_hours,
-                    review_count: 0,
-                    average_rating: 0,
-                });
+            await branch.reload({
+                include: [
+                    {
+                        model: BranchImage,
+                        as: "images",
+                        attributes: [
+                            "id",
+                            "url",
+                            "type",
+                        ],
+                    },
+                ],
+            });
 
-                if (images?.length) {
-                    await BranchImage.bulkCreate(
-                        images.map((image) => ({
-                            branchId: branch.id,
-                            url: image.url,
-                            type: image.type,
-                        })),
-                    );
-                }
-
-                const createdBranch = await Branch.findByPk(branch.id, {
-                    include: [
-                        {
-                            model: BranchImage,
-                            as: "images",
-                            attributes: [
-                                "id",
-                                "url",
-                                "type",
-                            ],
-                        },
-                    ],
-                });
-
-                return createdBranch;
-            } catch (error) {
-                if (!(error instanceof UniqueConstraintError)) {
-                    throw error;
-                }
-
+            return branch;
+        } catch (error) {
+            if (error instanceof UniqueConstraintError) {
                 const constraint = (error.parent as {
                     constraint?: string;
                 })?.constraint;
 
-                if (constraint !== "branches_restaurant_id_slug_unique") {
-                    throw error;
+                if (constraint === "branches_restaurant_id_slug_unique") {
+                    throw createError(
+                        "A branch with this name already exists in this restaurant",
+                        409,
+                    );
                 }
-
-                slug = `${baseSlug}-${counter}`;
-                counter++;
             }
+
+            throw error;
         }
     },
-
+    
     update: async (
         restaurantId: string,
         branchId: string,
@@ -154,42 +149,93 @@ export const branchService = {
             ...branchData
         } = data;
 
-        await branch.update(branchData);
+        const updateData: Record<string, unknown> = {
+            ...branchData,
+        };
 
-        if (deletedImageIds?.length) {
-            await BranchImage.destroy({
+        if (branchData.name && branchData.name !== branch.name) {
+            const newSlug = generateSlug(branchData.name);
+
+            if (!newSlug) {
+                throw createError(
+                    "Branch name must contain at least one alphanumeric character",
+                    400,
+                );
+            }
+
+            const existingBranch = await Branch.findOne({
                 where: {
-                    id: deletedImageIds,
-                    branchId: branch.id,
+                    restaurantId,
+                    slug: newSlug,
                 },
             });
+
+            if (existingBranch && existingBranch.id !== branch.id) {
+                throw createError(
+                    "A branch with this name already exists in this restaurant",
+                    409,
+                );
+            }
+
+            updateData.slug = newSlug;
         }
 
-        if (images?.length) {
-            await BranchImage.bulkCreate(
-                images.map((image) => ({
-                    branchId: branch.id,
-                    url: image.url,
-                    type: image.type,
-                })),
-            );
+        try {
+            await branch.update(updateData);
+
+            if (deletedImageIds?.length) {
+                await BranchImage.destroy({
+                    where: {
+                        id: deletedImageIds,
+                        branchId: branch.id,
+                    },
+                });
+            }
+
+            if (images?.length) {
+                await BranchImage.bulkCreate(
+                    images.map((image) => ({
+                        branchId: branch.id,
+                        url: image.url,
+                        type: image.type,
+                    })),
+                );
+            }
+
+            await branch.reload({
+                include: [
+                    {
+                        model: BranchImage,
+                        as: "images",
+                        attributes: [
+                            "id",
+                            "url",
+                            "type",
+                        ],
+                    },
+                ],
+            });
+
+            return branch;
+        } catch (error) {
+            if (error instanceof UniqueConstraintError) {
+                const constraint = (error.parent as {
+                    constraint?: string;
+                })?.constraint;
+
+                if (
+                    constraint ===
+                    "branches_restaurant_id_slug_unique"
+                ) {
+                    throw createError(
+                        "A branch with this name already exists in this restaurant",
+                        409,
+                    );
+                }
+            }
+
+            throw error;
         }
-
-        await branch.reload({
-            include: [
-                {
-                    model: BranchImage,
-                    as: "images",
-                    attributes: [
-                        "id",
-                        "url",
-                        "type",
-                    ],
-                },
-            ],
-        });
-
-        return branch;
     },
 
     delete: async (
