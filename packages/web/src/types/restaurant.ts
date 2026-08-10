@@ -93,7 +93,7 @@ export interface RestaurantDetails {
   email: string;
   phone: string;
   review_count: number;
-  average_rating: string;
+  average_rating: number;
   image_url: string;
   branches: Branch[];
   menus: MenuSummary[];
