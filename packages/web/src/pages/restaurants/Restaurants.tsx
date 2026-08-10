@@ -10,7 +10,8 @@ import type {
 import { HeroSearch } from "@/components/shared/HeroSearch";
 
 export function Restaurants() {
-  const [searchParams] = useSearchParams();
+
+  const [ searchParams, setSearchParams ] = useSearchParams();
 
   const search = searchParams.get("search") ?? "";
   const city = searchParams.get("city");
@@ -24,9 +25,18 @@ export function Restaurants() {
 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
+  
 
   const page = Number(searchParams.get("page") ?? 1);
   const limit = 12;
+
+  const handlePageChange = (newPage: number) => {
+    setSearchParams((params) => {
+      const nextParams = new URLSearchParams(params);
+      nextParams.set("page", String(newPage));
+      return nextParams;
+    });
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -173,7 +183,7 @@ export function Restaurants() {
 
         {/* Restaurant Grid */}
         {!isLoading && !error && restaurants.length > 0 && (
-          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-">
+          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
             {restaurants.map((restaurant) => (
               <RestaurantCard
                 key={restaurant.id}
@@ -185,12 +195,41 @@ export function Restaurants() {
 
         {/* Pagination placeholder */}
         {!isLoading && !error && meta && meta.totalPages > 1 && (
-          <div className="mt-12 flex justify-center">
-            <div className="text-sm text-muted-foreground">
-              Page {meta.page} of {meta.totalPages}
-            </div>
-          </div>
-        )}
+          <div className="mt-12 flex items-center justify-center gap-2">
+          <button
+            type="button"
+            onClick={() => handlePageChange(meta.page - 1)}
+            disabled={meta.page === 1}
+            className="rounded-md border border-border px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Previous
+          </button>
+
+          {Array.from({ length: meta.totalPages }, (_, index) => {
+            const pageNumber = index + 1;
+
+            return (
+              <button
+                key={pageNumber}
+                type="button"
+                onClick={() => handlePageChange(pageNumber)}
+                aria-current={meta.page === pageNumber ? "page" : undefined}
+                className="rounded-md border border-border px-3 py-2 text-sm"
+              >
+                {pageNumber}
+              </button>
+            );
+          })}
+
+          <button
+            type="button"
+            onClick={() => handlePageChange(meta.page + 1)}
+            disabled={meta.page === meta.totalPages}
+            className="rounded-md border border-border px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Next
+          </button>
+        </div>        )}
       </section>
     </main>
   );
