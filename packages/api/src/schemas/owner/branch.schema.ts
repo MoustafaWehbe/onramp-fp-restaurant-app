@@ -10,11 +10,11 @@ export const ownerBranchUpdateParamsSchema = z.object({
 });
 
 export const createBranchSchema = z.object({
-  name: z.string().min(1, "Branch name is required"),
+  name: z.string().trim().min(1, "Branch name is required"),
 
-  city: z.string().min(1, "City is required"),
+  city: z.string().trim().min(1, "City is required"),
 
-  address: z.string().min(1, "Address is required"),
+  address: z.string().trim().min(1, "Address is required"),
 
   latitude: z
     .string()
@@ -59,16 +59,19 @@ export const createBranchSchema = z.object({
 export const updateBranchSchema = z.object({
   name: z
     .string()
+    .trim()
     .min(1, "Branch name is required")
     .optional(),
 
   city: z
     .string()
+    .trim()
     .min(1, "City is required")
     .optional(),
 
   address: z
     .string()
+    .trim()
     .min(1, "Address is required")
     .optional(),
 
