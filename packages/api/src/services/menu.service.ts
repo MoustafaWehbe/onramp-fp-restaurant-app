@@ -1,10 +1,24 @@
 import { createError } from "src/middleware/error-handler";
 import { Menu } from "../models/Menu";
 import { MenuItem } from "../models/MenuItem";
+import { Branch, BranchMenuItem } from "@starter-kit/shared";
 
 export const menuService = {
-    getMenuById: async (id: string) => {
-        const menu = await Menu.findByPk(id, {
+    getMenuByIdForBranch: async (
+        menuId: string,
+        branchSlug: string
+    ) => {
+        const branch = await Branch.findOne({
+            where: {
+                slug: branchSlug,
+            },
+        });
+
+        if (!branch) {
+            throw createError("Branch not found");
+        }
+
+        const menu = await Menu.findByPk(menuId, {
             attributes: [
                 "id",
                 "name",
@@ -24,11 +38,26 @@ export const menuService = {
                         "display_order",
                         "is_active",
                     ],
-                }
-            ]
+                    include: [
+                        {
+                            model: BranchMenuItem,
+                            as: "branchMenuItems",
+                            required: false,
+                            where: {
+                                branchId: branch.id,
+                            },
+                            attributes: [
+                                "id",
+                                "customPrice",
+                                "isAvailable",
+                            ],
+                        },
+                    ],
+                },
+            ],
         });
 
-        if(!menu) {
+        if (!menu) {
             throw createError("Menu not found");
         }
 

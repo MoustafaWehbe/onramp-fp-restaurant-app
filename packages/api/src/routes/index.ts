@@ -16,7 +16,7 @@ router.use("/", favoriteRouter);
 
 router.use("/restaurants", restaurantRouter);
 router.use("/branches",branchRouter);
-router.use("/menus", menuRouter);
+router.use("/", menuRouter);
 
 //Owner Routes
 router.use("/owner/restaurant-claims", restaurantClaimRouter);
