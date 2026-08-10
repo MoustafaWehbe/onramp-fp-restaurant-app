@@ -86,21 +86,21 @@ const BranchInfo = ({
                         <div className="mt-5 flex flex-wrap items-center gap-3">
                             <div
                                 className={`flex items-center gap-2 rounded-full border px-3.5 py-2 shadow-sm ${openNow
-                                        ? "border-emerald-100 bg-emerald-50/70"
-                                        : "border-red-100 bg-red-50/70"
+                                    ? "border-emerald-100 bg-emerald-50/70"
+                                    : "border-red-100 bg-red-50/70"
                                     }`}
                             >
                                 <span
                                     className={`h-2 w-2 rounded-full ${openNow
-                                            ? "bg-emerald-500 shadow-[0_0_0_3px_rgba(16,185,129,0.12)]"
-                                            : "bg-red-500 shadow-[0_0_0_3px_rgba(239,68,68,0.12)]"
+                                        ? "bg-emerald-500 shadow-[0_0_0_3px_rgba(16,185,129,0.12)]"
+                                        : "bg-red-500 shadow-[0_0_0_3px_rgba(239,68,68,0.12)]"
                                         }`}
                                 />
 
                                 <span
                                     className={`text-xs font-semibold ${openNow
-                                            ? "text-emerald-700"
-                                            : "text-red-600"
+                                        ? "text-emerald-700"
+                                        : "text-red-600"
                                         }`}
                                 >
                                     {openNow ? "Open now" : "Closed now"}
@@ -131,15 +131,15 @@ const BranchInfo = ({
                                 </p>
 
                                 {/* Stars */}
+                                {/* Stars */}
                                 <div className="mt-2 flex items-center gap-1">
                                     {[1, 2, 3, 4, 5].map((value) => {
-                                        const rating =
-                                            Number(reviewSummary.averageRating);
+                                        const rating = Number(reviewSummary.averageRating);
+                                        const fraction = rating % 1;
 
                                         const isFull = value <= Math.floor(rating);
                                         const isPartial =
-                                            value === Math.ceil(rating) &&
-                                            rating % 1 !== 0;
+                                            value === Math.ceil(rating) && fraction > 0;
 
                                         return (
                                             <div
@@ -152,12 +152,27 @@ const BranchInfo = ({
                                                     strokeWidth={1.5}
                                                 />
 
-                                                {/* Filled star */}
-                                                {(isFull || isPartial) && (
+                                                {/* Full star */}
+                                                {isFull && (
                                                     <Star
                                                         className="absolute h-5 w-5 fill-amber-400 text-amber-400 drop-shadow-[0_1px_2px_rgba(245,158,11,0.2)]"
                                                         strokeWidth={1.5}
                                                     />
+                                                )}
+
+                                                {/* Partial star */}
+                                                {isPartial && (
+                                                    <div
+                                                        className="absolute left-0 top-0 h-5 overflow-hidden"
+                                                        style={{
+                                                            width: `${fraction * 100}%`,
+                                                        }}
+                                                    >
+                                                        <Star
+                                                            className="h-5 w-5 fill-amber-400 text-amber-400 drop-shadow-[0_1px_2px_rgba(245,158,11,0.2)]"
+                                                            strokeWidth={1.5}
+                                                        />
+                                                    </div>
                                                 )}
                                             </div>
                                         );

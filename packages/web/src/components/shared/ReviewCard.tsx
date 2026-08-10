@@ -116,11 +116,15 @@ const ReviewCard = ({
                         </>
                     )}
 
-
-                    <div className="flex items-center gap-1 rounded-full bg-orange-50/70 px-3.5 py-2 shadow-sm">
+                    <div
+                        className="flex items-center gap-1 rounded-full bg-orange-50/70 px-3.5 py-2 shadow-sm"
+                        role="img"
+                        aria-label={`Rating: ${review.rating} out of 5`}
+                    >
                         {[1, 2, 3, 4, 5].map((value) => (
                             <Star
                                 key={value}
+                                aria-hidden="true"
                                 className={`h-5 w-5 ${value <= review.rating
                                         ? "fill-amber-400 text-amber-400"
                                         : "text-orange-200"
