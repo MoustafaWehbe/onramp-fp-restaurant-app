@@ -1,12 +1,13 @@
 interface Menu {
     id: string;
     name: string;
+    description: string;
 }
 
 interface MenusSectionProps {
     menus: Menu[];
     title?: string;
-    description?: string;
+    description?: string | null;
 }
 
 const MenusSection = ({
@@ -31,9 +32,17 @@ const MenusSection = ({
                     {menus.map((menu) => (
                         <button
                             key={menu.id}
-                            className="rounded-full border px-8 py-4 text-base font-semibold transition hover:bg-muted"
+                            className="rounded-2xl border px-8 py-4 text-left transition hover:bg-muted"
                         >
-                            {menu.name}
+                            <div className="font-semibold">
+                                {menu.name}
+                            </div>
+
+                            {menu.description && (
+                                <p className="mt-2 text-sm font-normal leading-relaxed text-muted-foreground">
+                                    {menu.description}
+                                </p>
+                            )}
                         </button>
                     ))}
                 </div>

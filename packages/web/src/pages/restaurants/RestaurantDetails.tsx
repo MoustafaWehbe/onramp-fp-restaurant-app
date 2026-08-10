@@ -14,6 +14,7 @@ import { RestaurantSidebar } from "@/components/shared/RestaurantSidebar";
 import { BranchCard } from "@/components/shared/BranchCard";
 import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
 import { restaurantsApi } from "@/services/restaurantsApi";
+import Reviews from "@/components/shared/Reviews";
 
 export function RestaurantDetails() {
   const { slug } = useParams<{ slug: string }>();
@@ -63,7 +64,7 @@ export function RestaurantDetails() {
   );
 
   return (
-    <main className="mx-auto max-w-7xl px-6 py-8">
+    <main className="mx-auto px-6 py-8">
       {/* Back */}
       <Link
         to="/restaurants"
@@ -197,52 +198,6 @@ export function RestaurantDetails() {
       {/* Main content */}
       <div className="mt-10 grid grid-cols-1 gap-10 lg:grid-cols-3">
         <div className="space-y-12 lg:col-span-2">
-          {/* Menus */}
-          <section>
-            <div className="mb-5 flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
-                <Utensils className="h-5 w-5 text-primary" />
-              </div>
-
-              <div>
-                <h2 className="text-2xl font-bold text-foreground">
-                  Menus
-                </h2>
-
-                <p className="text-sm text-muted-foreground">
-                  Explore what {restaurant.name} has to offer
-                </p>
-              </div>
-            </div>
-
-            {restaurant.menus.length > 0 ? (
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                {restaurant.menus.map((menu) => (
-                  <div
-                    key={menu.id}
-                    className="rounded-2xl border border-border bg-card p-5 transition-all hover:-translate-y-0.5 hover:shadow-md"
-                  >
-                    <h3 className="font-semibold text-foreground">
-                      {menu.name}
-                    </h3>
-
-                    {menu.description && (
-                      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                        {menu.description}
-                      </p>
-                    )}
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="rounded-2xl border border-dashed border-border p-8 text-center">
-                <p className="text-sm text-muted-foreground">
-                  No menus available yet.
-                </p>
-              </div>
-            )}
-          </section>
-
           {/* Branches */}
           <section>
             <div className="mb-5 flex items-center gap-3">
@@ -273,78 +228,23 @@ export function RestaurantDetails() {
           </section>
 
           {/* Reviews */}
-          {allReviews.length > 0 && (
-            <section>
-              <div className="mb-5">
-                <h2 className="text-2xl font-bold text-foreground">
-                  Customer Reviews
-                </h2>
+          <section>
+          <div className="mb-5">
+            <h2 className="text-2xl font-bold text-foreground">
+              Customer Reviews
+            </h2>
 
-                <p className="mt-1 text-sm text-muted-foreground">
-                  What diners are saying about {restaurant.name}
-                </p>
-              </div>
+            <p className="mt-1 text-sm text-muted-foreground">
+              What diners are saying about {restaurant.name}
+            </p>
+          </div>
 
-              <div className="space-y-4">
-                {allReviews.map((review) => (
-                  <article
-                    key={review.id}
-                    className="rounded-2xl border border-border bg-card p-5"
-                  >
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <p className="font-semibold text-foreground">
-                          {review.user.name}
-                        </p>
-
-                        <div className="mt-1 flex items-center gap-1">
-                          {Array.from({ length: 5 }).map((_, index) => (
-                            <Star
-                              key={index}
-                              className={`h-4 w-4 ${
-                                index < review.rating
-                                  ? "fill-primary text-primary"
-                                  : "text-muted-foreground"
-                              }`}
-                            />
-                          ))}
-                        </div>
-                      </div>
-
-                      <span className="rounded-full bg-primary/10 px-3 py-1 text-sm font-semibold text-primary">
-                        {review.rating}/5
-                      </span>
-                    </div>
-
-                    <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-                      {review.comment}
-                    </p>
-                  </article>
-                ))}
-              </div>
-            </section>
-          )}
-
-          {/* Empty reviews */}
-          {allReviews.length === 0 && (
-            <section>
-              <h2 className="text-2xl font-bold text-foreground">
-                Customer Reviews
-              </h2>
-
-              <div className="mt-5 rounded-2xl border border-dashed border-border p-8 text-center">
-                <Star className="mx-auto h-8 w-8 text-muted-foreground" />
-
-                <p className="mt-3 font-medium text-foreground">
-                  No reviews yet
-                </p>
-
-                <p className="mt-1 text-sm text-muted-foreground">
-                  Be the first to share your experience.
-                </p>
-              </div>
-            </section>
-          )}
+          <Reviews
+            reviews={allReviews}
+            onUpdate={() => {}}
+            onDelete={() => {}}
+          />
+        </section>
         </div>
 
         {/* Sidebar */}

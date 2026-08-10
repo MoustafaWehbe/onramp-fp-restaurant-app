@@ -96,7 +96,7 @@ export function Restaurants() {
       <HeroSearch />
 
       {/* Results */}
-      <section className="mx-auto max-w-7xl px-6 py-12">
+      <section className="mx-auto px-6 py-12">
 
         {/* Results Header */}
         <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
