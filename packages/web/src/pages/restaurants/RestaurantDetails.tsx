@@ -14,9 +14,7 @@ import { RestaurantSidebar } from "@/components/shared/RestaurantSidebar";
 import { BranchCard } from "@/components/shared/BranchCard";
 import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
 import { restaurantsApi } from "@/services/restaurantsApi";
-import ReviewCard from "@/components/shared/ReviewCard";
 import Reviews from "@/components/shared/Reviews";
-import MenusSection from "@/components/shared/MenuSection";
 
 export function RestaurantDetails() {
   const { slug } = useParams<{ slug: string }>();
@@ -66,7 +64,7 @@ export function RestaurantDetails() {
   );
 
   return (
-    <main className="mx-auto max-w-9xl px-6 py-8">
+    <main className="mx-auto px-6 py-8">
       {/* Back */}
       <Link
         to="/restaurants"
