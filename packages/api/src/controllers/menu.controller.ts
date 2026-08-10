@@ -4,20 +4,30 @@ import { Request, Response, NextFunction } from "express";
 type MenuParams = {
     id: string;
 };
-
+type BranchMenuParams = {
+    branchSlug: string;
+    menuId: string;
+};
 export const menuController = {
-    getMenuById: async (req: Request<MenuParams>, res: Response, next: NextFunction) => {
+    getMenuByIdForBranch: async (
+        req: Request<BranchMenuParams>,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
-            const { id } = req.params;
+            const { branchSlug, menuId } = req.params;
 
-            const menu = await menuService.getMenuById(id);
+            const menu = await menuService.getMenuByIdForBranch(
+                menuId,
+                branchSlug
+            );
 
             res.status(200).json({
                 data: menu,
-                message: "Menu retrieved successfully",
+                message: "Branch menu retrieved successfully",
             });
-        } catch(error) {
+        } catch (error) {
             next(error);
         }
-    } 
+    },
 }

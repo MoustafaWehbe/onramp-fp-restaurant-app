@@ -1,5 +1,6 @@
 import { z } from "zod";
 
-export const menuParamsSchema = z.object({
-    id: z.string().uuid(),
+export const branchMenuParamsSchema = z.object({
+    branchSlug: z.string().trim().min(1),
+    menuId: z.string().uuid(),
 });
