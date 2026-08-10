@@ -3,6 +3,7 @@ import {
     Phone,
     Clock,
     Star,
+    ChevronRight,
 } from "lucide-react";
 
 interface BranchInfoProps {
@@ -23,8 +24,11 @@ const isOpenNow = (hours: string) => {
     const currentMinutes =
         now.getHours() * 60 + now.getMinutes();
 
-    const [openHour, openMinute] = openTime.split(":").map(Number);
-    const [closeHour, closeMinute] = closeTime.split(":").map(Number);
+    const [openHour, openMinute] =
+        openTime.split(":").map(Number);
+
+    const [closeHour, closeMinute] =
+        closeTime.split(":").map(Number);
 
     const openingMinutes =
         openHour * 60 + openMinute;
@@ -45,97 +49,231 @@ const isOpenNow = (hours: string) => {
     );
 };
 
-const BranchInfo = ({ branch, reviewSummary }: BranchInfoProps) => {
+const BranchInfo = ({
+    branch,
+    reviewSummary,
+}: BranchInfoProps) => {
     const openNow = isOpenNow(branch.opening_hours);
 
     return (
-        <section className="w-full py-8">
+        <section className="w-full py-10">
 
-            {/* Header */}
-            <div className="flex flex-col justify-between gap-8 lg:flex-row lg:items-start">
+            {/* Main Header */}
+            <div className="relative overflow-hidden rounded-[30px] border border-orange-100/80 bg-gradient-to-br from-white via-white to-orange-50/60 p-7 shadow-[0_12px_45px_rgba(0,0,0,0.05)] sm:p-9">
 
-                <div>
-                    <h1 className="text-5xl font-bold tracking-tight text-gray-900">
-                        {branch.name}
-                    </h1>
-                    {/* Open status */}
-                    <div className="mt-5 flex items-center gap-3">
+                {/* Decorative elements */}
+                <div className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full bg-orange-100/40 blur-3xl" />
 
-                        <span
-                            className={`rounded-full px-4 py-2 text-sm font-semibold ${openNow
-                                    ? "bg-green-100 text-green-700"
-                                    : "bg-red-100 text-red-700"
-                                }`}
-                        >
-                            {openNow ? "● Open Now" : "● Closed Now"}
-                        </span>
+                <div className="pointer-events-none absolute -bottom-28 left-1/3 h-48 w-48 rounded-full bg-amber-100/30 blur-3xl" />
 
-                    </div>
+                <div className="relative flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
 
-                </div>
-
-
-                {/* Rating */}
-                <div className="flex items-center gap-4 rounded-3xl bg-gradient-to-br from-orange-500 to-amber-400 px-6 py-5 text-white shadow-lg">
-
-                    <div className="rounded-full bg-white/20 p-3">
-                        <Star className="h-8 w-8 fill-white text-white" />
-                    </div>
-
+                    {/* Branch information */}
                     <div>
-                        <p className="text-3xl font-bold">
-                            {reviewSummary.averageRating}
-                        </p>
+                        <div className="mb-4 flex items-center gap-2">
+                            <span className="h-px w-7 bg-orange-400" />
 
-                        <p className="text-sm text-white/90">
-                            {reviewSummary.totalReviews} reviews
-                        </p>
+                            <span className="text-[11px] font-semibold uppercase tracking-[0.24em] text-orange-500">
+                                Restaurant Branch
+                            </span>
+                        </div>
+
+                        <h1 className="text-4xl font-semibold tracking-[-0.03em] text-gray-900 sm:text-5xl">
+                            {branch.name}
+                        </h1>
+
+                        {/* Status */}
+                        <div className="mt-5 flex flex-wrap items-center gap-3">
+                            <div
+                                className={`flex items-center gap-2 rounded-full border px-3.5 py-2 shadow-sm ${openNow
+                                        ? "border-emerald-100 bg-emerald-50/70"
+                                        : "border-red-100 bg-red-50/70"
+                                    }`}
+                            >
+                                <span
+                                    className={`h-2 w-2 rounded-full ${openNow
+                                            ? "bg-emerald-500 shadow-[0_0_0_3px_rgba(16,185,129,0.12)]"
+                                            : "bg-red-500 shadow-[0_0_0_3px_rgba(239,68,68,0.12)]"
+                                        }`}
+                                />
+
+                                <span
+                                    className={`text-xs font-semibold ${openNow
+                                            ? "text-emerald-700"
+                                            : "text-red-600"
+                                        }`}
+                                >
+                                    {openNow ? "Open now" : "Closed now"}
+                                </span>
+                            </div>
+                        </div>
                     </div>
 
-                </div>
 
+                    {/* Rating Card */}
+                    <div className="relative overflow-hidden rounded-2xl border border-orange-100/80 bg-white px-6 py-5 shadow-[0_8px_30px_rgba(0,0,0,0.045)]">
+
+                        {/* Subtle glow */}
+                        <div className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-amber-100/50 blur-2xl" />
+
+                        <div className="relative flex items-center gap-5">
+
+                            {/* Rating score */}
+                            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-50 to-amber-50">
+                                <span className="text-xl font-semibold tracking-tight text-gray-900">
+                                    {reviewSummary.averageRating}
+                                </span>
+                            </div>
+
+                            <div>
+                                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">
+                                    Guest Rating
+                                </p>
+
+                                {/* Stars */}
+                                <div className="mt-2 flex items-center gap-1">
+                                    {[1, 2, 3, 4, 5].map((value) => {
+                                        const rating =
+                                            Number(reviewSummary.averageRating);
+
+                                        const isFull = value <= Math.floor(rating);
+                                        const isPartial =
+                                            value === Math.ceil(rating) &&
+                                            rating % 1 !== 0;
+
+                                        return (
+                                            <div
+                                                key={value}
+                                                className="relative h-5 w-5"
+                                            >
+                                                {/* Empty star */}
+                                                <Star
+                                                    className="absolute h-5 w-5 text-amber-200"
+                                                    strokeWidth={1.5}
+                                                />
+
+                                                {/* Filled star */}
+                                                {(isFull || isPartial) && (
+                                                    <Star
+                                                        className="absolute h-5 w-5 fill-amber-400 text-amber-400 drop-shadow-[0_1px_2px_rgba(245,158,11,0.2)]"
+                                                        strokeWidth={1.5}
+                                                    />
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+
+                                <p className="mt-1.5 text-xs text-gray-400">
+                                    Based on {reviewSummary.totalReviews}{" "}
+                                    {reviewSummary.totalReviews === 1
+                                        ? "review"
+                                        : "reviews"}
+                                </p>
+                            </div>
+
+                        </div>
+                        <ChevronRight className="hidden h-4 w-4 text-gray-300 sm:block" />
+                    </div>
+                </div>
             </div>
 
 
-            {/* Details */}
-            <div className="mt-12 grid gap-5 md:grid-cols-3">
+            {/* Information */}
+            <div className="mt-6 grid gap-4 md:grid-cols-3">
 
-                <div className="rounded-2xl bg-orange-50 p-6 transition hover:shadow-md">
-                    <Clock className="mb-4 h-7 w-7 text-orange-500" />
+                {/* Opening Hours */}
+                <div className="group relative overflow-hidden rounded-2xl border border-gray-100 bg-white p-5 shadow-[0_5px_25px_rgba(0,0,0,0.035)] transition-all duration-300 hover:-translate-y-0.5 hover:border-orange-100 hover:shadow-[0_10px_30px_rgba(0,0,0,0.06)]">
 
-                    <p className="text-sm text-muted-foreground">
-                        Opening Hours
-                    </p>
+                    <div className="absolute right-0 top-0 h-20 w-20 rounded-full bg-orange-50/70 blur-2xl transition-all group-hover:bg-orange-100/70" />
 
-                    <p className="mt-2 text-lg font-semibold">
-                        {branch.opening_hours}
-                    </p>
+                    <div className="relative flex items-start gap-4">
+
+                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-orange-50">
+                            <Clock
+                                className="h-5 w-5 text-orange-500"
+                                strokeWidth={1.7}
+                            />
+                        </div>
+
+                        <div>
+                            <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-gray-400">
+                                Opening Hours
+                            </p>
+
+                            <p className="mt-2 text-sm font-semibold text-gray-900">
+                                {branch.opening_hours}
+                            </p>
+
+                            <p className="mt-1 text-xs text-gray-400">
+                                {openNow
+                                    ? "Currently serving guests"
+                                    : "Currently closed"}
+                            </p>
+                        </div>
+                    </div>
                 </div>
 
 
-                <div className="rounded-2xl bg-amber-50 p-6 transition hover:shadow-md">
-                    <Phone className="mb-4 h-7 w-7 text-amber-500" />
+                {/* Contact */}
+                <div className="group relative overflow-hidden rounded-2xl border border-gray-100 bg-white p-5 shadow-[0_5px_25px_rgba(0,0,0,0.035)] transition-all duration-300 hover:-translate-y-0.5 hover:border-orange-100 hover:shadow-[0_10px_30px_rgba(0,0,0,0.06)]">
 
-                    <p className="text-sm text-muted-foreground">
-                        Contact
-                    </p>
+                    <div className="absolute right-0 top-0 h-20 w-20 rounded-full bg-orange-50/70 blur-2xl transition-all group-hover:bg-orange-100/70" />
 
-                    <p className="mt-2 text-lg font-semibold">
-                        {branch.phone}
-                    </p>
+                    <div className="relative flex items-start gap-4">
+
+                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-orange-50">
+                            <Phone
+                                className="h-5 w-5 text-orange-500"
+                                strokeWidth={1.7}
+                            />
+                        </div>
+
+                        <div className="min-w-0">
+                            <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-gray-400">
+                                Contact
+                            </p>
+
+                            <p className="mt-2 truncate text-sm font-semibold text-gray-900">
+                                {branch.phone}
+                            </p>
+
+                            <p className="mt-1 text-xs text-gray-400">
+                                Call the branch
+                            </p>
+                        </div>
+                    </div>
                 </div>
 
 
-                <div className="rounded-2xl bg-yellow-50 p-6 transition hover:shadow-md">
-                    <MapPin className="mb-4 h-7 w-7 text-yellow-600" />
+                {/* Location */}
+                <div className="group relative overflow-hidden rounded-2xl border border-gray-100 bg-white p-5 shadow-[0_5px_25px_rgba(0,0,0,0.035)] transition-all duration-300 hover:-translate-y-0.5 hover:border-orange-100 hover:shadow-[0_10px_30px_rgba(0,0,0,0.06)]">
 
-                    <p className="text-sm text-muted-foreground">
-                        Location
-                    </p>
+                    <div className="absolute right-0 top-0 h-20 w-20 rounded-full bg-orange-50/70 blur-2xl transition-all group-hover:bg-orange-100/70" />
 
-                    <p className="mt-2 text-lg font-semibold">
-                        {branch.city}
-                    </p>
+                    <div className="relative flex items-start gap-4">
+
+                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-orange-50">
+                            <MapPin
+                                className="h-5 w-5 text-orange-500"
+                                strokeWidth={1.7}
+                            />
+                        </div>
+
+                        <div>
+                            <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-gray-400">
+                                Location
+                            </p>
+
+                            <p className="mt-2 text-sm font-semibold text-gray-900">
+                                {branch.city}
+                            </p>
+
+                            <p className="mt-1 text-xs text-gray-400">
+                                Restaurant location
+                            </p>
+                        </div>
+                    </div>
                 </div>
 
             </div>

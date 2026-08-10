@@ -117,18 +117,23 @@ const ReviewCard = ({
                     )}
 
 
-                    <div className="flex items-center gap-1 rounded-full bg-white px-3 py-1.5 shadow-sm">
-
-                        <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
-
-                        <span className="font-semibold">
-                            {review.rating}
-                        </span>
-
+                    <div className="flex items-center gap-1 rounded-full bg-orange-50/70 px-3.5 py-2 shadow-sm">
+                        {[1, 2, 3, 4, 5].map((value) => (
+                            <Star
+                                key={value}
+                                className={`h-5 w-5 ${value <= review.rating
+                                        ? "fill-amber-400 text-amber-400"
+                                        : "text-orange-200"
+                                    }`}
+                                strokeWidth={1.6}
+                            />
+                        ))}
                     </div>
 
+
+
                 </div>
-                
+
 
             </div>
 
@@ -204,17 +209,17 @@ const ReviewCard = ({
 
             )}
 
-        <ConfirmDialog
-            open={showDeleteDialog}
-            title="Delete review?"
-            description="Are you sure you want to delete this review? This action cannot be undone."
-            onCancel={() => setShowDeleteDialog(false)}
-            onConfirm={() => {
-                console.log("delete clicked", review.id);
-                onDelete();
-                setShowDeleteDialog(false);
-            }}
-        />
+            <ConfirmDialog
+                open={showDeleteDialog}
+                title="Delete review?"
+                description="Are you sure you want to delete this review? This action cannot be undone."
+                onCancel={() => setShowDeleteDialog(false)}
+                onConfirm={() => {
+                    console.log("delete clicked", review.id);
+                    onDelete();
+                    setShowDeleteDialog(false);
+                }}
+            />
         </div>
     );
 };
