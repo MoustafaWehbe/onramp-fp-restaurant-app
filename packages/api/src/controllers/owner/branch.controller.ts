@@ -1,6 +1,5 @@
 import type { Request, Response, NextFunction } from "express";
 import { branchService } from "src/services/owner/branch.service";
-
 type BranchParams = {
     restaurantId: string;
     branchId: string;
@@ -23,7 +22,11 @@ export const branchController = {
                 longitude,
                 phone,
                 opening_hours,
+                images,
             } = req.body;
+
+            console.log("CREATE BODY:", req.body);
+            console.log("IMAGES:", images);
 
             const branch = await branchService.create({
                 restaurantId,
@@ -34,6 +37,7 @@ export const branchController = {
                 longitude,
                 phone,
                 opening_hours,
+                images,
             });
 
             res.status(201).json({
@@ -54,11 +58,6 @@ export const branchController = {
     ) => {
         try {
             const { restaurantId, branchId } = req.params;
-
-            console.log("UPDATE BRANCH PARAMS:", {
-                restaurantId,
-                branchId,
-            });
 
             const branch = await branchService.update(
                 restaurantId,

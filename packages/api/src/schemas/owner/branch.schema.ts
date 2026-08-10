@@ -45,6 +45,12 @@ export const createBranchSchema = z.object({
   phone: z.string().optional().nullable(),
 
   opening_hours: z.string().min(1, "Opening hours are required"),
+  images: z.array(
+    z.object({
+      url: z.string().url(),
+      type: z.string(),
+    })
+  ),
 });
 
 export const updateBranchSchema = z.object({
@@ -87,4 +93,10 @@ export const updateBranchSchema = z.object({
   phone: z.string().optional().nullable(),
 
   opening_hours: z.string().min(1, "Opening hours are required").optional(),
+  images: z.array(
+    z.object({
+      url: z.string().url(),
+      type: z.string(),
+    })
+  ).optional(),
 });

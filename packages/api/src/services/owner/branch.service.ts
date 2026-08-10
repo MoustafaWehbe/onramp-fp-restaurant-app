@@ -3,6 +3,12 @@ import { generateSlug } from "src/lib/slug";
 import { createError } from "src/middleware/error-handler";
 import { Menu, Restaurant, Review, User } from "@starter-kit/shared";
 import { UniqueConstraintError } from "sequelize";
+import { BranchImage } from "src/models/BranchImage";
+
+interface BranchImageData {
+    url: string;
+    type: string;
+}
 
 interface CreateBranchData {
     restaurantId: string;
@@ -13,6 +19,19 @@ interface CreateBranchData {
     longitude: string;
     phone?: string | null;
     opening_hours: string;
+    images?: BranchImageData[];
+}
+
+interface UpdateBranchData {
+    name?: string;
+    city?: string;
+    address?: string;
+    latitude?: string;
+    longitude?: string;
+    phone?: string | null;
+    opening_hours?: string;
+    images?: BranchImageData[];
+    deletedImageIds?: string[];
 }
 
 export const branchService = {
@@ -25,6 +44,7 @@ export const branchService = {
         longitude,
         phone,
         opening_hours,
+        images,
     }: CreateBranchData) => {
         const baseSlug = generateSlug(name);
 
@@ -47,9 +67,10 @@ export const branchService = {
             });
 
             if (existingBranch) {
-                slug = `${baseSlug}-${counter}`;
-                counter++;
-                continue;
+                throw createError(
+                    "A branch with this name already exists in this restaurant",
+                    409,
+                );
             }
 
             try {
@@ -67,13 +88,39 @@ export const branchService = {
                     average_rating: 0,
                 });
 
-                return branch;
+                if (images?.length) {
+                    await BranchImage.bulkCreate(
+                        images.map((image) => ({
+                            branchId: branch.id,
+                            url: image.url,
+                            type: image.type,
+                        })),
+                    );
+                }
+
+                const createdBranch = await Branch.findByPk(branch.id, {
+                    include: [
+                        {
+                            model: BranchImage,
+                            as: "images",
+                            attributes: [
+                                "id",
+                                "url",
+                                "type",
+                            ],
+                        },
+                    ],
+                });
+
+                return createdBranch;
             } catch (error) {
                 if (!(error instanceof UniqueConstraintError)) {
                     throw error;
                 }
 
-                const constraint = (error.parent as { constraint?: string })?.constraint;
+                const constraint = (error.parent as {
+                    constraint?: string;
+                })?.constraint;
 
                 if (constraint !== "branches_restaurant_id_slug_unique") {
                     throw error;
@@ -88,7 +135,7 @@ export const branchService = {
     update: async (
         restaurantId: string,
         branchId: string,
-        data: Partial<CreateBranchData>,
+        data: UpdateBranchData,
     ) => {
         const branch = await Branch.findOne({
             where: {
@@ -101,7 +148,46 @@ export const branchService = {
             throw createError("Branch not found", 404);
         }
 
-        await branch.update(data);
+        const {
+            images,
+            deletedImageIds,
+            ...branchData
+        } = data;
+
+        await branch.update(branchData);
+
+        if (deletedImageIds?.length) {
+            await BranchImage.destroy({
+                where: {
+                    id: deletedImageIds,
+                    branchId: branch.id,
+                },
+            });
+        }
+
+        if (images?.length) {
+            await BranchImage.bulkCreate(
+                images.map((image) => ({
+                    branchId: branch.id,
+                    url: image.url,
+                    type: image.type,
+                })),
+            );
+        }
+
+        await branch.reload({
+            include: [
+                {
+                    model: BranchImage,
+                    as: "images",
+                    attributes: [
+                        "id",
+                        "url",
+                        "type",
+                    ],
+                },
+            ],
+        });
 
         return branch;
     },
