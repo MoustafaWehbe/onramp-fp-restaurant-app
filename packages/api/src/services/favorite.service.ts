@@ -81,11 +81,29 @@ export const favoriteService = {
             "email",
             "phone",
             "ambiance_tags",
+            "average_rating",
+            "review_count",
+            "image_url",
           ]
         }
       ]
     });
 
-    return favorites.map(favorite => favorite.restaurant);
+    return favorites
+      .map((favorite) => favorite.restaurant)
+      .filter((restaurant): restaurant is Restaurant => restaurant !== undefined)
+      .map(serializeRestaurant);
   },
+}
+
+//helper function to normalize the values of average_rating and review_count to numbers
+
+const serializeRestaurant = (restaurant: Restaurant) => {
+  const data = restaurant.toJSON();
+
+  return {
+    ...data,
+    average_rating: Number(data.average_rating),
+    review_count: Number(data.review_count),
+  }
 }

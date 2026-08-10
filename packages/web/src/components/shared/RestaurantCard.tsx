@@ -1,14 +1,21 @@
-import { memo } from "react";
+import { memo, useState } from "react";
 import { Link } from "react-router-dom";
-import { Star } from "lucide-react";
+import {
+  Bookmark,
+  BookmarkCheck,
+  Star,
+} from "lucide-react";
 import type { Restaurant } from "@/types/restaurant";
+import { favoritesApi } from "@/services/favoritesApi";
 
 interface RestaurantCardProps {
   restaurant: Restaurant;
+  initialIsSaved?: boolean;
 }
 
 export const RestaurantCard = memo(function RestaurantCard({
   restaurant,
+  initialIsSaved = false,
 }: RestaurantCardProps) {
   const {
     slug,
@@ -19,6 +26,34 @@ export const RestaurantCard = memo(function RestaurantCard({
     review_count,
     image_url,
   } = restaurant;
+
+  const [isSaved, setIsSaved] = useState(initialIsSaved);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const handleSave = async (
+    event: React.MouseEvent<HTMLButtonElement>
+  ) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (isSaving) return;
+
+    setIsSaving(true);
+
+    try {
+      if (isSaved) {
+        await favoritesApi.delete(slug);
+        setIsSaved(false);
+      } else {
+        await favoritesApi.create(slug);
+        setIsSaved(true);
+      }
+    } catch (error) {
+      console.error("Failed to update favorite:", error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   return (
     <Link
@@ -80,6 +115,38 @@ export const RestaurantCard = memo(function RestaurantCard({
           <Star className="h-4 w-4 fill-primary text-primary" />
           {average_rating.toFixed(1)}
         </span>
+
+        {/* Save button */}
+        <button
+          type="button"
+          onClick={handleSave}
+          disabled={isSaving}
+          aria-label={
+            isSaved
+              ? `Remove ${name} from saved restaurants`
+              : `Save ${name}`
+          }
+          className="
+            absolute bottom-4 right-4
+            flex h-10 w-10 items-center justify-center
+            rounded-full
+            bg-background/90
+            text-foreground
+            shadow-sm
+            backdrop-blur-sm
+            transition-all
+            hover:bg-background
+            hover:text-primary
+            disabled:cursor-not-allowed
+            disabled:opacity-60
+          "
+        >
+          {isSaved ? (
+            <BookmarkCheck className="h-5 w-5 fill-primary text-primary" />
+          ) : (
+            <Bookmark className="h-5 w-5" />
+          )}
+        </button>
       </div>
 
       {/* Restaurant information */}
