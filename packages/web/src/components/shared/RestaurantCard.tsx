@@ -1,14 +1,10 @@
 import { memo } from "react";
 import { Link } from "react-router-dom";
-import { MapPin, Star } from "lucide-react";
+import { Star } from "lucide-react";
 import type { Restaurant } from "@/types/restaurant";
 
 interface RestaurantCardProps {
   restaurant: Restaurant;
-}
-
-function priceLabel(level: Restaurant["priceLevel"]) {
-  return "$".repeat(level);
 }
 
 export const RestaurantCard = memo(function RestaurantCard({
@@ -17,13 +13,11 @@ export const RestaurantCard = memo(function RestaurantCard({
   const {
     slug,
     name,
-    cuisine,
-    city,
-    address,
-    priceLevel,
-    rating,
-    reviewCount,
-    imageUrl,
+    cuisine_type,
+    price_range,
+    average_rating,
+    review_count,
+    image_url,
   } = restaurant;
 
   return (
@@ -43,7 +37,7 @@ export const RestaurantCard = memo(function RestaurantCard({
       {/* Restaurant image */}
       <div className="relative h-72 w-full overflow-hidden bg-muted">
         <img
-          src={imageUrl}
+          src={image_url}
           alt={name}
           loading="lazy"
           className="
@@ -66,7 +60,7 @@ export const RestaurantCard = memo(function RestaurantCard({
             backdrop-blur-sm
           "
         >
-          {cuisine}
+          {cuisine_type}
         </span>
 
         {/* Rating badge */}
@@ -84,7 +78,7 @@ export const RestaurantCard = memo(function RestaurantCard({
           "
         >
           <Star className="h-4 w-4 fill-primary text-primary" />
-          {rating.toFixed(1)}
+          {average_rating.toFixed(1)}
         </span>
       </div>
 
@@ -105,17 +99,12 @@ export const RestaurantCard = memo(function RestaurantCard({
               text-primary
             "
           >
-            {priceLabel(priceLevel)}
+            {price_range}
           </span>
         </div>
 
-        <p className="flex items-center gap-2 text-sm text-muted-foreground">
-          <MapPin className="h-4 w-4 text-primary" />
-          {address} · {city}
-        </p>
-
         <p className="text-sm text-muted-foreground">
-          {reviewCount.toLocaleString()} reviews
+          {review_count.toLocaleString()} reviews
         </p>
       </div>
     </Link>

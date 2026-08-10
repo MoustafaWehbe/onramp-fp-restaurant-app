@@ -46,7 +46,7 @@ export function AppRoutes() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/restaurants" element={<Restaurants />} />
-          <Route path="/restaurants/:id" element={<RestaurantDetails />} />
+          <Route path="/restaurants/:slug" element={<RestaurantDetails />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/owner/dashboard" element={<OwnerDashboard />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
