@@ -66,7 +66,7 @@ export function RestaurantDetails() {
   );
 
   return (
-    <main className="mx-auto max-w-7xl px-6 py-8">
+    <main className="mx-auto max-w-9xl px-6 py-8">
       {/* Back */}
       <Link
         to="/restaurants"
@@ -200,12 +200,6 @@ export function RestaurantDetails() {
       {/* Main content */}
       <div className="mt-10 grid grid-cols-1 gap-10 lg:grid-cols-3">
         <div className="space-y-12 lg:col-span-2">
-          {/* Menus */}
-          <MenusSection
-            menus={restaurant.menus}
-            title="Menus"
-            description={`Explore what ${restaurant.name} has to offer`}
-          />
           {/* Branches */}
           <section>
             <div className="mb-5 flex items-center gap-3">
