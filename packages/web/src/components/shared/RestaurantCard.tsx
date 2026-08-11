@@ -30,7 +30,6 @@ export const RestaurantCard = memo(function RestaurantCard({
   const [isSaved, setIsSaved] = useState(is_favorite);
   const [isSaving, setIsSaving] = useState(false);
 
-  // Keep local state synchronized with the API response.
   useEffect(() => {
     setIsSaved(is_favorite);
   }, [is_favorite]);
@@ -121,8 +120,30 @@ export const RestaurantCard = memo(function RestaurantCard({
           <Star className="h-4 w-4 fill-primary text-primary" />
           {average_rating.toFixed(1)}
         </span>
+      </div>
 
-        {/* Save button */}
+      {/* Restaurant information */}
+      <div className="flex items-center justify-between gap-3 px-2 my-2">
+        <h3 className="truncate text-xl font-semibold text-foreground">
+          {name}
+        </h3>
+
+        <span
+          className="
+            shrink-0
+            rounded-md
+            bg-primary/10
+            px-3 py-1
+            text-sm font-medium
+            text-primary
+          "
+        >
+          {price_range}
+        </span>
+      </div>
+
+      {/* Save button */}
+      <div className="flex justify-end mr-2">
         <button
           type="button"
           onClick={handleSave}
@@ -133,15 +154,13 @@ export const RestaurantCard = memo(function RestaurantCard({
               : `Save ${name}`
           }
           className="
-            absolute bottom-4 right-4
             flex h-10 w-10 items-center justify-center
             rounded-full
-            bg-background/90
+            bg-background
             text-foreground
             shadow-sm
-            backdrop-blur-sm
             transition-all
-            hover:bg-background
+            hover:bg-muted
             hover:text-primary
             disabled:cursor-not-allowed
             disabled:opacity-60
@@ -155,31 +174,9 @@ export const RestaurantCard = memo(function RestaurantCard({
         </button>
       </div>
 
-      {/* Restaurant information */}
-      <div className="space-y-3 p-6">
-        <div className="flex items-center justify-between gap-3">
-          <h3 className="truncate text-xl font-semibold text-foreground">
-            {name}
-          </h3>
-
-          <span
-            className="
-              shrink-0
-              rounded-md
-              bg-primary/10
-              px-3 py-1
-              text-sm font-medium
-              text-primary
-            "
-          >
-            {price_range}
-          </span>
-        </div>
-
-        <p className="text-sm text-muted-foreground">
-          {review_count.toLocaleString()} reviews
-        </p>
-      </div>
+      <p className="text-sm text-muted-foreground m-2">
+        {review_count.toLocaleString()} reviews
+      </p>
     </Link>
   );
 });
