@@ -13,13 +13,14 @@ import { RestaurantDetails } from "../pages/restaurants/RestaurantDetails";
 import { Profile } from "../pages/profile/Profile";
 import { OwnerDashboard } from "../pages/dashboard/OwnerDashboard";
 import { AdminDashboard } from "../pages/dashboard/AdminDashboard";
-import BranchDetails  from "../pages/branch/BranchDetails";
+import BranchDetails from "../pages/branch/BranchDetails";
 import { Search } from "../pages/restaurants/Search";
 import AuthCenteredLayout from "../layouts/AuthCenteredLayout";
 import ForgotPassword from "../pages/auth/ForgotPassword";
 import { VerifyEmailToken } from "../pages/auth/VerifyEmailToken";
 import ResetPassword from "../pages/auth/ResetPassword";
 import Home from "@/pages/home/Home";
+import MenuDetailsPage from "@/pages/menu/MenuDetails";
 
 
 export function AppRoutes() {
@@ -55,7 +56,10 @@ export function AppRoutes() {
             path="/restaurants/:restaurantSlug/branches/:branchSlug"
             element={<BranchDetails />}
           />
-
+          <Route
+            path="/restaurants/:restaurantSlug/branches/:branchSlug/menus/:menuId"
+            element={<MenuDetailsPage />}
+          />
         </Route>
       </Route>
 

@@ -54,14 +54,17 @@ const BranchDetailsPage = () => {
     const { user } = useAuth();
 
     const [hasError, setHasError] = useState(false);
-    const [data, setData] = useState<BranchDetailsResponse | null>(null);
+    const [data, setData] =
+        useState<BranchDetailsResponse | null>(null);
     const [isLoading, setIsLoading] = useState(true);
-
     const [reviews, setReviews] = useState<Review[]>([]);
-
 
     useEffect(() => {
         const fetchBranch = async () => {
+            if (!restaurantSlug || !branchSlug) {
+                return;
+            }
+
             try {
                 setIsLoading(true);
                 setHasError(false);
@@ -70,12 +73,17 @@ const BranchDetailsPage = () => {
                     `/restaurants/${restaurantSlug}/branches/${branchSlug}`
                 );
 
-                const branchData = response.data.data;
+                const branchData: BranchDetailsResponse =
+                    response.data.data;
 
                 setData(branchData);
                 setReviews(branchData.branch.reviews);
+            } catch (error) {
+                console.error(
+                    "Failed to load branch details",
+                    error
+                );
 
-            } catch {
                 setData(null);
                 setHasError(true);
             } finally {
@@ -83,12 +91,8 @@ const BranchDetailsPage = () => {
             }
         };
 
-        if (restaurantSlug && branchSlug) {
-            fetchBranch();
-        }
-
+        fetchBranch();
     }, [restaurantSlug, branchSlug]);
-
 
     if (isLoading) {
         return <LoadingSpinner />;
@@ -111,17 +115,29 @@ const BranchDetailsPage = () => {
     }
 
     const refreshBranch = async () => {
-        const response = await apiClient.get(
-            `/restaurants/${restaurantSlug}/branches/${branchSlug}`
-        );
+        if (!restaurantSlug || !branchSlug) {
+            return;
+        }
 
-        const branchData = response.data.data;
+        try {
+            const response = await apiClient.get(
+                `/restaurants/${restaurantSlug}/branches/${branchSlug}`
+            );
 
-        setData(branchData);
-        setReviews(branchData.branch.reviews);
+            const branchData: BranchDetailsResponse =
+                response.data.data;
+
+            setData(branchData);
+            setReviews(branchData.branch.reviews);
+        } catch (error) {
+            console.error(
+                "Failed to refresh branch details",
+                error
+            );
+        }
     };
-    const { branch, reviewSummary } = data;
 
+    const { branch, reviewSummary } = data;
 
     const handleCreateReview = async () => {
         await refreshBranch();
@@ -131,26 +147,28 @@ const BranchDetailsPage = () => {
         await refreshBranch();
     };
 
-
     const handleDeleteReview = async (reviewId: string) => {
         try {
             await apiClient.delete(`/reviews/${reviewId}`);
 
             await refreshBranch();
-
         } catch (error) {
-            console.error("Failed to delete review", error);
+            console.error(
+                "Failed to delete review",
+                error
+            );
         }
-    }; 
+    };
 
     return (
         <div className="space-y-10">
+            {/* Branch Gallery */}
+            <div className="px-4 sm:px-6 lg:px-10">
+                <BranchGallery images={branch.images} />
+            </div>
 
-            <BranchGallery images={branch.images} />
-
-
+            {/* Branch Information + Map */}
             <div className="grid gap-10 lg:grid-cols-3">
-
                 <div className="lg:col-span-2">
                     <BranchInfo
                         branch={branch}
@@ -158,26 +176,25 @@ const BranchDetailsPage = () => {
                     />
                 </div>
 
-
                 <aside className="space-y-6">
                     <BranchMap
                         latitude={Number(branch.latitude)}
                         longitude={Number(branch.longitude)}
                     />
                 </aside>
-
             </div>
 
-
+            {/* Menus */}
             <MenusSection
                 menus={branch.menus}
+                restaurantSlug={restaurantSlug!}
+                branchSlug={branchSlug!}
                 title={`${branch.name} Menus`}
                 description="Browse all available menus from this restaurant."
             />
 
-
+            {/* Reviews */}
             <section className="space-y-6 pb-12">
-
                 <div>
                     <h2 className="text-3xl font-bold">
                         Reviews
@@ -188,21 +205,50 @@ const BranchDetailsPage = () => {
                     </p>
                 </div>
 
+                <div className="grid gap-8 lg:grid-cols-[420px_minmax(0,1fr)]">
+                    {/* Review Form */}
+                    <div>
+                        <ReviewForm
+                            restaurantSlug={restaurantSlug!}
+                            branchSlug={branch.slug}
+                            onCreated={handleCreateReview}
+                        />
+                    </div>
 
-                <ReviewForm
-                    restaurantSlug={restaurantSlug!}
-                    branchSlug={branch.slug}
-                    onCreated={handleCreateReview}
-                />
+                    {/* Reviews */}
+                    <div className="min-w-0">
+                        {reviews.length === 0 ? (
+                            <div className="flex min-h-[300px] items-center justify-center rounded-2xl border-2 border-dashed border-border p-8 text-center">
+                                <div>
+                                    <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-muted">
+                                        <span className="text-2xl">
+                                            💬
+                                        </span>
+                                    </div>
 
-                <Reviews
-                    reviews={reviews}
-                    currentUserId={user?.id}
-                    onUpdate={handleUpdateReview}
-                    onDelete={handleDeleteReview}
-                />
+                                    <h3 className="text-lg font-semibold">
+                                        No reviews yet
+                                    </h3>
+
+                                    <p className="mt-2 text-sm text-muted-foreground">
+                                        Be the first to share your
+                                        experience at this branch.
+                                    </p>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="max-h-[600px] overflow-y-auto pr-2">
+                                <Reviews
+                                    reviews={reviews}
+                                    currentUserId={user?.id}
+                                    onUpdate={handleUpdateReview}
+                                    onDelete={handleDeleteReview}
+                                />
+                            </div>
+                        )}
+                    </div>
+                </div>
             </section>
-
         </div>
     );
 };
