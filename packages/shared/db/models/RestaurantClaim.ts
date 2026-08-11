@@ -7,7 +7,7 @@ export interface RestaurantClaimAttributes {
   restaurantName: string;
   email: string;
   phone: string;
-  status: "pending" | "approved" | "rejected";
+  status: "pending" | "approved" | "rejected" | "completed";
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -28,7 +28,7 @@ export class RestaurantClaim
   declare restaurantName: string;
   declare email: string;
   declare phone: string;
-  declare status: "pending" | "approved" | "rejected";
+  declare status: "pending" | "approved" | "rejected"| "completed";
     declare readonly createdAt: Date;
   declare readonly updatedAt: Date;
 
@@ -72,7 +72,8 @@ export class RestaurantClaim
           type: DataTypes.ENUM(
             "pending",
             "approved",
-            "rejected"
+            "rejected",
+            "completed"
           ),
           allowNull: false,
           defaultValue: "pending",

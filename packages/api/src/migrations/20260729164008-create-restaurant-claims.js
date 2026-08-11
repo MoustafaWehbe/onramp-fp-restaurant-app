@@ -50,7 +50,8 @@ module.exports = {
         type: Sequelize.ENUM(
           "pending",
           "approved",
-          "rejected"
+          "rejected",
+          "completed"
         ),
         allowNull: false,
         defaultValue: "pending",
