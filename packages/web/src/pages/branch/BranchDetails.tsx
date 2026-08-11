@@ -62,6 +62,9 @@ const BranchDetailsPage = () => {
     useEffect(() => {
         const fetchBranch = async () => {
             if (!restaurantSlug || !branchSlug) {
+                setData(null);
+                setReviews([]);
+                setIsLoading(false);
                 return;
             }
 
@@ -115,27 +118,29 @@ const BranchDetailsPage = () => {
     }
 
     const refreshBranch = async () => {
-        if (!restaurantSlug || !branchSlug) {
-            return;
-        }
+    if (!restaurantSlug || !branchSlug) {
+        return;
+    }
 
-        try {
-            const response = await apiClient.get(
-                `/restaurants/${restaurantSlug}/branches/${branchSlug}`
-            );
+    try {
+        const response = await apiClient.get(
+            `/restaurants/${restaurantSlug}/branches/${branchSlug}`
+        );
 
-            const branchData: BranchDetailsResponse =
-                response.data.data;
+        const branchData: BranchDetailsResponse =
+            response.data.data;
 
-            setData(branchData);
-            setReviews(branchData.branch.reviews);
-        } catch (error) {
-            console.error(
-                "Failed to refresh branch details",
-                error
-            );
-        }
-    };
+        setData(branchData);
+        setReviews(branchData.branch.reviews);
+    } catch (error) {
+        console.error(
+            "Failed to refresh branch details",
+            error
+        );
+
+        throw error;
+    }
+};
 
     const { branch, reviewSummary } = data;
 

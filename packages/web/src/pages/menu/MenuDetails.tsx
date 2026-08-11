@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { apiClient } from "@/lib/api-client";
 import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
 
@@ -38,6 +38,7 @@ interface BranchResponse {
 
 const MenuDetailsPage = () => {
     const { restaurantSlug, branchSlug, menuId } = useParams();
+    const navigate = useNavigate();
 
     const [branch, setBranch] = useState<Branch | null>(null);
     const [menus, setMenus] = useState<Menu[]>([]);
@@ -47,7 +48,9 @@ const MenuDetailsPage = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [isSwitchingMenu, setIsSwitchingMenu] = useState(false);
     const [hasError, setHasError] = useState(false);
-
+    const [failedImageIds, setFailedImageIds] = useState<Set<string>>(
+        new Set()
+    );
     /*
      * Fetch branch information and all available menus.
      */
@@ -127,6 +130,10 @@ const MenuDetailsPage = () => {
             );
 
             setSelectedMenu(response.data.data);
+
+            navigate(
+                `/restaurants/${restaurantSlug}/branches/${branchSlug}/menus/${newMenuId}`
+            );
         } catch (error) {
             console.error("Failed to switch menu", error);
         } finally {
@@ -174,19 +181,18 @@ const MenuDetailsPage = () => {
 
     return (
         <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
-
             {/* Restaurant and Branch Header */}
             <header className="mb-10 text-center">
-    <p className="text-sm font-medium uppercase tracking-[0.2em] text-primary">
-        {restaurantSlug?.replace(/-/g, " ")}
-    </p>
+                <p className="text-sm font-medium uppercase tracking-[0.2em] text-primary">
+                    {restaurantSlug?.replace(/-/g, " ")}
+                </p>
 
-    <h1 className="mt-2 text-2xl font-bold">
-        {branch.name}
-    </h1>
+                <h1 className="mt-2 text-2xl font-bold">
+                    {branch.name}
+                </h1>
 
-    <div className="mx-auto mt-6 h-px w-16 bg-primary" />
-</header>
+                <div className="mx-auto mt-6 h-px w-16 bg-primary" />
+            </header>
 
             {/* Menu Switcher */}
             {menus.length > 0 && (
@@ -203,15 +209,13 @@ const MenuDetailsPage = () => {
                                 onClick={() =>
                                     handleMenuChange(menu.id)
                                 }
-                                className={`rounded-full border px-6 py-3 text-sm font-semibold transition ${
-                                    isSelected
-                                        ? "bg-primary text-primary-foreground"
-                                        : "hover:bg-muted"
-                                } ${
-                                    isSwitchingMenu
+                                className={`rounded-full border px-6 py-3 text-sm font-semibold transition ${isSelected
+                                    ? "bg-primary text-primary-foreground"
+                                    : "hover:bg-muted"
+                                    } ${isSwitchingMenu
                                         ? "cursor-wait opacity-70"
                                         : ""
-                                }`}
+                                    }`}
                             >
                                 {menu.name}
                             </button>
@@ -239,58 +243,58 @@ const MenuDetailsPage = () => {
 
             {/* Menu Items */}
             {menuItems.length > 0 ? (
-                <div className="divide-y divide-border">
+                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                     {menuItems.map((item) => {
                         const isAvailable = item.is_active;
 
                         return (
                             <article
                                 key={item.id}
-                                className={`flex gap-5 py-7 transition ${
-                                    !isAvailable
-                                        ? "opacity-60"
-                                        : ""
-                                }`}
+                                className={`overflow-hidden rounded-2xl border bg-background transition ${!isAvailable
+                                    ? "opacity-60"
+                                    : ""
+                                    }`}
                             >
-                                {/* Item Image */}
-                                <div className="shrink-0">
-                                    {item.image_url ? (
-                                        <img
-                                            src={item.image_url}
-                                            alt={item.name}
-                                            className="h-28 w-28 rounded-lg object-cover sm:h-36 sm:w-36"
-                                        />
-                                    ) : (
-                                        <div className="flex h-28 w-28 items-center justify-center rounded-lg bg-muted sm:h-36 sm:w-36">
-                                            <span className="text-sm text-muted-foreground">
-                                                No image
-                                            </span>
-                                        </div>
-                                    )}
-                                </div>
+                                {item.image_url && !failedImageIds.has(item.id) ? (
+                                    <img
+                                        src={item.image_url}
+                                        alt={item.name}
+                                        onError={() => {
+                                            setFailedImageIds((current) => {
+                                                const next = new Set(current);
+                                                next.add(item.id);
+                                                return next;
+                                            });
+                                        }}
+                                        className="h-48 w-full object-cover"
+                                    />
+                                ) : (
+                                    <div className="flex h-48 items-center justify-center bg-muted">
+                                        <span className="text-sm text-muted-foreground">
+                                            No image
+                                        </span>
+                                    </div>
+                                )}
 
-                                {/* Item Details */}
-                                <div className="flex min-w-0 flex-1 flex-col">
-                                    <div className="flex items-start justify-between gap-4">
-                                        <div>
-                                            <h3 className="text-lg font-semibold sm:text-xl">
-                                                {item.name}
-                                            </h3>
+                                <div className="p-5">
+                                    <div className="flex items-start justify-between gap-3">
+                                        <h3 className="text-lg font-semibold">
+                                            {item.name}
+                                        </h3>
 
-                                            {item.description && (
-                                                <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-                                                    {item.description}
-                                                </p>
-                                            )}
-                                        </div>
-
-                                        <span className="shrink-0 text-base font-semibold sm:text-lg">
+                                        <span className="shrink-0 font-semibold">
                                             $
                                             {Number(
                                                 item.base_price
                                             ).toFixed(2)}
                                         </span>
                                     </div>
+
+                                    {item.description && (
+                                        <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                                            {item.description}
+                                        </p>
+                                    )}
 
                                     {!isAvailable && (
                                         <div className="mt-4">
