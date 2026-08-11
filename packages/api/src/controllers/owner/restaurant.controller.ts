@@ -12,7 +12,7 @@ export const restaurantController = {
             const userId = req.user?.userId;
 
             if (!userId) {
-                return next();
+                return next(createError("Unauthenticated", 401));
             }
 
             const {
