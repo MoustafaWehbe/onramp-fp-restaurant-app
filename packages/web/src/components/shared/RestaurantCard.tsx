@@ -1,4 +1,4 @@
-import { memo, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Bookmark,
@@ -7,15 +7,14 @@ import {
 } from "lucide-react";
 import type { Restaurant } from "@/types/restaurant";
 import { favoritesApi } from "@/services/favoritesApi";
+import { notifyFavoriteAdded } from "@/lib/favorite-events";
 
 interface RestaurantCardProps {
   restaurant: Restaurant;
-  initialIsSaved?: boolean;
 }
 
 export const RestaurantCard = memo(function RestaurantCard({
   restaurant,
-  initialIsSaved = false,
 }: RestaurantCardProps) {
   const {
     slug,
@@ -25,10 +24,16 @@ export const RestaurantCard = memo(function RestaurantCard({
     average_rating,
     review_count,
     image_url,
+    is_favorite,
   } = restaurant;
 
-  const [isSaved, setIsSaved] = useState(initialIsSaved);
+  const [isSaved, setIsSaved] = useState(is_favorite);
   const [isSaving, setIsSaving] = useState(false);
+
+  // Keep local state synchronized with the API response.
+  useEffect(() => {
+    setIsSaved(is_favorite);
+  }, [is_favorite]);
 
   const handleSave = async (
     event: React.MouseEvent<HTMLButtonElement>
@@ -47,6 +52,7 @@ export const RestaurantCard = memo(function RestaurantCard({
       } else {
         await favoritesApi.create(slug);
         setIsSaved(true);
+        notifyFavoriteAdded();
       }
     } catch (error) {
       console.error("Failed to update favorite:", error);

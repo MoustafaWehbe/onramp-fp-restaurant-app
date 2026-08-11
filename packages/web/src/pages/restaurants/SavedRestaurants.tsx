@@ -101,7 +101,6 @@ export function SavedRestaurants() {
               <RestaurantCard
                 key={restaurant.id}
                 restaurant={restaurant}
-                initialIsSaved
               />
             ))}
           </div>

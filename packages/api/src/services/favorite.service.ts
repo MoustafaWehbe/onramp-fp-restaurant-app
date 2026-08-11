@@ -105,5 +105,6 @@ const serializeRestaurant = (restaurant: Restaurant) => {
     ...data,
     average_rating: Number(data.average_rating),
     review_count: Number(data.review_count),
+    is_favorite: true,
   }
 }

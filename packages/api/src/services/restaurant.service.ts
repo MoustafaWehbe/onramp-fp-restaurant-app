@@ -5,10 +5,12 @@ import { User } from "../models/User";
 import { Menu } from "../models/Menu";
 import { createError } from "src/middleware/error-handler";
 import { type Includeable, Op, type WhereOptions } from "sequelize";
+import { Favorite } from "../models/Favorite";
 
 interface GetRestaurantsOptions {
   page: number,
   limit: number,
+  userId?: string,
 }
 
 interface SearchRestaurantsOptions {
@@ -18,10 +20,11 @@ interface SearchRestaurantsOptions {
   priceRange?: string | null,
   page: number,
   limit: number,
+  userId?: string,
 }
 
 export const restaurantService = {
-  getRestaurantBySlug: async (slug: string) => {
+  getRestaurantBySlug: async (slug: string,  userId?: string) => {
     const restaurant = await Restaurant.findOne({
     where: {
       slug,
@@ -100,10 +103,12 @@ export const restaurantService = {
       throw createError("Restaurant not found", 404);
     }
 
-    return serializeRestaurant(restaurant);
+    const favoriteIds = await getFavorites(userId);
+
+    return serializeRestaurant(restaurant, favoriteIds.has(restaurant.id));
   },
 
-  getRestaurants: async({page,limit}: GetRestaurantsOptions) => {
+  getRestaurants: async({userId, page,limit}: GetRestaurantsOptions) => {
 
     const offset = (page - 1) * limit;
 
@@ -126,8 +131,11 @@ export const restaurantService = {
       order: [["createdAt", "DESC"]],
     });
 
+    const favoriteIds = await getFavorites(userId);
+
+
     return {
-      data: rows.map(serializeRestaurant),
+      data: rows.map((restaurant) => serializeRestaurant(restaurant, favoriteIds.has(restaurant.id))),
       meta: {
         page,
         limit,
@@ -144,6 +152,7 @@ export const restaurantService = {
     priceRange,
     page,
     limit,
+    userId,
   }: SearchRestaurantsOptions) => {
     const include: Includeable[] = [];
 
@@ -215,8 +224,10 @@ export const restaurantService = {
       order: [["createdAt" , "DESC"]],
     });
 
+    const favoritIds = await getFavorites(userId);
+
     return {
-      data: rows.map(serializeRestaurant),
+      data: rows.map((restaurant) => serializeRestaurant(restaurant, favoritIds.has(restaurant.id))),
       meta: {
         page,
         limit,
@@ -227,14 +238,34 @@ export const restaurantService = {
   }
 };
 
+//helper function to get the favorite restaurant ids for the logged in user
+
+const getFavorites = async (userId?: string): Promise<Set<string>> => {
+  if(!userId) {
+    return new Set();
+  }
+  const favorites = await Favorite.findAll({
+    where: {
+      userId,
+    },
+    attributes: ["restaurantId"],
+    raw: true,
+  });
+
+  return new Set(
+    favorites.map((favorite) => favorite.restaurantId)
+  );
+};
+
 //helper function to normalize the values of average_rating and review_count to numbers
 
-const serializeRestaurant = (restaurant: Restaurant) => {
+const serializeRestaurant = (restaurant: Restaurant, isFavorite = false) => {
   const data = restaurant.toJSON();
 
   return {
     ...data,
     average_rating: Number(data.average_rating),
     review_count: Number(data.review_count),
-  }
-}
+    is_favorite: isFavorite,
+  };
+};
