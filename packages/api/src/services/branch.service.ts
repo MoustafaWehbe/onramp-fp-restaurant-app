@@ -67,7 +67,6 @@ export const branchService = {
           model: Review,
           as: "reviews",
           separate: true,
-          limit: 3,
           order: [["createdAt", "DESC"]],
           attributes: [
             "id",
