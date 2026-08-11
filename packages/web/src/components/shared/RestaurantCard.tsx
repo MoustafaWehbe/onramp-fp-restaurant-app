@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import type { Restaurant } from "@/types/restaurant";
 import { favoritesApi } from "@/services/favoritesApi";
-import { notifyFavoriteAdded } from "@/lib/favorite-events";
+import { notifyFavoriteAdded, notifyFavoriteRemoved } from "@/lib/favorite-events";
 
 interface RestaurantCardProps {
   restaurant: Restaurant;
@@ -48,6 +48,7 @@ export const RestaurantCard = memo(function RestaurantCard({
       if (isSaved) {
         await favoritesApi.delete(slug);
         setIsSaved(false);
+        notifyFavoriteRemoved(slug);
       } else {
         await favoritesApi.create(slug);
         setIsSaved(true);

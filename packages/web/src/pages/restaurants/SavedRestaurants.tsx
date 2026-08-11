@@ -3,6 +3,7 @@ import { RestaurantCard } from "@/components/shared/RestaurantCard";
 import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
 import { favoritesApi } from "@/services/favoritesApi";
 import type { Restaurant } from "@/types/restaurant";
+import { FAVORITE_REMOVED_EVENT } from "@/lib/favorite-events";
 
 export function SavedRestaurants() {
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
@@ -40,6 +41,32 @@ export function SavedRestaurants() {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+  const handleFavoriteRemoved = (
+    event: Event
+  ) => {
+    const customEvent = event as CustomEvent<{ slug: string }>;
+
+    setRestaurants((currentRestaurants) =>
+      currentRestaurants.filter(
+        (restaurant) => restaurant.slug !== customEvent.detail.slug
+      )
+    );
+  };
+
+  window.addEventListener(
+    FAVORITE_REMOVED_EVENT,
+    handleFavoriteRemoved
+  );
+
+  return () => {
+    window.removeEventListener(
+      FAVORITE_REMOVED_EVENT,
+      handleFavoriteRemoved
+    );
+  };
+}, []);
 
   return (
     <main className="min-h-screen bg-background">
