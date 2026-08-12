@@ -10,13 +10,16 @@ import {
     ownerBranchUpdateParamsSchema,
 } from "src/schemas/owner/branch.schema";
 import { branchController } from "src/controllers/owner/branch.controller";
+import { authorize } from "src/middleware/authorize";
 
 const router = Router();
 
 router.post(
     "/:restaurantId/branches",
     authenticate,
-    rateLimiter, validate(ownerBranchParamsSchema, "params"),
+    authorize("owner"),
+    rateLimiter, 
+    validate(ownerBranchParamsSchema, "params"),
     verifyRestaurantOwnership,
     validate(createBranchSchema, "body"),
     branchController.create,
@@ -25,6 +28,7 @@ router.post(
 router.patch(
     "/:restaurantId/branches/:branchId",
     authenticate,
+    authorize("owner"),
     rateLimiter,
     validate(ownerBranchUpdateParamsSchema, "params"),
     verifyRestaurantOwnership,
@@ -35,6 +39,7 @@ router.patch(
 router.delete(
     "/:restaurantId/branches/:branchId",
     authenticate,
+    authorize("owner"),
     rateLimiter,
     validate(ownerBranchUpdateParamsSchema, "params"),
     verifyRestaurantOwnership,
@@ -44,6 +49,7 @@ router.delete(
 router.get(
     "/:restaurantId/branches",
     authenticate,
+    authorize("owner"),
     rateLimiter,
     validate(ownerBranchParamsSchema, "params"),
     verifyRestaurantOwnership,
@@ -53,6 +59,7 @@ router.get(
 router.get(
     "/:restaurantId/branches/:branchId",
     authenticate,
+    authorize("owner"),
     rateLimiter,
     validate(ownerBranchUpdateParamsSchema, "params"),
     verifyRestaurantOwnership,
