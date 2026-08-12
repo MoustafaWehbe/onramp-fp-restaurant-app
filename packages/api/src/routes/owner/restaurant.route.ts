@@ -5,6 +5,7 @@ import { restaurantController } from "src/controllers/owner/restaurant.controlle
 import { createRestaurantSchema, updateRestaurantSchema } from "src/schemas/owner/restaurant.schema";
 import { rateLimiter } from "src/middleware/rate-limiter";
 import { verifyRestaurantOwnership } from "src/middleware/verifyRetsaurantOwnership";
+import { authorize } from "src/middleware/authorize";
 
 const router = Router();
 
@@ -12,6 +13,7 @@ router.post(
     "/",
     rateLimiter,
     authenticate,
+    authorize("owner"),
     validate(createRestaurantSchema),
     restaurantController.create,
 );
@@ -20,6 +22,7 @@ router.patch(
     "/:restaurantId",
     rateLimiter,
     authenticate,
+    authorize("owner"),
     verifyRestaurantOwnership,
     validate(updateRestaurantSchema),
     restaurantController.update,
@@ -29,6 +32,7 @@ router.get(
     "/:restaurantId",
     rateLimiter,
     authenticate,
+    authorize("owner"),
     verifyRestaurantOwnership,
     restaurantController.getById,
 );

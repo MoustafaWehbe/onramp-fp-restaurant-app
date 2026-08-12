@@ -34,13 +34,6 @@ export async function verifyRestaurantOwnership(
       return;
     }
 
-    if (user.role !== "owner") {
-      res.status(403).json({
-        error: "Owner access required",
-      });
-      return;
-    }
-
     const claim = await RestaurantClaim.findOne({
       where: {
         restaurantId,
