@@ -4,7 +4,7 @@ import { Review } from "../models/Review";
 import { User } from "../models/User";
 import { Menu } from "../models/Menu";
 import { createError } from "src/middleware/error-handler";
-import { type Includeable, Op, type WhereOptions } from "sequelize";
+import { type Includeable, Op,literal, type WhereOptions } from "sequelize";
 
 interface GetRestaurantsOptions {
   page: number,
@@ -23,9 +23,9 @@ interface SearchRestaurantsOptions {
 export const restaurantService = {
   getRestaurantBySlug: async (slug: string) => {
     const restaurant = await Restaurant.findOne({
-    where: {
-      slug,
-    },
+      where: {
+        slug,
+      },
       attributes: [
         "id",
         "name",
@@ -103,7 +103,7 @@ export const restaurantService = {
     return serializeRestaurant(restaurant);
   },
 
-  getRestaurants: async({page,limit}: GetRestaurantsOptions) => {
+  getRestaurants: async ({ page, limit }: GetRestaurantsOptions) => {
 
     const offset = (page - 1) * limit;
 
@@ -137,7 +137,7 @@ export const restaurantService = {
     };
   },
 
-  searchRestaurants: async({
+  searchRestaurants: async ({
     search,
     cuisine,
     city,
@@ -178,7 +178,7 @@ export const restaurantService = {
       }),
     };
 
-    if(city) {
+    if (city) {
       include.push({
         model: Branch,
         as: "branches",
@@ -199,7 +199,7 @@ export const restaurantService = {
       include,
       attributes: [
         "id",
-        "slug", 
+        "slug",
         "name",
         "description",
         "price_range",
@@ -212,7 +212,7 @@ export const restaurantService = {
       limit,
       offset,
       distinct: true,
-      order: [["createdAt" , "DESC"]],
+      order: [["createdAt", "DESC"]],
     });
 
     return {
@@ -224,7 +224,36 @@ export const restaurantService = {
         totalPages: Math.ceil(count / limit),
       },
     };
-  }
+  },
+  searchRestaurantsByName: async (name: string) => {
+    const searchTerm = name.trim();
+
+    return Restaurant.findAll({
+      where: {
+        name: {
+          [Op.iLike]: `%${searchTerm}%`,
+        },
+      },
+
+      attributes: ["id", "name", "slug"],
+
+      order: [
+        [
+          literal(`
+          CASE
+            WHEN "Restaurant"."name" ILIKE '${searchTerm.replace(/'/g, "''")}%'
+            THEN 0
+            ELSE 1
+          END
+        `),
+          "ASC",
+        ],
+        ["name", "ASC"],
+      ],
+
+      limit: 10,
+    });
+  },
 };
 
 //helper function to normalize the values of average_rating and review_count to numbers

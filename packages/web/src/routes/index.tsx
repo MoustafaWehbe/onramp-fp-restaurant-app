@@ -21,6 +21,7 @@ import { VerifyEmailToken } from "../pages/auth/VerifyEmailToken";
 import ResetPassword from "../pages/auth/ResetPassword";
 import Home from "@/pages/home/Home";
 import MenuDetailsPage from "@/pages/menu/MenuDetails";
+import RestaurantClaimPage from "@/pages/restaurantclaims/RestaurantClaims";
 
 
 export function AppRoutes() {
@@ -61,6 +62,10 @@ export function AppRoutes() {
             element={<MenuDetailsPage />}
           />
         </Route>
+        <Route
+          path="/claim-restaurant"
+          element={<RestaurantClaimPage />}
+        />
       </Route>
 
       <Route path="*" element={<NotFound />} />

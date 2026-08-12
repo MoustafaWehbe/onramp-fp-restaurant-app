@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { restaurantService } from "../services/restaurant.service";
+import { createError } from "src/middleware/error-handler";
 
 export const restaurantController = {
   getRestaurantBySlug: async (
@@ -80,5 +81,21 @@ export const restaurantController = {
     } catch(error) {
       next(error)
     }
-  }
+  },
+  searchByName: async (req: Request, res: Response) => {
+    const { name } = req.query;
+
+    if (!name || typeof name !== "string" || !name.trim()) {
+      throw createError("Restaurant name is required", 400);
+    }
+
+    const restaurants = await restaurantService.searchRestaurantsByName(
+      name.trim()
+    );
+
+    return res.status(200).json({
+      success: true,
+      data: restaurants,
+    });
+  },
 };

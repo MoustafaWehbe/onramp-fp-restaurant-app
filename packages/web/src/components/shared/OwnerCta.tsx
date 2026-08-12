@@ -65,7 +65,7 @@ export function OwnerCta() {
         </div>
 
         <Button asChild size="lg">
-          <Link to="/register">
+          <Link to="/claim-restaurant">
             Join Platera
           </Link>
         </Button>
