@@ -1,5 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
-import { RestaurantClaim } from "@fp_restaurant/shared";
+import { RestaurantClaim, User } from "@fp_restaurant/shared";
+import { Op } from "sequelize";
 
 export async function verifyRestaurantOwnership(
   req: Request,
@@ -24,11 +25,22 @@ export async function verifyRestaurantOwnership(
       return;
     }
 
+    const user = await User.findByPk(userId);
+
+    if (!user) {
+      res.status(401).json({
+        error: "User not found",
+      });
+      return;
+    }
+
     const claim = await RestaurantClaim.findOne({
       where: {
         restaurantId,
         userId,
-        status: "approved",
+        status: {
+          [Op.in]: ["approved", "completed"],
+        }
       },
     });
 
