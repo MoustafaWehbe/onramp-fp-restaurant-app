@@ -10,6 +10,7 @@ export interface RestaurantClaimAttributes {
   status: "pending" | "approved" | "rejected" | "completed";
   createdAt?: Date;
   updatedAt?: Date;
+  deletedAt?: Date | null;
 }
 
 export interface RestaurantClaimCreationAttributes
@@ -29,9 +30,9 @@ export class RestaurantClaim
   declare email: string;
   declare phone: string;
   declare status: "pending" | "approved" | "rejected"| "completed";
-    declare readonly createdAt: Date;
+  declare readonly createdAt: Date;
   declare readonly updatedAt: Date;
-
+  declare readonly deletedAt?: Date | null | undefined;
 
   static initModel(sequelize: Sequelize) {
     RestaurantClaim.init(
@@ -77,6 +78,11 @@ export class RestaurantClaim
           ),
           allowNull: false,
           defaultValue: "pending",
+        },
+         deletedAt: {
+          type: DataTypes.DATE,
+          allowNull: true,
+          defaultValue: null,
         },
       },
       {
