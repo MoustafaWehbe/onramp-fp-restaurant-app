@@ -1,24 +1,42 @@
+import { useNavigate } from "react-router-dom";
+
 interface Menu {
     id: string;
     name: string;
-    description: string;
 }
 
 interface MenusSectionProps {
     menus: Menu[];
+    restaurantSlug: string;
+    branchSlug: string;
     title?: string;
     description?: string | null;
 }
 
 const MenusSection = ({
     menus,
+    restaurantSlug,
+    branchSlug,
     title = "Explore Menus",
     description = "Discover the menus and selections available at this restaurant.",
 }: MenusSectionProps) => {
+    const navigate = useNavigate();
+
+    const handleMenuClick = (menuId: string) => {
+        navigate(
+            `/restaurants/${restaurantSlug}/branches/${branchSlug}/menus/${menuId}`,
+            {
+                state: {
+                    menus,
+                },
+            }
+        );
+    };
+
     return (
         <section className="space-y-6">
             <div>
-                <h2 className="flex items-center gap-2 text-3xl font-bold text">
+                <h2 className="flex items-center gap-2 text-3xl font-bold">
                     {title}
                 </h2>
 
@@ -32,17 +50,11 @@ const MenusSection = ({
                     {menus.map((menu) => (
                         <button
                             key={menu.id}
-                            className="rounded-2xl border px-8 py-4 text-left transition hover:bg-muted"
+                            type="button"
+                            onClick={() => handleMenuClick(menu.id)}
+                            className="rounded-full border px-8 py-4 text-base font-semibold transition hover:bg-muted"
                         >
-                            <div className="font-semibold">
-                                {menu.name}
-                            </div>
-
-                            {menu.description && (
-                                <p className="mt-2 text-sm font-normal leading-relaxed text-muted-foreground">
-                                    {menu.description}
-                                </p>
-                            )}
+                            {menu.name}
                         </button>
                     ))}
                 </div>
