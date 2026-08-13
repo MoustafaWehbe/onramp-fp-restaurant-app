@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Eye, EyeOff } from "lucide-react";
-
+import { apiClient } from "../../lib/api-client";
 import { useAuth } from "../../hooks/useAuth";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
@@ -44,7 +44,13 @@ export function Login() {
     try {
       setError(null);
       await login(data.email, data.password);
-      navigate("/home");
+      const response = await apiClient.get("/auth/me");
+      const user = response.data.data;
+      if (user.role === "owner") {
+        navigate("/owner");
+      } else {
+        navigate("/home");
+      }
     } catch {
       setError("Invalid email or password");
     }

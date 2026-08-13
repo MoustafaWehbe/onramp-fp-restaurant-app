@@ -47,12 +47,12 @@ export const restaurantController = {
         next: NextFunction,
     ) => {
         try {
-            const { restaurantId } = req.params;
+            const { restaurantSlug } = req.params;
 
-            if (!restaurantId || Array.isArray(restaurantId)) {
+            if (!restaurantSlug || Array.isArray(restaurantSlug)) {
                 return next(
                     createError(
-                        "Restaurant ID is required",
+                        "Restaurant Slug is required",
                         400,
                     ),
                 );
@@ -60,7 +60,7 @@ export const restaurantController = {
 
             const restaurant =
                 await restaurantService.update(
-                    restaurantId,
+                    restaurantSlug,
                     req.body,
                 );
 
@@ -73,29 +73,29 @@ export const restaurantController = {
         }
     },
 
-    getById: async (
+    getBySlug: async (
         req: Request,
         res: Response,
         next: NextFunction,
     ) => {
         try {
-            const { restaurantId } = req.params;
+            const { restaurantSlug } = req.params;
 
             if (
-                !restaurantId ||
-                Array.isArray(restaurantId)
+                !restaurantSlug ||
+                Array.isArray(restaurantSlug)
             ) {
                 return next(
                     createError(
-                        "Restaurant ID is required",
+                        "Restaurant slug is required",
                         400,
                     ),
                 );
             }
 
             const restaurant =
-                await restaurantService.getById(
-                    restaurantId,
+                await restaurantService.getBySlug(
+                    restaurantSlug,
                 );
 
             res.status(200).json({

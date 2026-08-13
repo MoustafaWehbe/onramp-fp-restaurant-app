@@ -1,12 +1,22 @@
 import { z } from "zod";
 
 export const ownerBranchParamsSchema = z.object({
-  restaurantId: z.string().uuid("Invalid restaurant ID"),
+    restaurantSlug: z
+        .string()
+        .trim()
+        .min(1, "Restaurant slug is required"),
 });
 
 export const ownerBranchUpdateParamsSchema = z.object({
-  restaurantId: z.string().uuid("Invalid restaurant ID"),
-  branchId: z.string().uuid("Invalid branch ID"),
+    restaurantSlug: z
+        .string()
+        .trim()
+        .min(1, "Restaurant slug is required"),
+
+    branchSlug: z
+        .string()
+        .trim()
+        .min(1, "Branch slug is required"),
 });
 
 export const createBranchSchema = z.object({

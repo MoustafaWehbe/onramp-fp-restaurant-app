@@ -1,18 +1,19 @@
 import type { Request, Response, NextFunction } from "express";
 import { branchService } from "src/services/owner/branch.service";
+
 type BranchParams = {
-    restaurantId: string;
-    branchId: string;
+    restaurantSlug: string;
+    branchSlug: string;
 };
 
 export const branchController = {
     create: async (
-        req: Request<BranchParams>,
+        req: Request<{ restaurantSlug: string }>,
         res: Response,
         next: NextFunction,
     ) => {
         try {
-            const { restaurantId } = req.params;
+            const { restaurantSlug } = req.params;
 
             const {
                 name,
@@ -24,8 +25,9 @@ export const branchController = {
                 opening_hours,
                 images,
             } = req.body;
+
             const branch = await branchService.create({
-                restaurantId,
+                restaurantSlug,
                 name,
                 city,
                 address,
@@ -44,20 +46,21 @@ export const branchController = {
             next(error);
         }
     },
+
     update: async (
-        req: Request<{
-            restaurantId: string;
-            branchId: string;
-        }>,
+        req: Request<BranchParams>,
         res: Response,
         next: NextFunction,
     ) => {
         try {
-            const { restaurantId, branchId } = req.params;
+            const {
+                restaurantSlug,
+                branchSlug,
+            } = req.params;
 
             const branch = await branchService.update(
-                restaurantId,
-                branchId,
+                restaurantSlug,
+                branchSlug,
                 req.body,
             );
 
@@ -71,19 +74,19 @@ export const branchController = {
     },
 
     delete: async (
-        req: Request<{
-            restaurantId: string;
-            branchId: string;
-        }>,
+        req: Request<BranchParams>,
         res: Response,
         next: NextFunction,
     ) => {
         try {
-            const { restaurantId, branchId } = req.params;
+            const {
+                restaurantSlug,
+                branchSlug,
+            } = req.params;
 
             await branchService.delete(
-                restaurantId,
-                branchId,
+                restaurantSlug,
+                branchSlug,
             );
 
             res.status(200).json({
@@ -95,14 +98,17 @@ export const branchController = {
     },
 
     getAll: async (
-        req: Request<{ restaurantId: string }>,
+        req: Request<{ restaurantSlug: string }>,
         res: Response,
         next: NextFunction,
     ) => {
         try {
-            const { restaurantId } = req.params;
+            const { restaurantSlug } = req.params;
 
-            const branches = await branchService.getAll(restaurantId);
+            const branches =
+                await branchService.getAll(
+                    restaurantSlug,
+                );
 
             res.status(200).json({
                 data: branches,
@@ -113,21 +119,22 @@ export const branchController = {
         }
     },
 
-    getById: async (
-        req: Request<{
-            restaurantId: string;
-            branchId: string;
-        }>,
+    getBySlug: async (
+        req: Request<BranchParams>,
         res: Response,
         next: NextFunction,
     ) => {
         try {
-            const { restaurantId, branchId } = req.params;
+            const {
+                restaurantSlug,
+                branchSlug,
+            } = req.params;
 
-            const branch = await branchService.getById(
-                restaurantId,
-                branchId,
-            );
+            const branch =
+                await branchService.getBySlug(
+                    restaurantSlug,
+                    branchSlug,
+                );
 
             res.status(200).json({
                 data: branch,

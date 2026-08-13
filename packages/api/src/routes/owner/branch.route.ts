@@ -15,10 +15,10 @@ import { authorize } from "src/middleware/authorize";
 const router = Router();
 
 router.post(
-    "/:restaurantId/branches",
+    "/:restaurantSlug/branches",
     authenticate,
     authorize("owner"),
-    rateLimiter, 
+    rateLimiter,
     validate(ownerBranchParamsSchema, "params"),
     verifyRestaurantOwnership,
     validate(createBranchSchema, "body"),
@@ -26,7 +26,7 @@ router.post(
 );
 
 router.patch(
-    "/:restaurantId/branches/:branchId",
+    "/:restaurantSlug/branches/:branchSlug",
     authenticate,
     authorize("owner"),
     rateLimiter,
@@ -37,7 +37,7 @@ router.patch(
 );
 
 router.delete(
-    "/:restaurantId/branches/:branchId",
+    "/:restaurantSlug/branches/:branchSlug",
     authenticate,
     authorize("owner"),
     rateLimiter,
@@ -47,7 +47,7 @@ router.delete(
 );
 
 router.get(
-    "/:restaurantId/branches",
+    "/:restaurantSlug/branches",
     authenticate,
     authorize("owner"),
     rateLimiter,
@@ -57,13 +57,13 @@ router.get(
 );
 
 router.get(
-    "/:restaurantId/branches/:branchId",
+    "/:restaurantSlug/branches/:branchSlug",
     authenticate,
     authorize("owner"),
     rateLimiter,
     validate(ownerBranchUpdateParamsSchema, "params"),
     verifyRestaurantOwnership,
-    branchController.getById,
+    branchController.getBySlug,
 );
 
 export { router as ownerBranchRouter };

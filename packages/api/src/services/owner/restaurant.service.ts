@@ -77,6 +77,8 @@ export const restaurantService = {
                         { transaction },
                     );
 
+                    // Keep restaurantId here because it is
+                    // the foreign key stored in RestaurantClaim.
                     await claim.update(
                         {
                             restaurantId: created.id,
@@ -98,10 +100,7 @@ export const restaurantService = {
                     }
                 )?.constraint;
 
-                if (
-                    constraint ===
-                    "restaurants_slug_unique"
-                ) {
+                if (constraint === "restaurants_slug_unique") {
                     throw createError(
                         "A restaurant with this name already exists",
                         409,
@@ -114,12 +113,14 @@ export const restaurantService = {
     },
 
     update: async (
-        restaurantId: string,
+        slug: string,
         data: UpdateRestaurantData,
     ) => {
-        const restaurant = await Restaurant.findByPk(
-            restaurantId,
-        );
+        const restaurant = await Restaurant.findOne({
+            where: {
+                slug,
+            },
+        });
 
         if (!restaurant) {
             throw createError(
@@ -184,10 +185,7 @@ export const restaurantService = {
                     }
                 )?.constraint;
 
-                if (
-                    constraint ===
-                    "restaurants_slug_unique"
-                ) {
+                if (constraint === "restaurants_slug_unique") {
                     throw createError(
                         "A restaurant with this name already exists",
                         409,
@@ -199,18 +197,20 @@ export const restaurantService = {
         }
     },
 
-    getById: async (restaurantId: string) => {
-    const restaurant = await Restaurant.findByPk(
-        restaurantId,
-    );
+    getBySlug: async (slug: string) => {
+        const restaurant = await Restaurant.findOne({
+            where: {
+                slug,
+            },
+        });
 
-    if (!restaurant) {
-        throw createError(
-            "Restaurant not found",
-            404,
-        );
-    }
+        if (!restaurant) {
+            throw createError(
+                "Restaurant not found",
+                404,
+            );
+        }
 
-    return restaurant;
-},
+        return restaurant;
+    },
 };

@@ -23,7 +23,7 @@ import Home from "@/pages/home/Home";
 import { SavedRestaurants } from "@/pages/restaurants/SavedRestaurants";
 import MenuDetailsPage from "@/pages/menu/MenuDetails";
 import RestaurantClaimPage from "@/pages/restaurantclaims/RestaurantClaims";
-import { OwnerLayout } from "@/components/layout/OwnerLayout";
+import { OwnerLayout } from "@/layouts/OwnerLayout";
 
 
 export function AppRoutes() {
@@ -53,7 +53,6 @@ export function AppRoutes() {
           <Route path="/restaurants/:slug" element={<RestaurantDetails />} />
           <Route path="/saved-restaurants" element={<SavedRestaurants />} />
           <Route path="/profile" element={<Profile />} />
-          <Route path="/owner/dashboard" element={<OwnerDashboard />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/search" element={<Search />} />
           <Route

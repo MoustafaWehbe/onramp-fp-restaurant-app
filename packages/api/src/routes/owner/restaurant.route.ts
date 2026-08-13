@@ -19,7 +19,7 @@ router.post(
 );
 
 router.patch(
-    "/:restaurantId",
+    "/:restaurantSlug",
     rateLimiter,
     authenticate,
     authorize("owner"),
@@ -29,11 +29,11 @@ router.patch(
 );
 
 router.get(
-    "/:restaurantId",
+    "/:restaurantSlug",
     rateLimiter,
     authenticate,
     authorize("owner"),
     verifyRestaurantOwnership,
-    restaurantController.getById,
+    restaurantController.getBySlug,
 );
 export  {router as restaurantOwnerRouter};
