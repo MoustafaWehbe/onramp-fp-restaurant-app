@@ -17,7 +17,7 @@ export interface RestaurantAttributes {
 }
 
 export interface RestaurantCreationAttributes
-  extends Optional<RestaurantAttributes, "id"> { }
+  extends Optional<Omit<RestaurantAttributes,"deletedAt">, "id"> { }
 
 export class Restaurant
   extends Model<RestaurantAttributes, RestaurantCreationAttributes>
@@ -35,6 +35,7 @@ export class Restaurant
   declare review_count: number;
   declare average_rating: number;
   declare menus?: NonAttribute<Menu[]>;
+  declare deletedAt: Date | null;
   static initModel(sequelize: Sequelize) {
     Restaurant.init(
       {

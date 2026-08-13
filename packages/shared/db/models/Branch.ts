@@ -27,7 +27,7 @@ export interface BranchAttributes {
 }
 
 export interface BranchCreationAttributes
-  extends Optional<BranchAttributes, "id" | "phone"> { }
+  extends Optional<Omit<BranchAttributes, "deletedAt">, "id" | "phone"> { }
 
 export class Branch
   extends Model<BranchAttributes, BranchCreationAttributes>
@@ -45,7 +45,8 @@ export class Branch
   declare opening_hours: string;
   declare review_count: number;
   declare average_rating: number;
-
+  declare deletedAt: Date | null;
+  
   // Associations
   declare restaurant?: NonAttribute<Restaurant>;
   declare images?: NonAttribute<BranchImage[]>;
