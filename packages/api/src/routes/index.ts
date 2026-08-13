@@ -8,6 +8,7 @@ import { menuRouter } from "./menu.routes";
 import { restaurantClaimRouter } from "./owner/restaurantClaims.route";
 import { ownerBranchRouter } from "./owner/branch.route";
 import { restaurantOwnerRouter } from "./owner/restaurant.route";
+import { ownerMenuRouter } from "./owner/menu.route";
 
 const router = Router();
 
@@ -23,5 +24,6 @@ router.use("/", menuRouter);
 router.use("/restaurant-claims", restaurantClaimRouter);
 router.use("/owner",ownerBranchRouter);
 router.use("/owner/restaurants", restaurantOwnerRouter);
+router.use("/owner/restaurants/:restaurantSlug", ownerMenuRouter);
 
 export { router };
