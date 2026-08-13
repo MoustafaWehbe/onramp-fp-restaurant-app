@@ -61,11 +61,12 @@ export function AppRoutes() {
             path="/restaurants/:restaurantSlug/branches/:branchSlug/menus/:menuId"
             element={<MenuDetailsPage />}
           />
-        </Route>
-        <Route
+          <Route
           path="/claim-restaurant"
           element={<RestaurantClaimPage />}
         />
+        </Route>
+        
       </Route>
 
       <Route path="*" element={<NotFound />} />
