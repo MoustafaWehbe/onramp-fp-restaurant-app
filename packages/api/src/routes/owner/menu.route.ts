@@ -9,6 +9,8 @@ import {
   getBranchMenusSchema,
   deleteMenuSchema,
   updateMenuSchema,
+  updateMenuItemSchema,
+  createMenuItemRouteSchema,
 } from "../../schemas/owner/menu.schema";
 import { authenticate } from "src/middleware/authenticate";
 import { authorize } from "src/middleware/authorize";
@@ -58,7 +60,7 @@ router.patch(
   authorize("owner"),
   verifyRestaurantOwnership,
   validate(updateMenuSchema),
-  menuController.update,
+  menuController.updateMenu,
 );
 
 router.delete(
@@ -69,5 +71,22 @@ router.delete(
   validate(deleteMenuSchema),
   menuController.delete,
 );
+
+router.patch(
+  "/menus/:menuId/:menuItemId",
+  authenticate,
+  authorize("owner"),
+  verifyRestaurantOwnership,
+  validate(updateMenuItemSchema),
+  menuController.updateMenuItem,
+);
+
+router.post(
+  "/menus/:menuId",
+  authenticate,
+  authorize("owner"),
+  verifyRestaurantOwnership,
+  validate(createMenuItemRouteSchema),
+)
 
 export {router as ownerMenuRouter};

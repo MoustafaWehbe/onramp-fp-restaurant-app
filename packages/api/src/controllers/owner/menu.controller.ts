@@ -99,7 +99,7 @@ export const menuController = {
     }
   },
 
-  update: async (
+  updateMenu: async (
     req: Request,
     res: Response,
     next: NextFunction
@@ -107,13 +107,54 @@ export const menuController = {
     try {
       const { restaurantSlug, menuId } = req.params;
 
-      const menu = await menuService.update(
+      const menu = await menuService.updateMenu(
         restaurantSlug as string,
         menuId as string,
         req.body
       );
 
       return res.status(200).json(menu);
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  addMenuItem: async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const { restaurantSlug, menuId } = req.params;
+
+      const menuItem = await menuService.addMenuItem(
+        restaurantSlug as string,
+        menuId as string,
+        req.body
+      );
+
+      return res.status(201).json(menuItem);
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  updateMenuItem: async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const { restaurantSlug, menuId, menuItemId } = req.params;
+
+      const menuItem = await menuService.updateMenuItem(
+        restaurantSlug as string,
+        menuId as string,
+        menuItemId as string,
+        req.body
+      );
+
+      return res.status(200).json(menuItem);
     } catch (error) {
       next(error);
     }

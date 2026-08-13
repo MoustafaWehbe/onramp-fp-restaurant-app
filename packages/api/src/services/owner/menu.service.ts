@@ -23,12 +23,9 @@ interface CreateMenuInput {
 }
 
 interface UpdateMenuInput {
-  restaurantSlug: string;
-  menuId: string;
   name?: string;
   description?: string | null;
   is_active?: boolean;
-  items?: CreateMenuItemInput[];
 }
 
 interface BranchMenuItemOverrideInput {
@@ -37,6 +34,15 @@ interface BranchMenuItemOverrideInput {
   menuItemId: string;
   customPrice?: number | null;
   isAvailable?: boolean;
+}
+
+interface UpdateMenuItemInput {
+  name?: string;
+  description?: string | null;
+  base_price?: number;
+  image_url?: string | null;
+  display_order?: number;
+  is_active?: boolean;
 }
 
 export const menuService = {
@@ -415,25 +421,16 @@ export const menuService = {
     }
   },
 
-  update: async (
+  updateMenu: async (
     restaurantSlug: string,
     menuId: string,
-    input: Omit<UpdateMenuInput, "restaurantSlug" | "menuId">,
+    input: UpdateMenuInput,
   ) => {
-    const sequelize = Menu.sequelize;
-
-    if (!sequelize) {
-      throw createError("Sequelize instance is not initialized");
-    }
-
-    const transaction = await sequelize.transaction();
-
     try {
       const restaurant = await Restaurant.findOne({
         where: {
           slug: restaurantSlug,
         },
-        transaction,
       });
 
       if (!restaurant) {
@@ -445,7 +442,6 @@ export const menuService = {
           id: menuId,
           restaurantId: restaurant.id,
         },
-        transaction,
       });
 
       if (!menu) {
@@ -464,48 +460,136 @@ export const menuService = {
         menu.is_active = input.is_active;
       }
 
-      await menu.save({
-        transaction,
+      await menu.save();
+      return menu;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  addMenuItem: async (
+    restaurantSlug: string,
+    menuId: string,
+    item: CreateMenuItemInput,
+  ) => {
+    try {
+      const restaurant = await Restaurant.findOne({
+        where: {
+          slug: restaurantSlug,
+        },
       });
 
-      if (input.items?.length) {
+      if (!restaurant) {
+        throw createError("Restaurant not found");
+      }
+
+      const menu = await Menu.findOne({
+        where: {
+          id: menuId,
+          restaurantId: restaurant.id,
+        },
+      });
+
+      if (!menu) {
+        throw createError("Menu not found for this restaurant");
+      }
+
+      let displayOrder = item.display_order;
+
+      if (displayOrder === undefined) {
         const lastItem = await MenuItem.findOne({
           where: {
             menuId: menu.id,
           },
           order: [["display_order", "DESC"]],
-          transaction,
         });
 
-        const nextDisplayOrder =
-          lastItem !== null ? lastItem.display_order + 1 : 0;
-
-        await MenuItem.bulkCreate(
-          input.items.map((item, index) => ({
-            menuId: menu.id,
-            name: item.name,
-            description: item.description ?? null,
-            base_price: item.base_price,
-            image_url: item.image_url ?? null,
-            display_order: item.display_order ?? nextDisplayOrder + index,
-            is_active: item.is_active ?? true,
-          })),
-          { transaction },
-        );
+        displayOrder = lastItem ? lastItem.display_order + 1 : 0;
       }
 
-      await transaction.commit();
-
-      return Menu.findByPk(menu.id, {
-        include: [
-          {
-            model: MenuItem,
-            as: "menuItems",
-          },
-        ],
+      const menuItem = await MenuItem.create({
+        menuId: menu.id,
+        name: item.name,
+        description: item.description,
+        base_price: item.base_price,
+        image_url: item.image_url ?? null,
+        display_order: displayOrder,
+        is_active: item.is_active,
       });
+
+      return menuItem;
     } catch (error) {
-      await transaction.rollback();
+      throw error;
+    }
+  },
+
+  updateMenuItem: async (
+    restaurantSlug: string,
+    menuId: string,
+    menuItemId: string,
+    input: UpdateMenuItemInput,
+  ) => {
+    try {
+      const restaurant = await Restaurant.findOne({
+        where: {
+          slug: restaurantSlug,
+        },
+      });
+
+      if (!restaurant) {
+        throw createError("Restaurant not found");
+      }
+
+      const menu = await Menu.findOne({
+        where: {
+          id: menuId,
+          restaurantId: restaurant.id,
+        },
+      });
+
+      if (!menu) {
+        throw createError("Menu not found for this restaurant");
+      }
+
+      const menuItem = await MenuItem.findOne({
+        where: {
+          id: menuItemId,
+          menuId: menu.id,
+        },
+      });
+
+      if (!menuItem) {
+        throw createError("Menu item not found");
+      }
+
+      if (input.name !== undefined) {
+        menuItem.name = input.name;
+      }
+
+      if (input.description !== undefined) {
+        menuItem.description = input.description;
+      }
+
+      if (input.base_price !== undefined) {
+        menuItem.base_price = input.base_price;
+      }
+
+      if (input.image_url !== undefined) {
+        menuItem.image_url = input.image_url;
+      }
+
+      if (input.display_order !== undefined) {
+        menuItem.display_order = input.display_order;
+      }
+
+      if (input.is_active !== undefined) {
+        menuItem.is_active = input.is_active;
+      }
+
+      await menuItem.save();
+
+      return menuItem;
+    } catch (error) {
       throw error;
     }
   },

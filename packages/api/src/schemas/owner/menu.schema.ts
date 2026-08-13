@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-const createMenuItemSchema = z.object({
+const menuItemFields = {
   name: z
     .string()
     .min(1, "Menu item name is required")
@@ -10,12 +10,22 @@ const createMenuItemSchema = z.object({
 
   base_price: z.number().min(0, "Base price cannot be negative"),
 
-  image_url: z.string().url("Invalid image URL").nullable().optional(),
+  image_url: z
+    .string()
+    .url("Invalid image URL")
+    .nullable()
+    .optional(),
 
-  display_order: z.number().int().min(0).optional(),
+  display_order: z
+    .number()
+    .int()
+    .min(0)
+    .optional(),
 
   is_active: z.boolean().optional(),
-});
+};
+
+const createMenuItemSchema = z.object(menuItemFields);
 
 const restaurantSlugSchema = z.object({
   restaurantSlug: z.string().min(1, "Restaurant slug is required"),
@@ -50,8 +60,18 @@ export const createMenuSchema = z.object({
   }),
 });
 
+
+export const createMenuItemRouteSchema = z.object({
+  params: restaurantSlugSchema.merge(menuIdSchema),
+
+  body: createMenuItemSchema,
+});
+
+
 export const overrideBranchMenuItemSchema = z.object({
-  params: restaurantSlugSchema.merge(branchSlugSchema).merge(menuItemIdSchema),
+  params: restaurantSlugSchema
+    .merge(branchSlugSchema)
+    .merge(menuItemIdSchema),
 
   body: z
     .object({
@@ -65,24 +85,30 @@ export const overrideBranchMenuItemSchema = z.object({
     })
     .refine(
       (data) =>
-        data.customPrice !== undefined || data.isAvailable !== undefined,
+        data.customPrice !== undefined ||
+        data.isAvailable !== undefined,
       {
-        message: "At least one of customPrice or isAvailable must be provided",
+        message:
+          "At least one of customPrice or isAvailable must be provided",
       },
     ),
 });
+
 
 export const getRestaurantMenusSchema = z.object({
   params: restaurantSlugSchema,
 });
 
+
 export const getBranchMenusSchema = z.object({
   params: restaurantSlugSchema.merge(branchSlugSchema),
 });
 
+
 export const deleteMenuSchema = z.object({
   params: restaurantSlugSchema.merge(menuIdSchema),
 });
+
 
 export const updateMenuSchema = z.object({
   params: restaurantSlugSchema.merge(menuIdSchema),
@@ -98,15 +124,46 @@ export const updateMenuSchema = z.object({
       description: z.string().nullable().optional(),
 
       is_active: z.boolean().optional(),
-
-      items: z.array(createMenuItemSchema).optional(),
     })
     .refine(
       (data) =>
         data.name !== undefined ||
         data.description !== undefined ||
-        data.is_active !== undefined ||
-        data.items !== undefined,
+        data.is_active !== undefined,
+      {
+        message: "At least one field must be provided",
+      },
+    ),
+});
+
+
+export const updateMenuItemSchema = z.object({
+  params: restaurantSlugSchema
+    .merge(menuIdSchema)
+    .merge(menuItemIdSchema),
+
+  body: z
+    .object({
+      name: menuItemFields.name.optional(),
+
+      description: menuItemFields.description,
+
+      base_price: menuItemFields.base_price.optional(),
+
+      image_url: menuItemFields.image_url,
+
+      display_order: menuItemFields.display_order,
+
+      is_active: menuItemFields.is_active,
+    })
+    .refine(
+      (data) =>
+        data.name !== undefined ||
+        data.description !== undefined ||
+        data.base_price !== undefined ||
+        data.image_url !== undefined ||
+        data.display_order !== undefined ||
+        data.is_active !== undefined,
       {
         message: "At least one field must be provided",
       },
