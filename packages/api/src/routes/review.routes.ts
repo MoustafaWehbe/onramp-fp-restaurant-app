@@ -8,17 +8,18 @@ import { createReviewSchema, reviewBranchParamsSchema, updateReviewSchema } from
 const router = Router();
 
 router.post(
-    "/restaurants/:restaurantSlug/branches/:branchSlug/reviews",
-    rateLimiter,
-    authenticate,
-    validate(createReviewSchema),
-    validate(reviewBranchParamsSchema,"params"),
-    reviewController.create,
+  "/restaurants/:restaurantSlug/branches/:branchSlug/reviews",
+  authenticate,
+  rateLimiter,
+  validate(createReviewSchema),
+  validate(reviewBranchParamsSchema, "params"),
+  reviewController.create,
 );
 
 router.patch(
   "/reviews/:reviewId",
   authenticate,
+  rateLimiter,
   validate(updateReviewSchema),
   reviewController.update,
 );
@@ -26,13 +27,15 @@ router.patch(
 router.delete(
   "/reviews/:reviewId",
   authenticate,
+  rateLimiter,
   reviewController.delete,
 );
 
 router.get(
   "/restaurants/:restaurantSlug/branches/:branchSlug/reviews",
   authenticate,
-  validate(reviewBranchParamsSchema,"params"),
+  rateLimiter,
+  validate(reviewBranchParamsSchema, "params"),
   reviewController.getBranchReviews,
 );
 export { router as reviewRouter };
