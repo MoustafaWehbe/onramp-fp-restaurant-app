@@ -4,7 +4,7 @@ export interface RestaurantAttributes {
   id: string;
   image_url: string;
   name: string;
-  slug:string;
+  slug: string;
   description: string;
   cuisine_type: string;
   ambiance_tags: string[];
@@ -13,16 +13,15 @@ export interface RestaurantAttributes {
   phone: string;
   review_count: number,
   average_rating: number,
-
+  deletedAt?: Date | null;
 }
 
 export interface RestaurantCreationAttributes
-  extends Optional<RestaurantAttributes, "id"> {}
+  extends Optional<Omit<RestaurantAttributes,"deletedAt">, "id"> { }
 
 export class Restaurant
   extends Model<RestaurantAttributes, RestaurantCreationAttributes>
-  implements RestaurantAttributes
-{
+  implements RestaurantAttributes {
   declare id: string;
   declare image_url: string;
   declare name: string;
@@ -36,6 +35,7 @@ export class Restaurant
   declare review_count: number;
   declare average_rating: number;
   declare menus?: NonAttribute<Menu[]>;
+  declare deletedAt: Date | null;
   static initModel(sequelize: Sequelize) {
     Restaurant.init(
       {
@@ -54,8 +54,8 @@ export class Restaurant
         },
         slug: {
           type: DataTypes.STRING,
-          allowNull:false,
-          unique:true,
+          allowNull: false,
+          unique: true,
         },
         description: {
           type: DataTypes.TEXT,
@@ -87,9 +87,14 @@ export class Restaurant
           defaultValue: 0,
         },
         average_rating: {
-          type: DataTypes.DECIMAL(3,2),
+          type: DataTypes.DECIMAL(3, 2),
           allowNull: false,
           defaultValue: 0.00,
+        },
+        deletedAt: {
+          type: DataTypes.DATE,
+          allowNull: true,
+          defaultValue: null,
         },
       },
       {
@@ -98,6 +103,8 @@ export class Restaurant
         modelName: "Restaurant",
         underscored: true,
         timestamps: true,
+        paranoid: true,
+        deletedAt: "deleted_at",
       }
     );
   }

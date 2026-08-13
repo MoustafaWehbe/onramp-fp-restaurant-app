@@ -23,15 +23,16 @@ export interface BranchAttributes {
   opening_hours: string;
   review_count: number;
   average_rating: number;
+  deletedAt?: Date | null;
 }
 
 export interface BranchCreationAttributes
-  extends Optional<BranchAttributes, "id" | "phone"> {}
+  extends Optional<Omit<BranchAttributes, "deletedAt">, "id" | "phone"> { }
 
 export class Branch
   extends Model<BranchAttributes, BranchCreationAttributes>
   implements BranchAttributes {
-  
+
   declare id: string;
   declare restaurantId: string;
   declare name: string;
@@ -44,7 +45,8 @@ export class Branch
   declare opening_hours: string;
   declare review_count: number;
   declare average_rating: number;
-
+  declare deletedAt: Date | null;
+  
   // Associations
   declare restaurant?: NonAttribute<Restaurant>;
   declare images?: NonAttribute<BranchImage[]>;
@@ -104,6 +106,11 @@ export class Branch
           allowNull: false,
           defaultValue: 0.0,
         },
+        deletedAt: {
+          type: DataTypes.DATE,
+          allowNull: true,
+          defaultValue: null,
+        },
       },
       {
         sequelize,
@@ -111,6 +118,8 @@ export class Branch
         modelName: "Branch",
         underscored: true,
         timestamps: true,
+        paranoid: true,
+        deletedAt: "deleted_at",
       }
     );
   }
