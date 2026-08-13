@@ -34,6 +34,13 @@ router.get(
 );
 
 router.get(
+  "/by-name",
+  authenticate,
+  rateLimiter,
+  restaurantController.searchByName
+);
+
+router.get(
   "/:slug",
   authenticate,
   rateLimiter,

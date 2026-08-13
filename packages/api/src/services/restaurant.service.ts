@@ -4,7 +4,7 @@ import { Review } from "../models/Review";
 import { User } from "../models/User";
 import { Menu } from "../models/Menu";
 import { createError } from "src/middleware/error-handler";
-import { type Includeable, Op, type WhereOptions } from "sequelize";
+import { type Includeable, Op, literal, type WhereOptions } from "sequelize";
 import { Favorite } from "../models/Favorite";
 
 interface GetRestaurantsOptions {
@@ -26,9 +26,9 @@ interface SearchRestaurantsOptions {
 export const restaurantService = {
   getRestaurantBySlug: async (slug: string,  userId?: string) => {
     const restaurant = await Restaurant.findOne({
-    where: {
-      slug,
-    },
+      where: {
+        slug,
+      },
       attributes: [
         "id",
         "name",
@@ -145,7 +145,7 @@ export const restaurantService = {
     };
   },
 
-  searchRestaurants: async({
+  searchRestaurants: async ({
     search,
     cuisine,
     city,
@@ -187,7 +187,7 @@ export const restaurantService = {
       }),
     };
 
-    if(city) {
+    if (city) {
       include.push({
         model: Branch,
         as: "branches",
@@ -208,7 +208,7 @@ export const restaurantService = {
       include,
       attributes: [
         "id",
-        "slug", 
+        "slug",
         "name",
         "description",
         "price_range",
@@ -221,7 +221,7 @@ export const restaurantService = {
       limit,
       offset,
       distinct: true,
-      order: [["createdAt" , "DESC"]],
+      order: [["createdAt", "DESC"]],
     });
 
     const favoritIds = await getFavorites(userId);
@@ -235,7 +235,44 @@ export const restaurantService = {
         totalPages: Math.ceil(count / limit),
       },
     };
-  }
+  },
+  searchRestaurantsByName: async (name: string) => {
+    const searchTerm = name.trim();
+
+    const prefixPattern = `${searchTerm
+      .replace(/\\/g, "\\\\")
+      .replace(/%/g, "\\%")
+      .replace(/_/g, "\\_")}%`;
+
+    const escapedPrefixPattern =
+      Restaurant.sequelize!.escape(prefixPattern);
+
+    return Restaurant.findAll({
+      where: {
+        name: {
+          [Op.iLike]: `%${searchTerm}%`,
+        },
+      },
+
+      attributes: ["id", "name", "slug"],
+
+      order: [
+        [
+          literal(`
+          CASE
+            WHEN "Restaurant"."name" ILIKE ${escapedPrefixPattern} ESCAPE '\\'
+            THEN 0
+            ELSE 1
+          END
+        `),
+          "ASC",
+        ],
+        ["name", "ASC"],
+      ],
+
+      limit: 10,
+    });
+  },
 };
 
 //helper function to get the favorite restaurant ids for the logged in user

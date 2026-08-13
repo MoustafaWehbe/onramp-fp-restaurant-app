@@ -20,7 +20,7 @@ router.use("/branches",branchRouter);
 router.use("/", menuRouter);
 
 //Owner Routes
-router.use("/owner/restaurant-claims", restaurantClaimRouter);
+router.use("/restaurant-claims", restaurantClaimRouter);
 router.use("/owner",ownerBranchRouter);
 router.use("/owner/restaurants", restaurantOwnerRouter);
 

@@ -22,6 +22,7 @@ import ResetPassword from "../pages/auth/ResetPassword";
 import Home from "@/pages/home/Home";
 import { SavedRestaurants } from "@/pages/restaurants/SavedRestaurants";
 import MenuDetailsPage from "@/pages/menu/MenuDetails";
+import RestaurantClaimPage from "@/pages/restaurantclaims/RestaurantClaims";
 
 
 export function AppRoutes() {
@@ -62,7 +63,12 @@ export function AppRoutes() {
             path="/restaurants/:restaurantSlug/branches/:branchSlug/menus/:menuId"
             element={<MenuDetailsPage />}
           />
+          <Route
+          path="/claim-restaurant"
+          element={<RestaurantClaimPage />}
+        />
         </Route>
+        
       </Route>
 
       <Route path="*" element={<NotFound />} />
