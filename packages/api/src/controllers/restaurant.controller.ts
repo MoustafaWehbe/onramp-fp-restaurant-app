@@ -49,7 +49,7 @@ export const restaurantController = {
         ...restaurants,
         message: "Restaurants retrieved successfully",
       });
-    } catch(error) {
+    } catch (error) {
       next(error);
     }
   },
@@ -78,24 +78,28 @@ export const restaurantController = {
         ...restaurants,
         message: "Restaurants retrieved successfully",
       });
-    } catch(error) {
+    } catch (error) {
       next(error)
     }
   },
-  searchByName: async (req: Request, res: Response) => {
-    const { name } = req.query;
+  searchByName: async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { name } = req.query;
 
-    if (!name || typeof name !== "string" || !name.trim()) {
-      throw createError("Restaurant name is required", 400);
+      if (!name || typeof name !== "string" || !name.trim()) {
+        throw createError("Restaurant name is required", 400);
+      }
+
+      const restaurants = await restaurantService.searchRestaurantsByName(
+        name.trim()
+      );
+
+      return res.status(200).json({
+        success: true,
+        data: restaurants,
+      });
+    } catch (error) {
+        next(error);
     }
-
-    const restaurants = await restaurantService.searchRestaurantsByName(
-      name.trim()
-    );
-
-    return res.status(200).json({
-      success: true,
-      data: restaurants,
-    });
   },
 };

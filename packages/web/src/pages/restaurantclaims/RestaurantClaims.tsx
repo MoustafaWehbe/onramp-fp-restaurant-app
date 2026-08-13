@@ -20,7 +20,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-import {apiClient} from "@/lib/api-client";
+import { apiClient } from "@/lib/api-client";
 
 interface Restaurant {
   id: string;
@@ -62,6 +62,10 @@ export default function RestaurantClaimPage() {
       return;
     }
 
+    if (selectedRestaurant) {
+      return;
+    }
+
     const searchTerm = search.trim();
 
     if (!searchTerm) {
@@ -95,8 +99,8 @@ export default function RestaurantClaimPage() {
 
         setError(
           error?.response?.data?.error ||
-            error?.response?.data?.message ||
-            "Unable to search restaurants."
+          error?.response?.data?.message ||
+          "Unable to search restaurants."
         );
       } finally {
         setSearching(false);
@@ -168,22 +172,19 @@ export default function RestaurantClaimPage() {
         phone: phone.trim(),
       };
 
-      console.log(
-        "Restaurant claim payload:",
-        payload
-      );
-
-      const response = await apiClient.post(
+      await apiClient.post(
         "/restaurant-claims",
         payload
       );
 
-      console.log(
-        "Restaurant claim response:",
-        response.data
-      );
-
+      setRestaurantName("");
+      setSearch("");
+      setRestaurants([]);
+      setSelectedRestaurant(null);
+      setEmail("");
+      setPhone("");
       setClaimSuccessOpen(true);
+
     } catch (error: any) {
       console.error(
         "Restaurant claim error:",
@@ -238,11 +239,10 @@ export default function RestaurantClaimPage() {
                   setClaimType("existing");
                   setError("");
                 }}
-                className={`rounded-2xl border p-5 text-left transition ${
-                  claimType === "existing"
-                    ? "border-primary bg-primary/5 shadow-sm"
-                    : "border-border hover:border-primary/40"
-                }`}
+                className={`rounded-2xl border p-5 text-left transition ${claimType === "existing"
+                  ? "border-primary bg-primary/5 shadow-sm"
+                  : "border-border hover:border-primary/40"
+                  }`}
               >
                 <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
                   <Search className="h-5 w-5 text-primary" />
@@ -267,11 +267,10 @@ export default function RestaurantClaimPage() {
                   setRestaurants([]);
                   setError("");
                 }}
-                className={`rounded-2xl border p-5 text-left transition ${
-                  claimType === "new"
-                    ? "border-primary bg-primary/5 shadow-sm"
-                    : "border-border hover:border-primary/40"
-                }`}
+                className={`rounded-2xl border p-5 text-left transition ${claimType === "new"
+                  ? "border-primary bg-primary/5 shadow-sm"
+                  : "border-border hover:border-primary/40"
+                  }`}
               >
                 <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
                   <Store className="h-5 w-5 text-primary" />
@@ -295,7 +294,7 @@ export default function RestaurantClaimPage() {
               {/* Existing restaurant */}
               {claimType === "existing" && (
                 <div className="relative">
-                  <label className="mb-2 block text-sm font-medium">
+                  <label htmlFor="claim-email" className="mb-2 block text-sm font-medium">
                     Search your restaurant
                   </label>
 
@@ -303,6 +302,7 @@ export default function RestaurantClaimPage() {
                     <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
 
                     <Input
+                      id="claim-email"
                       value={search}
                       onChange={(e) => {
                         setSearch(e.target.value);

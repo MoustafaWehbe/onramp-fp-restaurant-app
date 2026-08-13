@@ -4,7 +4,7 @@ import { Review } from "../models/Review";
 import { User } from "../models/User";
 import { Menu } from "../models/Menu";
 import { createError } from "src/middleware/error-handler";
-import { type Includeable, Op,literal, type WhereOptions } from "sequelize";
+import { type Includeable, Op, literal, type WhereOptions } from "sequelize";
 
 interface GetRestaurantsOptions {
   page: number,
@@ -228,6 +228,14 @@ export const restaurantService = {
   searchRestaurantsByName: async (name: string) => {
     const searchTerm = name.trim();
 
+    const prefixPattern = `${searchTerm
+      .replace(/\\/g, "\\\\")
+      .replace(/%/g, "\\%")
+      .replace(/_/g, "\\_")}%`;
+
+    const escapedPrefixPattern =
+      Restaurant.sequelize!.escape(prefixPattern);
+
     return Restaurant.findAll({
       where: {
         name: {
@@ -241,7 +249,7 @@ export const restaurantService = {
         [
           literal(`
           CASE
-            WHEN "Restaurant"."name" ILIKE '${searchTerm.replace(/'/g, "''")}%'
+            WHEN "Restaurant"."name" ILIKE ${escapedPrefixPattern} ESCAPE '\\'
             THEN 0
             ELSE 1
           END
