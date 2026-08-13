@@ -6,6 +6,7 @@ import { validate } from "src/middleware/validate";
 import { authenticate } from "src/middleware/authenticate";
 import { branchParamsSchema } from "src/schemas/branch.schema";
 import { branchController } from "src/controllers/branch.controller";
+import { opitonalAuthenticate } from "src/middleware/optionalAuthenticate";
 
 const router = Router();
 
@@ -27,7 +28,6 @@ router.get(
 
 router.get(
   "/:restaurantSlug/branches/:branchSlug",
-  authenticate,
   rateLimiter,
   validate(branchParamsSchema, "params"),
   branchController.getBranchBySlug,
