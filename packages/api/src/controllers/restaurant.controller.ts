@@ -9,7 +9,9 @@ export const restaurantController = {
     try {
       const { slug } = req.params;
 
-      const restaurant = await restaurantService.getRestaurantBySlug(slug);
+      const userId = req.user?.userId;
+
+      const restaurant = await restaurantService.getRestaurantBySlug(slug, userId);
 
       return res.status(200).json({
         data: restaurant,
@@ -39,9 +41,12 @@ export const restaurantController = {
         limit,
       } = req.query;
 
+      const userId = req.user?.userId;
+
       const restaurants = await restaurantService.getRestaurants({
         page: Number(page),
         limit: Number(limit),
+        userId: userId as string,
       });
 
       return res.status(200).json({
@@ -64,6 +69,8 @@ export const restaurantController = {
         limit,
       } = req.query;
 
+      const userId = req.user?.userId;
+
       const restaurants = await restaurantService.searchRestaurants({
         search: search as string,
         city: city as string,
@@ -71,6 +78,7 @@ export const restaurantController = {
         priceRange: priceRange as string,
         page: Number(page),
         limit: Number(limit),
+        userId: userId as string,
       });
 
       return res.status(200).json({

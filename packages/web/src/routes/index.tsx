@@ -20,6 +20,7 @@ import ForgotPassword from "../pages/auth/ForgotPassword";
 import { VerifyEmailToken } from "../pages/auth/VerifyEmailToken";
 import ResetPassword from "../pages/auth/ResetPassword";
 import Home from "@/pages/home/Home";
+import { SavedRestaurants } from "@/pages/restaurants/SavedRestaurants";
 import MenuDetailsPage from "@/pages/menu/MenuDetails";
 
 
@@ -48,6 +49,7 @@ export function AppRoutes() {
           <Route path="/settings" element={<Settings />} />
           <Route path="/restaurants" element={<Restaurants />} />
           <Route path="/restaurants/:slug" element={<RestaurantDetails />} />
+          <Route path="/saved-restaurants" element= {<SavedRestaurants />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/owner/dashboard" element={<OwnerDashboard />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />

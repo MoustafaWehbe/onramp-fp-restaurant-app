@@ -42,5 +42,5 @@ router.post(
   authRateLimiter,
   validate(resetPasswordSchema),
   authController.resetPassword,
-)
+) 
 export { router as authRouter };

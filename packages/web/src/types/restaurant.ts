@@ -8,6 +8,7 @@ export interface Restaurant {
   average_rating: number;
   review_count: number;
   image_url: string;
+  is_favorite: boolean;
 }
 
 export interface PaginationMeta {
@@ -95,6 +96,7 @@ export interface RestaurantDetails {
   review_count: number;
   average_rating: number;
   image_url: string;
+  is_favorite: boolean;
   branches: Branch[];
   menus: MenuSummary[];
 }

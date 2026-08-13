@@ -1,7 +1,13 @@
-import { memo } from "react";
+import { memo, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Star } from "lucide-react";
+import {
+  Bookmark,
+  BookmarkCheck,
+  Star,
+} from "lucide-react";
 import type { Restaurant } from "@/types/restaurant";
+import { favoritesApi } from "@/services/favoritesApi";
+import { notifyFavoriteAdded, notifyFavoriteRemoved } from "@/lib/favorite-events";
 
 interface RestaurantCardProps {
   restaurant: Restaurant;
@@ -18,7 +24,42 @@ export const RestaurantCard = memo(function RestaurantCard({
     average_rating,
     review_count,
     image_url,
+    is_favorite,
   } = restaurant;
+
+  const [isSaved, setIsSaved] = useState(is_favorite);
+  const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    setIsSaved(is_favorite);
+  }, [is_favorite]);
+
+  const handleSave = async (
+    event: React.MouseEvent<HTMLButtonElement>
+  ) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (isSaving) return;
+
+    setIsSaving(true);
+
+    try {
+      if (isSaved) {
+        await favoritesApi.delete(slug);
+        setIsSaved(false);
+        notifyFavoriteRemoved(slug);
+      } else {
+        await favoritesApi.create(slug);
+        setIsSaved(true);
+        notifyFavoriteAdded();
+      }
+    } catch (error) {
+      console.error("Failed to update favorite:", error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   return (
     <Link
@@ -83,30 +124,60 @@ export const RestaurantCard = memo(function RestaurantCard({
       </div>
 
       {/* Restaurant information */}
-      <div className="space-y-3 p-6">
-        <div className="flex items-center justify-between gap-3">
-          <h3 className="truncate text-xl font-semibold text-foreground">
-            {name}
-          </h3>
+      <div className="flex items-center justify-between gap-3 px-2 my-2">
+        <h3 className="truncate text-xl font-semibold text-foreground">
+          {name}
+        </h3>
 
-          <span
-            className="
-              shrink-0
-              rounded-md
-              bg-primary/10
-              px-3 py-1
-              text-sm font-medium
-              text-primary
-            "
-          >
-            {price_range}
-          </span>
-        </div>
-
-        <p className="text-sm text-muted-foreground">
-          {review_count.toLocaleString()} reviews
-        </p>
+        <span
+          className="
+            shrink-0
+            rounded-md
+            bg-primary/10
+            px-3 py-1
+            text-sm font-medium
+            text-primary
+          "
+        >
+          {price_range}
+        </span>
       </div>
+
+      {/* Save button */}
+      <div className="flex justify-end mr-2">
+        <button
+          type="button"
+          onClick={handleSave}
+          disabled={isSaving}
+          aria-label={
+            isSaved
+              ? `Remove ${name} from saved restaurants`
+              : `Save ${name}`
+          }
+          className="
+            flex h-10 w-10 items-center justify-center
+            rounded-full
+            bg-background
+            text-foreground
+            shadow-sm
+            transition-all
+            hover:bg-muted
+            hover:text-primary
+            disabled:cursor-not-allowed
+            disabled:opacity-60
+          "
+        >
+          {isSaved ? (
+            <BookmarkCheck className="h-5 w-5 fill-primary text-primary" />
+          ) : (
+            <Bookmark className="h-5 w-5" />
+          )}
+        </button>
+      </div>
+
+      <p className="text-sm text-muted-foreground m-2">
+        {review_count.toLocaleString()} reviews
+      </p>
     </Link>
   );
 });
