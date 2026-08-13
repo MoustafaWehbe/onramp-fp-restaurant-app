@@ -1,6 +1,7 @@
 import { Restaurant } from "../../models/Restaurant";
 import { RestaurantClaim } from "../../models/RestaurantClaim";
 import { createError } from "src/middleware/error-handler";
+import { Op } from "sequelize";
 
 export const restaurantClaimService = {
   create: async (
@@ -60,5 +61,46 @@ export const restaurantClaimService = {
     });
 
     return claim;
+  },
+
+  getMyClaim: async (userId: string) => {
+    const claim = await RestaurantClaim.findOne({
+      where: {
+        userId,
+        status: {
+          [Op.in]: ["approved", "completed"],
+        },
+      },
+    });
+
+    if (!claim) {
+      throw createError(
+        "No approved restaurant claim found",
+        404,
+      );
+    }
+
+    let restaurantName: string | null = null;
+    let restaurantSlug: string | null = null;
+
+    if (claim.restaurantId) {
+        const restaurant = await Restaurant.findByPk(
+            claim.restaurantId,
+            {
+                attributes: ["id", "slug", "name"],
+            },
+        );
+
+        if (restaurant) {
+            restaurantName = restaurant.name;
+            restaurantSlug = restaurant.slug;
+        }
+    }
+
+    return {
+        ...claim.toJSON(),
+        restaurantName,
+        restaurantSlug,
+    };
   },
 };

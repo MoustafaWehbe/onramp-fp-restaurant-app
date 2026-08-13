@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Eye, EyeOff } from "lucide-react";
-
+import { apiClient } from "../../lib/api-client";
 import { useAuth } from "../../hooks/useAuth";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
@@ -40,15 +40,35 @@ export function Login() {
     resolver: zodResolver(loginSchema),
   });
 
-  const onSubmit = async (data: LoginFormData) => {
+ const onSubmit = async (data: LoginFormData) => {
     try {
-      setError(null);
-      await login(data.email, data.password);
-      navigate("/home");
+        setError(null);
+        await login(data.email, data.password);
     } catch {
-      setError("Invalid email or password");
+        setError("Invalid email or password");
+        return;
     }
-  };
+    try {
+        const response = await apiClient.get("/auth/me");
+
+        const user = response.data.data;
+
+        if (user.role === "owner") {
+            navigate("/owner");
+        } else {
+            navigate("/home");
+        }
+    } catch (error) {
+        console.error(
+            "Failed to load user profile after login:",
+            error,
+        );
+
+        setError(
+            "Signed in successfully, but we couldn't load your profile. Please try again.",
+        );
+    }
+};
 
   return (
     <Card className="w-full max-w-2xl rounded-3xl border-gray-200 bg-gray-50/80 px-8 py-8 shadow-lg">

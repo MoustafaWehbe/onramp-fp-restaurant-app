@@ -23,6 +23,7 @@ import Home from "@/pages/home/Home";
 import { SavedRestaurants } from "@/pages/restaurants/SavedRestaurants";
 import MenuDetailsPage from "@/pages/menu/MenuDetails";
 import RestaurantClaimPage from "@/pages/restaurantclaims/RestaurantClaims";
+import { OwnerLayout } from "@/layouts/OwnerLayout";
 
 
 export function AppRoutes() {
@@ -50,9 +51,8 @@ export function AppRoutes() {
           <Route path="/settings" element={<Settings />} />
           <Route path="/restaurants" element={<Restaurants />} />
           <Route path="/restaurants/:slug" element={<RestaurantDetails />} />
-          <Route path="/saved-restaurants" element= {<SavedRestaurants />} />
+          <Route path="/saved-restaurants" element={<SavedRestaurants />} />
           <Route path="/profile" element={<Profile />} />
-          <Route path="/owner/dashboard" element={<OwnerDashboard />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/search" element={<Search />} />
           <Route
@@ -64,11 +64,14 @@ export function AppRoutes() {
             element={<MenuDetailsPage />}
           />
           <Route
-          path="/claim-restaurant"
-          element={<RestaurantClaimPage />}
-        />
+            path="/claim-restaurant"
+            element={<RestaurantClaimPage />}
+          />
         </Route>
-        
+        {/*Owner routes*/}
+        <Route path="/owner" element={<OwnerLayout />}>
+          <Route index element={<OwnerDashboard />} />
+        </Route>
       </Route>
 
       <Route path="*" element={<NotFound />} />

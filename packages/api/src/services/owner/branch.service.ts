@@ -17,7 +17,7 @@ interface BranchImageData {
 }
 
 interface CreateBranchData {
-    restaurantId: string;
+    restaurantSlug: string;
     name: string;
     city: string;
     address: string;
@@ -42,7 +42,7 @@ interface UpdateBranchData {
 
 export const branchService = {
     create: async ({
-        restaurantId,
+        restaurantSlug,
         name,
         city,
         address,
@@ -52,6 +52,19 @@ export const branchService = {
         opening_hours,
         images,
     }: CreateBranchData) => {
+        const restaurant = await Restaurant.findOne({
+            where: {
+                slug: restaurantSlug,
+            },
+        });
+
+        if (!restaurant) {
+            throw createError(
+                "Restaurant not found",
+                404,
+            );
+        }
+
         const slug = generateSlug(name);
 
         if (!slug) {
@@ -63,7 +76,7 @@ export const branchService = {
 
         const existingBranch = await Branch.findOne({
             where: {
-                restaurantId,
+                restaurantId: restaurant.id,
                 slug,
             },
         });
@@ -80,7 +93,7 @@ export const branchService = {
                 async (transaction) => {
                     const created = await Branch.create(
                         {
-                            restaurantId,
+                            restaurantId: restaurant.id,
                             name,
                             slug,
                             city,
@@ -148,19 +161,35 @@ export const branchService = {
     },
 
     update: async (
-        restaurantId: string,
-        branchId: string,
+        restaurantSlug: string,
+        branchSlug: string,
         data: UpdateBranchData,
     ) => {
+        const restaurant = await Restaurant.findOne({
+            where: {
+                slug: restaurantSlug,
+            },
+        });
+
+        if (!restaurant) {
+            throw createError(
+                "Restaurant not found",
+                404,
+            );
+        }
+
         const branch = await Branch.findOne({
             where: {
-                id: branchId,
-                restaurantId,
+                restaurantId: restaurant.id,
+                slug: branchSlug,
             },
         });
 
         if (!branch) {
-            throw createError("Branch not found", 404);
+            throw createError(
+                "Branch not found",
+                404,
+            );
         }
 
         const {
@@ -188,7 +217,7 @@ export const branchService = {
 
             const existingBranch = await Branch.findOne({
                 where: {
-                    restaurantId,
+                    restaurantId: restaurant.id,
                     slug: newSlug,
                 },
             });
@@ -277,27 +306,56 @@ export const branchService = {
     },
 
     delete: async (
-        restaurantId: string,
-        branchId: string,
+        restaurantSlug: string,
+        branchSlug: string,
     ) => {
+        const restaurant = await Restaurant.findOne({
+            where: {
+                slug: restaurantSlug,
+            },
+        });
+
+        if (!restaurant) {
+            throw createError(
+                "Restaurant not found",
+                404,
+            );
+        }
+
         const branch = await Branch.findOne({
             where: {
-                id: branchId,
-                restaurantId,
+                restaurantId: restaurant.id,
+                slug: branchSlug,
             },
         });
 
         if (!branch) {
-            throw createError("Branch not found", 404);
+            throw createError(
+                "Branch not found",
+                404,
+            );
         }
 
         await branch.destroy();
     },
 
-    getAll: async (restaurantId: string) => {
+    getAll: async (restaurantSlug: string) => {
+        const restaurant = await Restaurant.findOne({
+            where: {
+                slug: restaurantSlug,
+            },
+        });
+
+        if (!restaurant) {
+            throw createError(
+                "Restaurant not found",
+                404,
+            );
+        }
+
         const branches = await Branch.findAll({
             where: {
-                restaurantId,
+                restaurantId: restaurant.id,
             },
             order: [["createdAt", "DESC"]],
         });
@@ -305,13 +363,13 @@ export const branchService = {
         return branches;
     },
 
-    getById: async (
-        restaurantId: string,
-        branchId: string,
+    getBySlug: async (
+        restaurantSlug: string,
+        branchSlug: string,
     ) => {
         const restaurant = await Restaurant.findOne({
             where: {
-                id: restaurantId,
+                slug: restaurantSlug,
             },
             include: [
                 {
@@ -338,13 +396,14 @@ export const branchService = {
 
         const branch = await Branch.findOne({
             where: {
-                id: branchId,
-                restaurantId,
+                restaurantId: restaurant.id,
+                slug: branchSlug,
             },
             attributes: [
                 "id",
                 "restaurantId",
                 "name",
+                "slug",
                 "city",
                 "address",
                 "latitude",
