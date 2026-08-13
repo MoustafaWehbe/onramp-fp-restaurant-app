@@ -64,16 +64,16 @@ export function AppRoutes() {
             element={<MenuDetailsPage />}
           />
           <Route
-          path="/claim-restaurant"
-          element={<RestaurantClaimPage />}
-        />
+            path="/claim-restaurant"
+            element={<RestaurantClaimPage />}
+          />
         </Route>
-        
+        {/*Owner routes*/}
+        <Route path="/owner" element={<OwnerLayout />}>
+          <Route index element={<OwnerDashboard />} />
+        </Route>
       </Route>
-      <Route path="/owner" element={<OwnerLayout/>}>
-        <Route index element={<OwnerDashboard />} />
 
-      </Route>
       <Route path="*" element={<NotFound />} />
 
 

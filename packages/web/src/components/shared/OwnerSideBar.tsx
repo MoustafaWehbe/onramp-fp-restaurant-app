@@ -18,39 +18,46 @@ const mainNavigation = [
     },
 ];
 
-const managementNavigation = [
-    {
-        label: "Restaurants",
-        icon: Store,
-        path: "/owner/restaurants",
-    },
-    {
-        label: "Branches",
-        icon: Building2,
-        path: "/owner/branches",
-    },
-    {
-        label: "Menus",
-        icon: Menu,
-        path: "/owner/menus",
-    },
-];
 
 const analyticsNavigation = [
     {
         label: "Statistics",
         icon: BarChart3,
-        path: "/owner/statistics",
+        path: "#",
+        disabled: true,
     },
 ];
 
 interface OwnerSidebarProps {
     userName: string;
+    restaurantSlug: string | null;
 }
 
 export function OwnerSidebar({
     userName,
+    restaurantSlug,
 }: OwnerSidebarProps) {
+    const managementNavigation = [
+        {
+            label: "Restaurants",
+            icon: Store,
+            path: "#",
+            disabled: true,
+        },
+        {
+            label: "Branches",
+            icon: Building2,
+            path: "#",
+            disabled: true,
+        },
+        {
+            label: "Menus",
+            icon: Menu,
+            path: "#",
+            disabled: true,
+        },
+    ];
+
     const handleLogout = async () => {
         try {
             await apiClient.post("/auth/logout");

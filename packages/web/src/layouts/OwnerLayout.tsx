@@ -54,8 +54,6 @@ export function OwnerLayout() {
                 const claim: RestaurantClaim =
                     claimResponse.data.data;
 
-                console.log("OWNER CLAIM:", claim);
-
                 if (claim.restaurantId) {
                     setRestaurantId(claim.restaurantId);
 
@@ -82,8 +80,9 @@ export function OwnerLayout() {
         <div className="h-screen overflow-hidden bg-[#FAF8F4] text-[#292524]">
 
 
-            <OwnerSidebar userName={userName} />
-
+            <OwnerSidebar userName={userName}  
+            restaurantSlug={restaurantSlug}
+            />
 
             <div className="ml-[400px] flex h-screen min-w-0 flex-col">
 
