@@ -3,14 +3,19 @@ import { Router } from "express";
 import { menuController } from "../../controllers/owner/menu.controller";
 import { validate } from "src/middleware/validate";
 import {
-  createMenuSchema,
-  overrideBranchMenuItemSchema,
+  createMenuParamsSchema,
+  createMenuBodySchema,
+  overrideBranchMenuItemParamsSchema,
+  overrideBranchMenuItemBodySchema,
   getRestaurantMenusSchema,
   getBranchMenusSchema,
   deleteMenuSchema,
-  updateMenuSchema,
-  updateMenuItemSchema,
-  createMenuItemRouteSchema,
+  updateMenuParamsSchema,
+  updateMenuBodySchema,
+  updateMenuItemParamsSchema,
+  updateMenuItemBodySchema,
+  createMenuItemParamsSchema,
+  createMenuItemBodySchema,
 } from "../../schemas/owner/menu.schema";
 import { authenticate } from "src/middleware/authenticate";
 import { authorize } from "src/middleware/authorize";
@@ -23,7 +28,8 @@ router.post(
   authenticate,
   authorize("owner"),
   verifyRestaurantOwnership,
-  validate(createMenuSchema),
+  validate(createMenuParamsSchema, "params"),
+  validate(createMenuBodySchema, "body"),
   menuController.create,
 );
 
@@ -32,7 +38,7 @@ router.get(
   authenticate,
   authorize("owner"),
   verifyRestaurantOwnership,
-  validate(getRestaurantMenusSchema),
+  validate(getRestaurantMenusSchema, "params"),
   menuController.getRestaurantMenus,
 );
 
@@ -41,7 +47,7 @@ router.get(
   authenticate,
   authorize("owner"),
   verifyRestaurantOwnership,
-  validate(getBranchMenusSchema),
+  validate(getBranchMenusSchema, "params"),
   menuController.getBranchMenus,
 );
 
@@ -50,7 +56,8 @@ router.patch(
   authenticate,
   authorize("owner"),
   verifyRestaurantOwnership,
-  validate(overrideBranchMenuItemSchema),
+  validate(overrideBranchMenuItemParamsSchema, "params"),
+  validate(overrideBranchMenuItemBodySchema, "body"),
   menuController.overrideBranchMenuItem,
 );
 
@@ -59,7 +66,8 @@ router.patch(
   authenticate,
   authorize("owner"),
   verifyRestaurantOwnership,
-  validate(updateMenuSchema),
+  validate(updateMenuParamsSchema, "params"),
+  validate(updateMenuBodySchema, "body"),
   menuController.updateMenu,
 );
 
@@ -68,16 +76,17 @@ router.delete(
   authenticate,
   authorize("owner"),
   verifyRestaurantOwnership,
-  validate(deleteMenuSchema),
+  validate(deleteMenuSchema, "params"),
   menuController.delete,
 );
 
 router.patch(
-  "/menus/:menuId/:menuItemId",
+  "/menus/:menuId/menu-items/:menuItemId",
   authenticate,
   authorize("owner"),
   verifyRestaurantOwnership,
-  validate(updateMenuItemSchema),
+  validate(updateMenuItemParamsSchema, "params"),
+  validate(updateMenuItemBodySchema, "body"),
   menuController.updateMenuItem,
 );
 
@@ -86,7 +95,9 @@ router.post(
   authenticate,
   authorize("owner"),
   verifyRestaurantOwnership,
-  validate(createMenuItemRouteSchema),
-)
+  validate(createMenuItemParamsSchema, "params"),
+  validate(createMenuItemBodySchema, "body"),
+  menuController.addMenuItem,
+);
 
-export {router as ownerMenuRouter};
+export { router as ownerMenuRouter };

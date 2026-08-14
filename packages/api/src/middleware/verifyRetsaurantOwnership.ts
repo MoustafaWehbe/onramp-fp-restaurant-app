@@ -1,9 +1,7 @@
 import type { Request, Response, NextFunction } from "express";
-import {
-    Restaurant,
-    RestaurantClaim,
-    User,
-} from "@fp_restaurant/shared";
+import { Restaurant } from "../models/Restaurant";
+import { RestaurantClaim } from "../models/RestaurantClaim";
+import { User } from "../models/User";
 import { Op } from "sequelize";
 
 export async function verifyRestaurantOwnership(
