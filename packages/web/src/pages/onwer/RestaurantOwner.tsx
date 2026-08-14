@@ -128,6 +128,7 @@ export function RestaurantOwnerPage() {
     const [saveError, setSaveError] =
         useState<string | null>(null);
 
+    const [priceRanges, setPriceRanges] = useState<string[]>([]);
     /* ========================================================= */
     /* Load Restaurant                                             */
     /* ========================================================= */
@@ -168,6 +169,35 @@ export function RestaurantOwnerPage() {
         loadRestaurant();
     }, [restaurantSlug]);
 
+    useEffect(() => {
+        const fetchPriceRanges = async () => {
+            try {
+                const response = await apiClient.get("/restaurants");
+
+                const restaurants = response.data.data;
+
+                const ranges: string[] = Array.from(
+                    new Set(
+                        restaurants
+                            .map(
+                                (restaurant: { price_range: string }) =>
+                                    restaurant.price_range,
+                            )
+                            .filter(Boolean),
+                    ),
+                );
+
+                setPriceRanges(ranges);
+            } catch (error) {
+                console.error(
+                    "Failed to fetch price ranges:",
+                    error,
+                );
+            }
+        };
+
+        fetchPriceRanges();
+    }, []);
     /* ========================================================= */
     /* Edit                                                        */
     /* ========================================================= */
@@ -240,7 +270,7 @@ export function RestaurantOwnerPage() {
                 updatedRestaurant.slug !==
                 restaurantSlug
             ) {
-                    window.location.href = "/owner/restaurant";
+                window.location.href = "/owner/restaurant";
             }
         } catch (error) {
             console.error(
@@ -285,7 +315,7 @@ export function RestaurantOwnerPage() {
             </div>
         );
     }
-    
+
     /* ========================================================= */
     /* Error                                                       */
     /* ========================================================= */
@@ -662,21 +692,14 @@ export function RestaurantOwnerPage() {
                                         </SelectTrigger>
 
                                         <SelectContent>
-                                            <SelectItem value="$">
-                                                $
-                                            </SelectItem>
-
-                                            <SelectItem value="$$">
-                                                $$
-                                            </SelectItem>
-
-                                            <SelectItem value="$$$">
-                                                $$$
-                                            </SelectItem>
-
-                                            <SelectItem value="$$$$">
-                                                $$$$
-                                            </SelectItem>
+                                            {priceRanges.map((price) => (
+                                                <SelectItem
+                                                    key={price}
+                                                    value={price}
+                                                >
+                                                    {price}
+                                                </SelectItem>
+                                            ))}
                                         </SelectContent>
                                     </Select>
                                 </div>
@@ -685,7 +708,7 @@ export function RestaurantOwnerPage() {
 
                                 <div className="space-y-2">
                                     <Label htmlFor="restaurant-image">
-                                        Cover image 
+                                        Cover image
                                     </Label>
 
                                     <Input

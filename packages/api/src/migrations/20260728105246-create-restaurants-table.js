@@ -34,7 +34,12 @@ module.exports = {
         allowNull: false,
       },
       price_range: {
-        type: Sequelize.STRING,
+        type: Sequelize.ENUM(
+          'Budget',
+          'Average',
+          'Expensive',
+          'Luxury'
+        ),
         allowNull: false,
       },
       email: {
@@ -71,7 +76,7 @@ module.exports = {
       },
       deleted_at: {
         type: Sequelize.DATE,
-        allowNull:true,
+        allowNull: true,
       },
     });
 
