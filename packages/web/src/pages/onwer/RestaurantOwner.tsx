@@ -240,10 +240,7 @@ export function RestaurantOwnerPage() {
                 updatedRestaurant.slug !==
                 restaurantSlug
             ) {
-                navigate(
-                    `/owner/restaurants/${updatedRestaurant.slug}`,
-                    { replace: true },
-                );
+                    window.location.href = "/owner/restaurant";
             }
         } catch (error) {
             console.error(
@@ -288,7 +285,33 @@ export function RestaurantOwnerPage() {
             </div>
         );
     }
+    
+    /* ========================================================= */
+    /* Error                                                       */
+    /* ========================================================= */
 
+    if (error) {
+        return (
+            <div className="flex min-h-[60vh] items-center justify-center">
+                <div className="text-center">
+                    <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#FCFAF7]">
+                        <Store
+                            className="h-5 w-5 text-[#A8A29E]"
+                            strokeWidth={1.5}
+                        />
+                    </div>
+
+                    <h2 className="mt-5 font-serif text-2xl font-medium text-[#292524]">
+                        Something went wrong
+                    </h2>
+
+                    <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-[#78716C]">
+                        {error}
+                    </p>
+                </div>
+            </div>
+        );
+    }
     /* ========================================================= */
     /* No Restaurant                                               */
     /* ========================================================= */
@@ -318,32 +341,6 @@ export function RestaurantOwnerPage() {
         );
     }
 
-    /* ========================================================= */
-    /* Error                                                       */
-    /* ========================================================= */
-
-    if (error) {
-        return (
-            <div className="flex min-h-[60vh] items-center justify-center">
-                <div className="text-center">
-                    <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#FCFAF7]">
-                        <Store
-                            className="h-5 w-5 text-[#A8A29E]"
-                            strokeWidth={1.5}
-                        />
-                    </div>
-
-                    <h2 className="mt-5 font-serif text-2xl font-medium text-[#292524]">
-                        Something went wrong
-                    </h2>
-
-                    <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-[#78716C]">
-                        {error}
-                    </p>
-                </div>
-            </div>
-        );
-    }
 
     const rating = Number(
         restaurant.average_rating || 0,

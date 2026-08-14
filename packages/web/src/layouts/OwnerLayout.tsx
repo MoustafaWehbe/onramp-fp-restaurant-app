@@ -60,7 +60,7 @@ export function OwnerLayout() {
                 const claim: RestaurantClaim =
                     claimResponse.data.data;
 
-                if (claim.restaurantId) {
+                if (claim.restaurantId && claim.restaurantSlug) {
                     setRestaurantId(claim.restaurantId);
 
                     setRestaurantSlug(claim.restaurantSlug);
