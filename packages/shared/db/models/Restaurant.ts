@@ -8,14 +8,21 @@ export interface RestaurantAttributes {
   description: string;
   cuisine_type: string;
   ambiance_tags: string[];
-  price_range: string;
+  price_range: PriceRange;
   email: string;
   phone: string;
   review_count: number,
   average_rating: number,
   deletedAt?: Date | null;
 }
+export const PRICE_RANGES = [
+  "Budget",
+  "Average",
+  "Expensive",
+  "Luxury",
+] as const;
 
+export type PriceRange = (typeof PRICE_RANGES)[number];
 export interface RestaurantCreationAttributes
   extends Optional<Omit<RestaurantAttributes,"deletedAt">, "id"> { }
 
@@ -29,7 +36,7 @@ export class Restaurant
   declare description: string;
   declare cuisine_type: string;
   declare ambiance_tags: string[];
-  declare price_range: string;
+  declare price_range: PriceRange;
   declare email: string;
   declare phone: string;
   declare review_count: number;
@@ -70,7 +77,7 @@ export class Restaurant
           allowNull: false,
         },
         price_range: {
-          type: DataTypes.STRING,
+          type: DataTypes.ENUM(...PRICE_RANGES),
           allowNull: false,
         },
         email: {

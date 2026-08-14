@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/select";
 import { CuisineFilterChips } from "@/components/shared/CuisineFilterChips";
 import { CITY_OPTIONS, CUISINE_FILTERS } from "@/data/mockRestaurants";
-
+import { apiClient } from "@/lib/api-client";
 export function HeroSearch() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -21,7 +21,35 @@ export function HeroSearch() {
   const [city, setCity] = useState<string>(CITY_OPTIONS[0]);
   const [activeCuisine, setActiveCuisine] = useState<string | null>(null);
   const [priceRange, setPriceRange] = useState("");
+  const [priceRanges, setPriceRanges] = useState<string[]>([]);
 
+  useEffect(() => {
+    const fetchPriceRanges = async () => {
+      try {
+        const response = await apiClient.get("/restaurants");
+
+        const restaurants = response.data.data;
+
+        const ranges: string[] = Array.from(
+          new Set(
+            restaurants
+              .map(
+                (restaurant: { price_range: string }) =>
+                  restaurant.price_range
+              )
+              .filter(Boolean)
+          )
+        );
+
+        setPriceRanges(ranges);
+
+      } catch (error) {
+        console.error("Failed to fetch price ranges:", error);
+      }
+    };
+
+    fetchPriceRanges();
+  }, []);
   // Sync the search UI with the current URL.
   // This is important when HeroSearch is rendered on /restaurants.
   useEffect(() => {
@@ -39,6 +67,7 @@ export function HeroSearch() {
       searchParams.get("priceRange") ?? ""
     );
   }, [searchParams]);
+
 
   const handleSearch = useCallback(() => {
     const params = new URLSearchParams();
@@ -187,10 +216,11 @@ export function HeroSearch() {
             </SelectTrigger>
 
             <SelectContent>
-              <SelectItem value="Budget">Budget</SelectItem>
-              <SelectItem value="Average">Average</SelectItem>
-              <SelectItem value="Expensive">Expensive</SelectItem>
-              <SelectItem value="Luxury">Luxury</SelectItem>
+              {priceRanges.map((price) => (
+                <SelectItem key={price} value={price}>
+                  {price}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
 
