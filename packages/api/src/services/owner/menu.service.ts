@@ -64,7 +64,7 @@ export const menuService = {
       });
 
       if (!restaurant) {
-        throw createError("Restaurant not found");
+        throw createError("Restaurant not found", 404);
       }
 
       const menu = await Menu.create(
@@ -119,7 +119,7 @@ export const menuService = {
       });
 
       if (!restaurant) {
-        throw createError("Restaurant not found");
+        throw createError("Restaurant not found", 404);
       }
 
       const branch = await Branch.findOne({
@@ -131,7 +131,7 @@ export const menuService = {
       });
 
       if (!branch) {
-        throw createError("Branch not found for this restaurant");
+        throw createError("Branch not found for this restaurant", 404);
       }
 
       const menuItem = await MenuItem.findByPk(input.menuItemId, {
@@ -146,18 +146,19 @@ export const menuService = {
       });
 
       if (!menuItem) {
-        throw createError("Menu item not found");
+        throw createError("Menu item not found", 404);
       }
 
       const menu = (menuItem as MenuItem & { menu: Menu }).menu;
 
       if (menu.restaurantId !== restaurant.id) {
-        throw createError("Menu item does not belong to this restaurant");
+        throw createError("Menu item does not belong to this restaurant", 400);
       }
 
       if (menu.restaurantId !== branch.restaurantId) {
         throw createError(
           "Menu item does not belong to this branch's restaurant",
+          400
         );
       }
 
@@ -214,21 +215,17 @@ export const menuService = {
     });
 
     if (!restaurant) {
-      throw createError("Restaurant not found");
+      throw createError("Restaurant not found", 404);
     }
 
     const menus = await Menu.findAll({
       where: {
         restaurantId: restaurant.id,
-        is_active: true,
       },
       include: [
         {
           model: MenuItem,
           as: "menuItems",
-          where: {
-            is_active: true,
-          },
           required: false,
         },
       ],
@@ -245,10 +242,6 @@ export const menuService = {
       ],
     });
 
-    if (menus.length === 0) {
-      throw createError("No menus were found for this restaurant");
-    }
-
     return menus;
   },
 
@@ -260,7 +253,7 @@ export const menuService = {
     });
 
     if (!restaurant) {
-      throw createError("Restaurant not found");
+      throw createError("Restaurant not found", 404);
     }
 
     const branch = await Branch.findOne({
@@ -271,7 +264,7 @@ export const menuService = {
     });
 
     if (!branch) {
-      throw createError("Branch not found for this restaurant");
+      throw createError("Branch not found for this restaurant", 404);
     }
 
     const menus = await Menu.findAll({
@@ -313,7 +306,7 @@ export const menuService = {
     });
 
     if (menus.length === 0) {
-      throw createError("No menus were found for this branch");
+      throw createError("No menus were found for this branch", 404);
     }
 
     return menus.map((menu) => {
@@ -365,7 +358,7 @@ export const menuService = {
       });
 
       if (!restaurant) {
-        throw createError("Restaurant not found");
+        throw createError("Restaurant not found", 404);
       }
 
       const menu = await Menu.findOne({
@@ -377,7 +370,7 @@ export const menuService = {
       });
 
       if (!menu) {
-        throw createError("Menu not found for this restaurant");
+        throw createError("Menu not found for this restaurant", 404);
       }
 
       const menuItems = await MenuItem.findAll({
@@ -434,7 +427,7 @@ export const menuService = {
       });
 
       if (!restaurant) {
-        throw createError("Restaurant not found");
+        throw createError("Restaurant not found", 404);
       }
 
       const menu = await Menu.findOne({
@@ -445,7 +438,7 @@ export const menuService = {
       });
 
       if (!menu) {
-        throw createError("Menu not found for this restaurant");
+        throw createError("Menu not found for this restaurant", 404);
       }
 
       if (input.name !== undefined) {
@@ -473,6 +466,14 @@ export const menuService = {
     item: CreateMenuItemInput,
   ) => {
     try {
+      const sequelize = Menu.sequelize;
+
+      if(!sequelize) {
+        throw createError("Sequelize instance is not initialized");
+      }
+
+      const transaction = await sequelize.transaction();
+
       const restaurant = await Restaurant.findOne({
         where: {
           slug: restaurantSlug,
@@ -480,7 +481,7 @@ export const menuService = {
       });
 
       if (!restaurant) {
-        throw createError("Restaurant not found");
+        throw createError("Restaurant not found", 404);
       }
 
       const menu = await Menu.findOne({
@@ -491,7 +492,7 @@ export const menuService = {
       });
 
       if (!menu) {
-        throw createError("Menu not found for this restaurant");
+        throw createError("Menu not found for this restaurant", 404);
       }
 
       let displayOrder = item.display_order;
@@ -502,6 +503,8 @@ export const menuService = {
             menuId: menu.id,
           },
           order: [["display_order", "DESC"]],
+          lock: transaction.LOCK.UPDATE,
+          transaction,
         });
 
         displayOrder = lastItem ? lastItem.display_order + 1 : 0;
@@ -510,7 +513,7 @@ export const menuService = {
       const menuItem = await MenuItem.create({
         menuId: menu.id,
         name: item.name,
-        description: item.description,
+        description: item.description ?? null,
         base_price: item.base_price,
         image_url: item.image_url ?? null,
         display_order: displayOrder,
@@ -537,7 +540,7 @@ export const menuService = {
       });
 
       if (!restaurant) {
-        throw createError("Restaurant not found");
+        throw createError("Restaurant not found", 404);
       }
 
       const menu = await Menu.findOne({
@@ -548,7 +551,7 @@ export const menuService = {
       });
 
       if (!menu) {
-        throw createError("Menu not found for this restaurant");
+        throw createError("Menu not found for this restaurant", 404);
       }
 
       const menuItem = await MenuItem.findOne({
@@ -559,7 +562,7 @@ export const menuService = {
       });
 
       if (!menuItem) {
-        throw createError("Menu item not found");
+        throw createError("Menu item not found", 404);
       }
 
       if (input.name !== undefined) {
