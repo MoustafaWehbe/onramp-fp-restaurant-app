@@ -24,6 +24,7 @@ import { SavedRestaurants } from "@/pages/restaurants/SavedRestaurants";
 import MenuDetailsPage from "@/pages/menu/MenuDetails";
 import RestaurantClaimPage from "@/pages/restaurantclaims/RestaurantClaims";
 import { OwnerLayout } from "@/layouts/OwnerLayout";
+import { RestaurantOwnerPage } from "@/pages/onwer/RestaurantOwner";
 
 
 export function AppRoutes() {
@@ -71,6 +72,10 @@ export function AppRoutes() {
         {/*Owner routes*/}
         <Route path="/owner" element={<OwnerLayout />}>
           <Route index element={<OwnerDashboard />} />
+          <Route
+            path="/owner/restaurant"
+            element={<RestaurantOwnerPage />}
+          />
         </Route>
       </Route>
 
