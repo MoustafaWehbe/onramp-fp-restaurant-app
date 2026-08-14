@@ -9,6 +9,8 @@ export interface OwnerOutletContext {
     restaurantId: string | null;
     restaurantSlug: string | null;
     restaurantName: string | null;
+    reviewCount: number;
+    averageRating: number;
     userName: string;
 }
 
@@ -34,6 +36,10 @@ export function OwnerLayout() {
 
     const [restaurantName, setRestaurantName] =
         useState<string | null>(null);
+    const [reviewCount, setReviewCount] = useState(0);
+
+    const [averageRating, setAverageRating] =
+        useState(0);
 
     useEffect(() => {
         const loadOwnerData = async () => {
@@ -54,15 +60,27 @@ export function OwnerLayout() {
                 const claim: RestaurantClaim =
                     claimResponse.data.data;
 
-                if (claim.restaurantId) {
+                if (claim.restaurantId && claim.restaurantSlug) {
                     setRestaurantId(claim.restaurantId);
 
-                    setRestaurantSlug(
-                        claim.restaurantSlug,
+                    setRestaurantSlug(claim.restaurantSlug);
+
+                    setRestaurantName(claim.restaurantName);
+
+                    const restaurantResponse =
+                        await apiClient.get(
+                            `/owner/restaurants/${claim.restaurantSlug}`,
+                        );
+
+                    const restaurant =
+                        restaurantResponse.data.data;
+
+                    setReviewCount(
+                        Number(restaurant.review_count || 0),
                     );
 
-                    setRestaurantName(
-                        claim.restaurantName,
+                    setAverageRating(
+                        Number(restaurant.average_rating || 0),
                     );
                 }
             } catch (error) {
@@ -80,8 +98,8 @@ export function OwnerLayout() {
         <div className="h-screen overflow-hidden bg-[#FAF8F4] text-[#292524]">
 
 
-            <OwnerSidebar userName={userName}  
-            restaurantSlug={restaurantSlug}
+            <OwnerSidebar userName={userName}
+                restaurantSlug={restaurantSlug}
             />
 
             <div className="ml-[400px] flex h-screen min-w-0 flex-col">
@@ -114,6 +132,8 @@ export function OwnerLayout() {
                                 restaurantId,
                                 restaurantSlug,
                                 restaurantName,
+                                reviewCount,
+                                averageRating,
                                 userName,
                             }}
                         />
