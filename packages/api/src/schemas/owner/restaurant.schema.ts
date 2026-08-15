@@ -19,7 +19,7 @@ export const updateRestaurantSchema = z.object({
         .array(z.string().trim().min(1))
         .min(1)
         .optional(),
-    price_range: z.nativeEnum(PriceRange),
+    price_range: z.nativeEnum(PriceRange).optional(),
     email: z.string().trim().email().optional(),
     phone: z.string().trim().min(1).optional(),
 });
