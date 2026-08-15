@@ -45,7 +45,7 @@ export function OwnerDashboard() {
         setError(null);
 
         const response = await apiClient.get(
-          `/owner/${restaurantSlug}/branches`,
+          `/owner/restaurants/${restaurantSlug}/branches`,
         );
 
         setBranches(response.data.data ?? []);

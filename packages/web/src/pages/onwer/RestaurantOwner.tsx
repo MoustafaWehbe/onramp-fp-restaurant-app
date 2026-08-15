@@ -54,7 +54,7 @@ interface Restaurant {
 
 interface RestaurantForm {
     name: string;
-    image_url: string;
+    image: File | null;
     description: string;
     cuisine_type: string;
     ambiance_tags: string[];
@@ -92,7 +92,7 @@ const CUISINE_OPTIONS = [
 
 const EMPTY_FORM: RestaurantForm = {
     name: "",
-    image_url: "",
+    image: null,
     description: "",
     cuisine_type: "",
     ambiance_tags: [],
@@ -209,8 +209,7 @@ export function RestaurantOwnerPage() {
 
         setForm({
             name: restaurant.name ?? "",
-            image_url:
-                restaurant.image_url ?? "",
+            image: null,
             description:
                 restaurant.description ?? "",
             cuisine_type:
@@ -239,7 +238,6 @@ export function RestaurantOwnerPage() {
     /* ========================================================= */
     /* Save                                                        */
     /* ========================================================= */
-
     const handleSave = async () => {
         if (!restaurantSlug) {
             return;
@@ -249,9 +247,32 @@ export function RestaurantOwnerPage() {
             setIsSaving(true);
             setSaveError(null);
 
+            const formData = new FormData();
+
+            formData.append("name", form.name);
+            formData.append("description", form.description);
+            formData.append("cuisine_type", form.cuisine_type);
+            formData.append("price_range", form.price_range);
+            formData.append("email", form.email);
+            formData.append("phone", form.phone);
+
+            form.ambiance_tags.forEach((tag) => {
+                formData.append("ambiance_tags", tag);
+            });
+
+            if (form.image) {
+                formData.append("image", form.image);
+            }
+            console.log("Selected file:", form.image);
+
+            console.log("FormData entries:");
+            for (const [key, value] of formData.entries()) {
+                console.log(key, value);
+            }
+
             const response = await apiClient.patch(
                 `/owner/restaurants/${restaurantSlug}`,
-                form,
+                formData,
             );
 
             const updatedRestaurant =
@@ -267,8 +288,7 @@ export function RestaurantOwnerPage() {
              */
             if (
                 updatedRestaurant.slug &&
-                updatedRestaurant.slug !==
-                restaurantSlug
+                updatedRestaurant.slug !== restaurantSlug
             ) {
                 window.location.href = "/owner/restaurant";
             }
@@ -716,11 +736,12 @@ export function RestaurantOwnerPage() {
                                         type="file"
                                         accept="image/*"
                                         onChange={(event) => {
-                                            const file = event.target.files?.[0];
+                                            const file = event.target.files?.[0] ?? null;
 
-                                            if (file) {
-                                                // upload file
-                                            }
+                                            setForm((previous) => ({
+                                                ...previous,
+                                                image: file,
+                                            }));
                                         }}
                                     />
                                 </div>

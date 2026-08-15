@@ -3,7 +3,6 @@ import axios, { type AxiosError } from "axios";
 export const apiClient = axios.create({
   baseURL: "/api",
   withCredentials: true,
-  headers: { "Content-Type": "application/json" },
 });
 
 // Refresh the access token cookie on 401, then retry the original request
