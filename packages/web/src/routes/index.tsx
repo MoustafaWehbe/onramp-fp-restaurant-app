@@ -25,6 +25,8 @@ import MenuDetailsPage from "@/pages/menu/MenuDetails";
 import RestaurantClaimPage from "@/pages/restaurantclaims/RestaurantClaims";
 import { OwnerLayout } from "@/layouts/OwnerLayout";
 import { RestaurantOwnerPage } from "@/pages/onwer/RestaurantOwner";
+import { OwnerBranchesPage } from "@/pages/onwer/OwnerBranches";
+import { OwnerBranchCreationPage } from "@/pages/onwer/OwnerBranchCreation";
 
 
 export function AppRoutes() {
@@ -75,6 +77,14 @@ export function AppRoutes() {
           <Route
             path="/owner/restaurant"
             element={<RestaurantOwnerPage />}
+          />
+          <Route
+            path="/owner/branches"
+            element={<OwnerBranchesPage />}
+          />
+          <Route
+            path="/owner/:restaurantSlug/branches"
+            element={<OwnerBranchCreationPage />}
           />
         </Route>
       </Route>
