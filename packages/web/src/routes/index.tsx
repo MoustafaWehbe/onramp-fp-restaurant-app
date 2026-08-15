@@ -27,6 +27,7 @@ import { OwnerLayout } from "@/layouts/OwnerLayout";
 import { RestaurantOwnerPage } from "@/pages/onwer/RestaurantOwner";
 import { OwnerBranchesPage } from "@/pages/onwer/OwnerBranches";
 import { OwnerBranchCreationPage } from "@/pages/onwer/OwnerBranchCreation";
+import { OwnerBranchDetailsPage } from "@/pages/onwer/OwnerBranchDetails";
 
 
 export function AppRoutes() {
@@ -85,6 +86,10 @@ export function AppRoutes() {
           <Route
             path="/owner/:restaurantSlug/branches"
             element={<OwnerBranchCreationPage />}
+          />
+          <Route
+            path="/owner/:restaurantSlug/branches/:branchSlug"
+            element={<OwnerBranchDetailsPage />}
           />
         </Route>
       </Route>

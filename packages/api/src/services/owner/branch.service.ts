@@ -357,6 +357,13 @@ export const branchService = {
             where: {
                 restaurantId: restaurant.id,
             },
+            include: [
+                {
+                    model: BranchImage,
+                    as: "images",
+                    attributes: ["id", "url", "type"],
+                },
+            ],
             order: [["createdAt", "DESC"]],
         });
 

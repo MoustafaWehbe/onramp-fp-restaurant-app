@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import {
     Clock,
@@ -6,6 +7,8 @@ import {
     Phone,
     ArrowRight,
     Image as ImageIcon,
+    ChevronLeft,
+    ChevronRight,
 } from "lucide-react";
 
 import type { Branch } from "@/types/restaurant";
@@ -29,39 +32,127 @@ export function OwnerBranchCard({
         city,
         phone,
         opening_hours,
+        images,
     } = branch;
 
+    const [currentImage, setCurrentImage] = useState(0);
+
     /*
-     * The current Branch type does not appear to expose
-     * an explicit isOpen/menu availability field.
-     *
-     * Keep these values derived/optional until the API
-     * actually provides them.
+     * The current Branch type does not expose
+     * these fields yet, so keep them optional.
      */
-    const isOpen =
-        (branch as Branch & { isOpen?: boolean }).isOpen;
+    const isOpen = (
+        branch as Branch & {
+            isOpen?: boolean;
+        }
+    ).isOpen;
 
-    const menuAvailable =
-        (branch as Branch & {
+    const menuAvailable = (
+        branch as Branch & {
             menu_available?: boolean;
-        }).menu_available;
+        }
+    ).menu_available;
 
-    const imageUrl =
-        (branch as Branch & {
-            image_url?: string | null;
-        }).image_url;
+    const branchImages = images ?? [];
+
+    const hasMultipleImages =
+        branchImages.length > 1;
+
+    const nextImage = () => {
+        setCurrentImage((current) =>
+            current === branchImages.length - 1
+                ? 0
+                : current + 1,
+        );
+    };
+
+    const previousImage = () => {
+        setCurrentImage((current) =>
+            current === 0
+                ? branchImages.length - 1
+                : current - 1,
+        );
+    };
 
     return (
         <Card className="group overflow-hidden rounded-2xl border-[#EAE4DC] bg-white shadow-[0_8px_30px_rgba(41,37,36,0.04)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_14px_40px_rgba(41,37,36,0.08)]">
             {/* Image */}
 
             <div className="relative aspect-[16/9] overflow-hidden bg-[#FCFAF7]">
-                {imageUrl ? (
-                    <img
-                        src={imageUrl}
-                        alt={name}
-                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-                    />
+                {branchImages.length > 0 ? (
+                    <>
+                        <img
+                            src={
+                                branchImages[
+                                    currentImage
+                                ].url
+                            }
+                            alt={`${name} ${
+                                currentImage + 1
+                            }`}
+                            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                        />
+
+                        {/* Previous */}
+
+                        {hasMultipleImages && (
+                            <button
+                                type="button"
+                                onClick={
+                                    previousImage
+                                }
+                                aria-label="Previous image"
+                                className="absolute left-3 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-[#292524] shadow-md transition hover:bg-white"
+                            >
+                                <ChevronLeft className="h-4 w-4" />
+                            </button>
+                        )}
+
+                        {/* Next */}
+
+                        {hasMultipleImages && (
+                            <button
+                                type="button"
+                                onClick={nextImage}
+                                aria-label="Next image"
+                                className="absolute right-3 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-[#292524] shadow-md transition hover:bg-white"
+                            >
+                                <ChevronRight className="h-4 w-4" />
+                            </button>
+                        )}
+
+                        {/* Image indicators */}
+
+                        {hasMultipleImages && (
+                            <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-1.5 rounded-full bg-black/40 px-2.5 py-1.5">
+                                {branchImages.map(
+                                    (image, index) => (
+                                        <button
+                                            key={
+                                                image.id
+                                            }
+                                            type="button"
+                                            onClick={() =>
+                                                setCurrentImage(
+                                                    index,
+                                                )
+                                            }
+                                            aria-label={`View image ${
+                                                index +
+                                                1
+                                            }`}
+                                            className={`h-1.5 rounded-full transition-all ${
+                                                index ===
+                                                currentImage
+                                                    ? "w-4 bg-white"
+                                                    : "w-1.5 bg-white/60"
+                                            }`}
+                                        />
+                                    ),
+                                )}
+                            </div>
+                        )}
+                    </>
                 ) : (
                     <div className="flex h-full items-center justify-center">
                         <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white">
@@ -83,7 +174,9 @@ export function OwnerBranchCard({
                                 : "bg-white text-[#78716C] hover:bg-white"
                         }`}
                     >
-                        {isOpen ? "Open" : "Closed"}
+                        {isOpen
+                            ? "Open"
+                            : "Closed"}
                     </Badge>
                 )}
             </div>
@@ -112,7 +205,9 @@ export function OwnerBranchCard({
 
                             <span>
                                 {address}
-                                {city ? ` · ${city}` : ""}
+                                {city
+                                    ? ` · ${city}`
+                                    : ""}
                             </span>
                         </div>
                     )}
@@ -121,7 +216,9 @@ export function OwnerBranchCard({
                         <div className="flex items-center gap-2.5">
                             <Phone className="h-4 w-4 shrink-0 text-primary" />
 
-                            <span>{phone}</span>
+                            <span>
+                                {phone}
+                            </span>
                         </div>
                     )}
 
@@ -129,11 +226,14 @@ export function OwnerBranchCard({
                         <div className="flex items-start gap-2.5">
                             <Clock className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
 
-                            <span>{opening_hours}</span>
+                            <span>
+                                {opening_hours}
+                            </span>
                         </div>
                     )}
 
-                    {menuAvailable !== undefined && (
+                    {menuAvailable !==
+                        undefined && (
                         <div className="flex items-center gap-2.5">
                             <Menu className="h-4 w-4 shrink-0 text-primary" />
 
@@ -157,6 +257,7 @@ export function OwnerBranchCard({
                             to={`/owner/${restaurantSlug}/branches/${slug}`}
                         >
                             Manage Branch
+
                             <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
                         </Link>
                     </Button>

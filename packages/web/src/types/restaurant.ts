@@ -63,6 +63,13 @@ export interface BranchReview {
   user: ReviewUser;
 }
 
+export interface BranchImage {
+    id: string;
+    branchId: string;
+    url: string;
+    type: string;
+}
+
 export interface Branch {
   id: string;
   restaurantId: string;
@@ -74,6 +81,7 @@ export interface Branch {
   opening_hours: string;
   review_count: number;
   average_rating: string;
+  images: BranchImage[];
   reviews: BranchReview[];
 }
 
