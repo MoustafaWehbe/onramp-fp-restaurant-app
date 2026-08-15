@@ -33,14 +33,27 @@ export const storageService = {
     return data.publicUrl;
   },
 
-  uploadFiles: async (
-    files: UploadableFile[],
-    folder: string
+  deleteFile: async (
+    publicUrl: string
   ) => {
-    return Promise.all(
-      files.map(file =>
-        storageService.uploadFile(file, folder)
-      )
-    );
+    const bucketName = storageConfig.bucketName;
+
+    const marker = `/object/public/${bucketName}/`;
+
+    const index = publicUrl.indexOf(marker);
+
+    if (index === -1) {
+      return;
+    }
+
+    const path = publicUrl.substring(index + marker.length);
+
+    const { error } = await supabase.storage
+      .from(bucketName)
+      .remove([path]);
+
+    if (error) {
+      throw error;
+    }
   },
 };

@@ -10,8 +10,6 @@ const menuItemFields = {
 
   base_price: z.number().min(0, "Base price cannot be negative"),
 
-  image_url: z.string().url("Invalid image URL").nullable().optional(),
-
   display_order: z.number().int().min(0).optional(),
 
   is_active: z.boolean().optional(),
@@ -119,8 +117,6 @@ export const updateMenuItemBodySchema = z
 
     base_price: menuItemFields.base_price.optional(),
 
-    image_url: menuItemFields.image_url,
-
     display_order: menuItemFields.display_order,
 
     is_active: menuItemFields.is_active,
@@ -130,7 +126,6 @@ export const updateMenuItemBodySchema = z
       data.name !== undefined ||
       data.description !== undefined ||
       data.base_price !== undefined ||
-      data.image_url !== undefined ||
       data.display_order !== undefined ||
       data.is_active !== undefined,
     {

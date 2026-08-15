@@ -1,18 +1,35 @@
 import type { Request, Response, NextFunction } from "express";
 import { menuService } from "../../services/owner/menu.service";
+import type { UploadableFile } from "src/services/storage/storage.service";
+
+interface RequestWithFile extends Request {
+  file?: UploadableFile;
+}
+
+interface RequestWithFiles extends Request {
+  files?: UploadableFile[];
+}
 
 export const menuController = {
   create: async (
-    req: Request,
+    req: RequestWithFiles,
     res: Response,
     next: NextFunction
   ) => {
     try {
       const { restaurantSlug } = req.params;
 
+      const items = req.body.items.map(
+        (item: any, index: number) => ({
+          ...item,
+          image: req.files?.[index],
+        })
+      );
+
       const menu = await menuService.create({
         restaurantSlug,
         ...req.body,
+        items,
       });
 
       return res.status(201).json(menu);
@@ -120,7 +137,7 @@ export const menuController = {
   },
 
   addMenuItem: async (
-    req: Request,
+    req: RequestWithFile,
     res: Response,
     next: NextFunction
   ) => {
@@ -130,7 +147,10 @@ export const menuController = {
       const menuItem = await menuService.addMenuItem(
         restaurantSlug as string,
         menuId as string,
-        req.body
+        {
+          ...req.body,
+          image:req.file
+        }
       );
 
       return res.status(201).json(menuItem);
@@ -140,7 +160,7 @@ export const menuController = {
   },
 
   updateMenuItem: async (
-    req: Request,
+    req: RequestWithFile,
     res: Response,
     next: NextFunction
   ) => {
@@ -151,7 +171,10 @@ export const menuController = {
         restaurantSlug as string,
         menuId as string,
         menuItemId as string,
-        req.body
+        {
+          ...req.body,
+          image: req.file,
+        },
       );
 
       return res.status(200).json(menuItem);
