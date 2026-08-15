@@ -11,6 +11,8 @@ import {
 } from "src/schemas/owner/branch.schema";
 import { branchController } from "src/controllers/owner/branch.controller";
 import { authorize } from "src/middleware/authorize";
+import { upload } from "src/middleware/upload";
+import { parseJsonFields } from "src/middleware/parse-json-fields";
 
 const router = Router();
 
@@ -21,6 +23,7 @@ router.post(
     rateLimiter,
     validate(ownerBranchParamsSchema, "params"),
     verifyRestaurantOwnership,
+    upload.array("images"),
     validate(createBranchSchema, "body"),
     branchController.create,
 );
@@ -32,6 +35,8 @@ router.patch(
     rateLimiter,
     validate(ownerBranchUpdateParamsSchema, "params"),
     verifyRestaurantOwnership,
+    upload.array("images"),
+    parseJsonFields("deletedImageIds"),
     validate(updateBranchSchema, "body"),
     branchController.update,
 );

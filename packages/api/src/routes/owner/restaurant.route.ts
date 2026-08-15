@@ -6,6 +6,8 @@ import { createRestaurantSchema, updateRestaurantSchema } from "src/schemas/owne
 import { rateLimiter } from "src/middleware/rate-limiter";
 import { verifyRestaurantOwnership } from "src/middleware/verifyRetsaurantOwnership";
 import { authorize } from "src/middleware/authorize";
+import { upload } from "src/middleware/upload";
+import { parseJsonFields } from "src/middleware/parse-json-fields";
 
 const router = Router();
 
@@ -14,6 +16,8 @@ router.post(
     rateLimiter,
     authenticate,
     authorize("owner"),
+    upload.single("image"),
+    parseJsonFields("ambiance_tags"),
     validate(createRestaurantSchema),
     restaurantController.create,
 );
@@ -24,6 +28,7 @@ router.patch(
     authenticate,
     authorize("owner"),
     verifyRestaurantOwnership,
+    upload.single("image"),
     validate(updateRestaurantSchema),
     restaurantController.update,
 );

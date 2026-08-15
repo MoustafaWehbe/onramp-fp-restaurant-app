@@ -9,3 +9,5 @@ export * from "../queue";
 
 // AI
 export * from "../ai";
+
+export * from "./types/restaurant";

@@ -3,106 +3,83 @@ import { createError } from "src/middleware/error-handler";
 import { restaurantService } from "src/services/owner/restaurant.service";
 
 export const restaurantController = {
-    create: async (
-        req: Request,
-        res: Response,
-        next: NextFunction,
-    ) => {
-        try {
-            const userId = req.user?.userId;
+  create: async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const userId = req.user?.userId;
 
-            if (!userId) {
-                return next(createError("Unauthenticated", 401));
-            }
+      if (!userId) {
+        return next(createError("Unauthenticated", 401));
+      }
 
-            const {
-                image_url,
-                description,
-                cuisine_type,
-                ambiance_tags,
-                price_range,
-            } = req.body;
+      const {
+        description,
+        cuisine_type,
+        ambiance_tags,
+        price_range,
+      } = req.body;
 
-            const restaurant = await restaurantService.create({
-                userId,
-                image_url,
-                description,
-                cuisine_type,
-                ambiance_tags,
-                price_range,
-            });
+      if (!req.file) {
+        return next(createError("Restaurant image is required", 400));
+      }
 
-            res.status(201).json({
-                data: restaurant,
-                message: "Restaurant created successfully",
-            });
-        } catch (error) {
-            next(error);
+      const restaurant = await restaurantService.create({
+        userId,
+        description,
+        cuisine_type,
+        ambiance_tags,
+        price_range,
+        image: req.file,
+      });
+
+      res.status(201).json({
+        data: restaurant,
+        message: "Restaurant created successfully",
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  update: async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { restaurantSlug } = req.params;
+
+      if (!restaurantSlug || Array.isArray(restaurantSlug)) {
+        return next(createError("Restaurant Slug is required", 400));
+      }
+
+      const restaurant = await restaurantService.update(
+        restaurantSlug,
+        {
+            ...req.body,
+            image: req.file,
         }
-    },
+      );
 
-    update: async (
-        req: Request,
-        res: Response,
-        next: NextFunction,
-    ) => {
-        try {
-            const { restaurantSlug } = req.params;
+      res.status(200).json({
+        data: restaurant,
+        message: "Restaurant updated successfully",
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
 
-            if (!restaurantSlug || Array.isArray(restaurantSlug)) {
-                return next(
-                    createError(
-                        "Restaurant Slug is required",
-                        400,
-                    ),
-                );
-            }
+  getBySlug: async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { restaurantSlug } = req.params;
 
-            const restaurant =
-                await restaurantService.update(
-                    restaurantSlug,
-                    req.body,
-                );
+      if (!restaurantSlug || Array.isArray(restaurantSlug)) {
+        return next(createError("Restaurant slug is required", 400));
+      }
 
-            res.status(200).json({
-                data: restaurant,
-                message: "Restaurant updated successfully",
-            });
-        } catch (error) {
-            next(error);
-        }
-    },
+      const restaurant = await restaurantService.getBySlug(restaurantSlug);
 
-    getBySlug: async (
-        req: Request,
-        res: Response,
-        next: NextFunction,
-    ) => {
-        try {
-            const { restaurantSlug } = req.params;
-
-            if (
-                !restaurantSlug ||
-                Array.isArray(restaurantSlug)
-            ) {
-                return next(
-                    createError(
-                        "Restaurant slug is required",
-                        400,
-                    ),
-                );
-            }
-
-            const restaurant =
-                await restaurantService.getBySlug(
-                    restaurantSlug,
-                );
-
-            res.status(200).json({
-                data: restaurant,
-            });
-        } catch (error) {
-            next(error);
-        }
-    },
+      res.status(200).json({
+        data: restaurant,
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
 };
