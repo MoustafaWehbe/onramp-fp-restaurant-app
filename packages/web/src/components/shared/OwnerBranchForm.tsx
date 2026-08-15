@@ -52,6 +52,7 @@ export function OwnerBranchForm({
 
     const [isLocationProcessing, setIsLocationProcessing] =
         useState(false);
+    const [locationError, setLocationError] = useState<string | null>(null);
 
     useEffect(() => {
         if (initialValues) {
@@ -79,9 +80,12 @@ export function OwnerBranchForm({
         }
 
         if (!form.latitude || !form.longitude) {
-            return;
+            setLocationError(
+                "Please add a branch location before saving.",
+            ); return;
         }
 
+        setLocationError(null);
         await onSubmit(form);
     };
 
@@ -280,28 +284,30 @@ export function OwnerBranchForm({
                         type="submit"
                         disabled={
                             isSaving ||
-                            isLocationProcessing
+                            isLocationProcessing ||
+                            !form.latitude ||
+                            !form.longitude
                         }
-                        className="gap-2 rounded-xl"
+                    className="gap-2 rounded-xl"
                     >
-                        {isSaving ? (
-                            <>
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                                {isEditMode
-                                    ? "Saving..."
-                                    : "Creating..."}
-                            </>
-                        ) : (
-                            <>
-                                <Save className="h-4 w-4" />
-                                {isEditMode
-                                    ? "Save Changes"
-                                    : "Create Branch"}
-                            </>
-                        )}
-                    </Button>
-                </div>
-            </form>
-        </Card>
+                    {isSaving ? (
+                        <>
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            {isEditMode
+                                ? "Saving..."
+                                : "Creating..."}
+                        </>
+                    ) : (
+                        <>
+                            <Save className="h-4 w-4" />
+                            {isEditMode
+                                ? "Save Changes"
+                                : "Create Branch"}
+                        </>
+                    )}
+                </Button>
+            </div>
+        </form>
+        </Card >
     );
 }

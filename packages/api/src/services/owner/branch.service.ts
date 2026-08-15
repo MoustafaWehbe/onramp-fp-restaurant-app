@@ -361,7 +361,7 @@ export const branchService = {
                 {
                     model: BranchImage,
                     as: "images",
-                    attributes: ["id", "url", "type"],
+                    attributes: ["id","branchId", "url", "type"],
                 },
             ],
             order: [["createdAt", "DESC"]],
@@ -426,6 +426,7 @@ export const branchService = {
                     as: "images",
                     attributes: [
                         "id",
+                        "branchId",
                         "url",
                         "type",
                     ],

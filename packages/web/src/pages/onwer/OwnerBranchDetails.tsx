@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
     ArrowLeft,
     Building2,
@@ -109,6 +109,9 @@ export function OwnerBranchDetailsPage() {
     const [saveError, setSaveError] =
         useState<string | null>(null);
 
+    const [deleteError, setDeleteError] =
+        useState<string | null>(null);
+
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] =
         useState(false);
 
@@ -132,7 +135,7 @@ export function OwnerBranchDetailsPage() {
 
             setData(
                 response.data.data ??
-                    response.data,
+                response.data,
             );
         } catch (error) {
             console.error(
@@ -153,8 +156,8 @@ export function OwnerBranchDetailsPage() {
 
             setError(
                 response?.data?.message ??
-                    response?.data?.error ??
-                    "Unable to load the branch.",
+                response?.data?.error ??
+                "Unable to load the branch.",
             );
         } finally {
             setIsLoading(false);
@@ -164,6 +167,40 @@ export function OwnerBranchDetailsPage() {
     useEffect(() => {
         loadBranch();
     }, [restaurantSlug, branchSlug]);
+
+    const initialValues = useMemo<BranchForm>(() => {
+        if (!data?.branch) {
+            return {
+                name: "",
+                city: "",
+                address: "",
+                phone: "",
+                opening_hours: "",
+                latitude: "",
+                longitude: "",
+            };
+        }
+
+        const { branch } = data;
+
+        return {
+            name: branch.name,
+            city: branch.city,
+            address: branch.address,
+            phone: branch.phone ?? "",
+            opening_hours: branch.opening_hours ?? "",
+            latitude: branch.latitude,
+            longitude: branch.longitude,
+        };
+    }, [
+        data?.branch?.name,
+        data?.branch?.city,
+        data?.branch?.address,
+        data?.branch?.phone,
+        data?.branch?.opening_hours,
+        data?.branch?.latitude,
+        data?.branch?.longitude,
+    ]);
 
     const handleUpdate = async (
         form: BranchForm,
@@ -202,18 +239,25 @@ export function OwnerBranchDetailsPage() {
             setData((current) =>
                 current
                     ? {
-                          ...current,
-                          branch: updatedBranch,
-                      }
+                        ...current,
+                        branch: updatedBranch,
+                    }
                     : current,
             );
 
             setIsEditing(false);
 
             /*
-             * Reload because the branch slug may change
-             * if the branch name was updated.
-             */
+            * Reload because the branch slug may change
+            * if the branch name was updated.
+            */
+            if (updatedBranch.slug !== branchSlug) {
+                navigate(
+                    `/owner/${encodeURIComponent(restaurantSlug)}/branches/${encodeURIComponent(updatedBranch.slug)}`,
+                    { replace: true },
+                );
+                return;
+            }
             await loadBranch();
         } catch (error) {
             console.error(
@@ -234,8 +278,8 @@ export function OwnerBranchDetailsPage() {
 
             setSaveError(
                 response?.data?.message ??
-                    response?.data?.error ??
-                    "Unable to update the branch. Please try again.",
+                response?.data?.error ??
+                "Unable to update the branch. Please try again.",
             );
         } finally {
             setIsSaving(false);
@@ -249,7 +293,7 @@ export function OwnerBranchDetailsPage() {
 
         try {
             setIsDeleting(true);
-            setError(null);
+            setDeleteError(null);
 
             await apiClient.delete(
                 `/owner/${encodeURIComponent(
@@ -277,10 +321,10 @@ export function OwnerBranchDetailsPage() {
                 }
             ).response;
 
-            setError(
+            setDeleteError(
                 response?.data?.message ??
-                    response?.data?.error ??
-                    "Unable to delete the branch. Please try again.",
+                response?.data?.error ??
+                "Unable to delete the branch. Please try again.",
             );
         } finally {
             setIsDeleting(false);
@@ -363,16 +407,6 @@ export function OwnerBranchDetailsPage() {
 
     const { branch, menus, reviewSummary } = data;
 
-    const initialValues: BranchForm = {
-        name: branch.name,
-        city: branch.city,
-        address: branch.address,
-        phone: branch.phone ?? "",
-        opening_hours:
-            branch.opening_hours ?? "",
-        latitude: branch.latitude,
-        longitude: branch.longitude,
-    };
 
     /*
      * =========================================================
@@ -498,7 +532,11 @@ export function OwnerBranchDetailsPage() {
                     {error}
                 </div>
             )}
-
+            {deleteError && (
+                <div className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+                    {deleteError}
+                </div>
+            )}
             {/* Main content */}
 
             <div className="grid gap-6 lg:grid-cols-3">
@@ -672,8 +710,8 @@ export function OwnerBranchDetailsPage() {
 
                         <Reviews
                             reviews={branch.reviews}
-                            onUpdate={() => {}}
-                            onDelete={() => {}}
+                            onUpdate={() => { }}
+                            onDelete={() => { }}
                         />
                     </section>
                 </div>
