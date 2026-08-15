@@ -5,36 +5,11 @@ import { UploadableFile } from "src/services/storage/storage.service";
 export const menuController = {
   create: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      console.log("===== CREATE MENU DEBUG =====");
-
-      console.log("BODY:");
-      console.log(JSON.stringify(req.body, null, 2));
-
-      console.log("BODY ITEMS:");
-      console.log(JSON.stringify(req.body.items, null, 2));
-
-      console.log("FILES:");
-      console.log(
-        (req.files ?? []).map((file: Express.Multer.File) => ({
-          fieldname: file.fieldname,
-          originalname: file.originalname,
-          mimetype: file.mimetype,
-          size: file.size,
-        })),
-      );
-
-      console.log("=============================");
-
       const { restaurantSlug } = req.params;
 
       const files = (req.files ?? []) as Express.Multer.File[];
 
       const items = (req.body.items ?? []).map((item: any) => {
-        console.log("CURRENT ITEM:");
-        console.log(item);
-        console.log("IMAGE INDEX:", item.imageIndex);
-        console.log("MATCHED FILE:", files[item.imageIndex]?.originalname);
-
         const { imageIndex, ...menuItem } = item;
 
         return {
@@ -44,15 +19,6 @@ export const menuController = {
           ),
         };
       });
-
-      console.log("FINAL ITEMS:");
-      console.log(
-        items.map((item: any) => ({
-          name: item.name,
-          hasImage: !!item.image,
-          imageName: item.image?.originalname,
-        })),
-      );
 
       const menu = await menuService.create({
         restaurantSlug,
