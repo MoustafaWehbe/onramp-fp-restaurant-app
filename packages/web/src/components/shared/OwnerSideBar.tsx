@@ -44,7 +44,7 @@ export function OwnerSidebar({
         {
             label: "Branches",
             icon: Building2,
-            disabled: true,
+            path: "/owner/branches",
         },
         {
             label: "Menus",
