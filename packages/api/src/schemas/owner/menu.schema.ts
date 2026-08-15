@@ -1,5 +1,11 @@
 import { z } from "zod";
 
+const booleanish = z
+  .union([z.boolean(), z.enum(["true", "false", "1", "0"])])
+  .transform((value) =>
+    typeof value === "boolean" ? value : value === "true" || value === "1",
+  );
+
 const menuItemFields = {
   name: z
     .string()
@@ -8,14 +14,21 @@ const menuItemFields = {
 
   description: z.string().nullable().optional(),
 
-  base_price: z.coerce.number().min(0, "Base price cannot be negative"),
+  base_price: z
+    .union([z.number(), z.string().trim().min(1, "Base price is required")])
+    .pipe(z.coerce.number().min(0, "Base price cannot be negative")),
 
-  display_order: z.coerce.number().int().min(0).optional(),
+  display_order: z
+    .union([z.number(), z.string().trim().min(1, "Display order is required")])
+    .pipe(z.coerce.number().int().min(0))
+    .optional(),
 
-  is_active: z.coerce.boolean().optional(),
+  is_active: booleanish.optional(),
 };
 
-const createMenuItemSchema = z.object(menuItemFields);
+const createMenuItemSchema = z.object(menuItemFields).extend({
+  imageIndex: z.coerce.number().int().min(0).optional(),
+});
 
 const restaurantSlugSchema = z.object({
   restaurantSlug: z.string().min(1, "Restaurant slug is required"),
@@ -43,7 +56,7 @@ export const createMenuBodySchema = z.object({
 
   description: z.string().nullable().optional(),
 
-  is_active: z.coerce.boolean().optional(),
+  is_active: booleanish.optional(),
 
   items: z.array(createMenuItemSchema).optional(),
 });
@@ -60,13 +73,12 @@ export const overrideBranchMenuItemParamsSchema = restaurantSlugSchema
 export const overrideBranchMenuItemBodySchema = z
   .object({
     customPrice: z
-      .coerce
-      .number()
-      .min(0, "Custom price cannot be negative")
+      .union([z.number(), z.string().trim().min(1, "Custom price is required")])
+      .pipe(z.coerce.number().min(0, "Custom price cannot be negative"))
       .nullable()
       .optional(),
 
-    isAvailable: z.coerce.boolean().optional(),
+    isAvailable: booleanish.optional(),
   })
   .refine(
     (data) => data.customPrice !== undefined || data.isAvailable !== undefined,
@@ -94,7 +106,7 @@ export const updateMenuBodySchema = z
 
     description: z.string().nullable().optional(),
 
-    is_active: z.coerce.boolean().optional(),
+    is_active: booleanish.optional(),
   })
   .refine(
     (data) =>

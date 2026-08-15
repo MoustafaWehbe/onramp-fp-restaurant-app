@@ -7,9 +7,21 @@ export interface UploadableFile {
   buffer: Buffer;
 }
 
+const sanitizeFilename = (filename: string) => {
+  return filename
+    .replace(/\\/g, "/")
+    .split("/")
+    .pop()!
+    .replace(/[^a-zA-Z0-9._-]/g, "_")
+    .replace(/^\.+/, "")
+    .slice(0, 100);
+};
+
 export const storageService = {
   uploadFile: async (file: UploadableFile, folder: string) => {
-    const fileName = `${crypto.randomUUID()}-${file.originalname}`;
+    const safeName = sanitizeFilename(file.originalname);
+
+    const fileName = `${crypto.randomUUID()}-${safeName || "upload"}`;
 
     const path = `${folder}/${fileName}`;
 

@@ -1,21 +1,22 @@
 import type { Request, Response, NextFunction } from "express";
+import createError from "http-errors";
 
 export const parseJsonFields = (...fields: string[]) => {
-    return (
-        req: Request,
-        res: Response,
-        next: NextFunction
-    ) => {
-        try {
-            for (const field of fields) {
-                if(typeof req.body?.[field] === "string") {
-                    req.body[field] = JSON.parse(req.body[field]);
-                }
-            }
+  return (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    for (const field of fields) {
+      if (typeof req.body?.[field] !== "string") continue;
 
-            next();
-        } catch (error) {
-            next(error);
-        }
+      try {
+        req.body[field] = JSON.parse(req.body[field]);
+      } catch {
+        return next(createError(400, `Invalid JSON in field "${field}"`));
+      }
     }
-}
+
+    next();
+  };
+};

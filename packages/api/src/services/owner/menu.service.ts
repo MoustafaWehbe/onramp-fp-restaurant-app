@@ -57,75 +57,93 @@ export const menuService = {
       throw createError("Sequelize instance is not initialized");
     }
 
-    const transaction = await sequelize.transaction();
-
     const uploadedImages: string[] = [];
 
     try {
-      const restaurant = await Restaurant.findOne({
-        where: {
-          slug: input.restaurantSlug,
-        },
-        transaction,
-      });
+      /**
+       * Upload images before opening the transaction
+       */
+      const preparedItems = await Promise.all(
+        (input.items ?? []).map(async (item, index) => {
+          const menuItemId = crypto.randomUUID();
 
-      if (!restaurant) {
-        throw createError("Restaurant not found", 404);
-      }
+          let imageUrl: string | null = null;
 
-      const menu = await Menu.create(
-        {
-          restaurantId: restaurant.id,
-          name: input.name,
-          description: input.description ?? null,
-          is_active: input.is_active ?? true,
-        },
-        {
-          transaction,
-        },
-      );
+          if (item.image) {
+            imageUrl = await storageService.uploadFile(
+              item.image,
+              `menu-items/${menuItemId}`,
+            );
 
-      for (const [index, item] of (input.items ?? []).entries()) {
-        const menuItemId = crypto.randomUUID();
+            uploadedImages.push(imageUrl);
+          }
 
-        let imageUrl: string | null = null;
-
-        if (item.image) {
-          imageUrl = await storageService.uploadFile(
-            item.image,
-            `menu-items/${menuItemId}`,
-          );
-
-          uploadedImages.push(imageUrl);
-        }
-
-        await MenuItem.create(
-          {
-            id: menuItemId,
-            menuId: menu.id,
+          return {
+            menuItemId,
             name: item.name,
             description: item.description ?? null,
             base_price: item.base_price,
-            image_url: imageUrl,
+            imageUrl,
             display_order: item.display_order ?? index,
             is_active: item.is_active ?? true,
+          };
+        }),
+      );
+
+      /**
+       * Database transaction only contains database operations
+       */
+      return await sequelize.transaction(async (transaction) => {
+        const restaurant = await Restaurant.findOne({
+          where: {
+            slug: input.restaurantSlug,
+          },
+          transaction,
+        });
+
+        if (!restaurant) {
+          throw createError("Restaurant not found", 404);
+        }
+
+        const menu = await Menu.create(
+          {
+            restaurantId: restaurant.id,
+            name: input.name,
+            description: input.description ?? null,
+            is_active: input.is_active ?? true,
           },
           {
             transaction,
           },
         );
-      }
 
-      await transaction.commit();
+        await MenuItem.bulkCreate(
+          preparedItems.map((item) => ({
+            id: item.menuItemId,
+            menuId: menu.id,
+            name: item.name,
+            description: item.description,
+            base_price: item.base_price,
+            image_url: item.imageUrl,
+            display_order: item.display_order,
+            is_active: item.is_active,
+          })),
+          {
+            transaction,
+          },
+        );
 
-      return menu;
+        return menu;
+      });
     } catch (error) {
-      await transaction.rollback();
-
-      // cleanup uploaded images
-      for (const image of uploadedImages) {
-        await storageService.deleteFile(image).catch(() => {});
-      }
+      /**
+       * Cleanup uploaded files if DB transaction fails
+       */
+      await Promise.all(
+        uploadedImages.map((image) =>
+          storageService.deleteFile(image).catch(() => {}),
+        ),
+      );
 
       throw error;
     }
@@ -612,7 +630,8 @@ export const menuService = {
       throw createError("Menu item not found", 404);
     }
 
-    let oldImageUrl = menuItem.image_url;
+    const oldImageUrl = menuItem.image_url;
+    let newImageUrl: string | null = null;
 
     if (input.name !== undefined) {
       menuItem.name = input.name;
@@ -634,36 +653,33 @@ export const menuService = {
       menuItem.is_active = input.is_active;
     }
 
-    let newImageUrl: string | null = null;
-
-    if (input.image) {
-      // upload first
-      newImageUrl = await storageService.uploadFile(
-        input.image,
-        `menu-items/${menuItem.id}`,
-      );
-
-      // update db reference
-      menuItem.image_url = newImageUrl;
-    }
-
     try {
-      await menuItem.save();
+      if (input.image) {
+        newImageUrl = await storageService.uploadFile(
+          input.image,
+          `menu-items/${menuItem.id}`,
+        );
 
-      // delete old image after DB success
-      if (newImageUrl && oldImageUrl) {
-        await storageService.deleteFile(oldImageUrl);
+        menuItem.image_url = newImageUrl;
       }
 
-      return menuItem;
+      await menuItem.save();
     } catch (error) {
-      // if DB failed after upload,
-      // remove the new uploaded image
+      // Database failed after uploading the new image
+      // remove the new orphaned upload
       if (newImageUrl) {
         await storageService.deleteFile(newImageUrl).catch(() => {});
       }
 
       throw error;
     }
+
+    // Database update succeeded.
+    // Old image cleanup is best-effort only.
+    if (newImageUrl && oldImageUrl) {
+      await storageService.deleteFile(oldImageUrl).catch(() => {});
+    }
+
+    return menuItem;
   },
 };
