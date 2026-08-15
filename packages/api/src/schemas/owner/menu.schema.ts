@@ -8,11 +8,11 @@ const menuItemFields = {
 
   description: z.string().nullable().optional(),
 
-  base_price: z.number().min(0, "Base price cannot be negative"),
+  base_price: z.coerce.number().min(0, "Base price cannot be negative"),
 
-  display_order: z.number().int().min(0).optional(),
+  display_order: z.coerce.number().int().min(0).optional(),
 
-  is_active: z.boolean().optional(),
+  is_active: z.coerce.boolean().optional(),
 };
 
 const createMenuItemSchema = z.object(menuItemFields);
@@ -43,7 +43,7 @@ export const createMenuBodySchema = z.object({
 
   description: z.string().nullable().optional(),
 
-  is_active: z.boolean().optional(),
+  is_active: z.coerce.boolean().optional(),
 
   items: z.array(createMenuItemSchema).optional(),
 });
@@ -60,12 +60,13 @@ export const overrideBranchMenuItemParamsSchema = restaurantSlugSchema
 export const overrideBranchMenuItemBodySchema = z
   .object({
     customPrice: z
+      .coerce
       .number()
       .min(0, "Custom price cannot be negative")
       .nullable()
       .optional(),
 
-    isAvailable: z.boolean().optional(),
+    isAvailable: z.coerce.boolean().optional(),
   })
   .refine(
     (data) => data.customPrice !== undefined || data.isAvailable !== undefined,
@@ -93,7 +94,7 @@ export const updateMenuBodySchema = z
 
     description: z.string().nullable().optional(),
 
-    is_active: z.boolean().optional(),
+    is_active: z.coerce.boolean().optional(),
   })
   .refine(
     (data) =>

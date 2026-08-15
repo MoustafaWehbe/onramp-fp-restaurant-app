@@ -8,10 +8,7 @@ export interface UploadableFile {
 }
 
 export const storageService = {
-  uploadFile: async (
-    file: UploadableFile,
-    folder: string
-  ) => {
+  uploadFile: async (file: UploadableFile, folder: string) => {
     const fileName = `${crypto.randomUUID()}-${file.originalname}`;
 
     const path = `${folder}/${fileName}`;
@@ -33,24 +30,22 @@ export const storageService = {
     return data.publicUrl;
   },
 
-  deleteFile: async (
-    publicUrl: string
-  ) => {
+  deleteFile: async (publicUrl: string) => {
     const bucketName = storageConfig.bucketName;
+
+    const decodedUrl = decodeURIComponent(publicUrl);
 
     const marker = `/object/public/${bucketName}/`;
 
-    const index = publicUrl.indexOf(marker);
+    const index = decodedUrl.indexOf(marker);
 
     if (index === -1) {
-      return;
+      throw new Error("Invalid Supabase storage URL");
     }
 
-    const path = publicUrl.substring(index + marker.length);
+    const path = decodedUrl.substring(index + marker.length);
 
-    const { error } = await supabase.storage
-      .from(bucketName)
-      .remove([path]);
+    const { error } = await supabase.storage.from(bucketName).remove([path]);
 
     if (error) {
       throw error;

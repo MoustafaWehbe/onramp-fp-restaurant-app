@@ -1,28 +1,23 @@
-import type { Request, Response, NextFunction } from "express";
+import type {Express, Request, Response, NextFunction } from "express";
 import { menuService } from "../../services/owner/menu.service";
-import type { UploadableFile } from "src/services/storage/storage.service";
+import { UploadableFile } from "src/services/storage/storage.service";
 
-interface RequestWithFile extends Request {
-  file?: UploadableFile;
-}
-
-interface RequestWithFiles extends Request {
-  files?: UploadableFile[];
-}
 
 export const menuController = {
   create: async (
-    req: RequestWithFiles,
+    req: Request,
     res: Response,
     next: NextFunction
   ) => {
     try {
       const { restaurantSlug } = req.params;
 
-      const items = req.body.items.map(
+      const files = (req.files ?? []) as Express.Multer.File[];
+
+      const items = (req.body.items ?? []).map(
         (item: any, index: number) => ({
           ...item,
-          image: req.files?.[index],
+          image: toUploadableFile(files[index]),
         })
       );
 
@@ -137,7 +132,7 @@ export const menuController = {
   },
 
   addMenuItem: async (
-    req: RequestWithFile,
+    req: Request,
     res: Response,
     next: NextFunction
   ) => {
@@ -149,7 +144,7 @@ export const menuController = {
         menuId as string,
         {
           ...req.body,
-          image:req.file
+          image: toUploadableFile(req.file)
         }
       );
 
@@ -160,7 +155,7 @@ export const menuController = {
   },
 
   updateMenuItem: async (
-    req: RequestWithFile,
+    req: Request,
     res: Response,
     next: NextFunction
   ) => {
@@ -173,7 +168,7 @@ export const menuController = {
         menuItemId as string,
         {
           ...req.body,
-          image: req.file,
+          image: toUploadableFile(req.file),
         },
       );
 
@@ -182,4 +177,14 @@ export const menuController = {
       next(error);
     }
   },
+};
+
+const toUploadableFile = (file?: Express.Multer.File): UploadableFile | undefined => {
+  if (!file) return undefined;
+
+  return {
+    originalname: file.originalname,
+    mimetype: file.mimetype,
+    buffer: file.buffer,
+  };
 };
