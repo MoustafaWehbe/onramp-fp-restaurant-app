@@ -47,12 +47,11 @@ export const restaurantController = {
       if (!restaurantSlug || Array.isArray(restaurantSlug)) {
         return next(createError("Restaurant Slug is required", 400));
       }
-
       const restaurant = await restaurantService.update(
         restaurantSlug,
         {
-            ...req.body,
-            image: req.file,
+          ...req.body,
+          image: req.file,
         }
       );
 

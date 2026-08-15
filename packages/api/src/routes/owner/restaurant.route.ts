@@ -29,6 +29,7 @@ router.patch(
     authorize("owner"),
     verifyRestaurantOwnership,
     upload.single("image"),
+    parseJsonFields("ambiance_tags"),
     validate(updateRestaurantSchema),
     restaurantController.update,
 );
