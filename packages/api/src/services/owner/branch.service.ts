@@ -229,10 +229,20 @@ export const branchService = {
         const restaurant = await Restaurant.findOne({ where: { slug: restaurantSlug } });
         if (!restaurant) throw createError("Restaurant not found", 404);
 
-        return Branch.findAll({
-            where: { restaurantId: restaurant.id },
+        const branches = await Branch.findAll({
+            where: {
+                restaurantId: restaurant.id,
+            },
+            include: [
+                {
+                    model: BranchImage,
+                    as: "images",
+                    attributes: ["id","branchId", "url", "type"],
+                },
+            ],
             order: [["createdAt", "DESC"]],
         });
+      return branches;
     },
 
     getBySlug: async (restaurantSlug: string, branchSlug: string) => {
@@ -258,7 +268,16 @@ export const branchService = {
                 "review_count", "average_rating",
             ],
             include: [
-                { model: BranchImage, as: "images", attributes: ["id", "url", "type"] },
+                {
+                    model: BranchImage,
+                    as: "images",
+                    attributes: [
+                        "id",
+                        "branchId",
+                        "url",
+                        "type",
+                    ],
+                },
                 {
                     model: Review,
                     as: "reviews",
