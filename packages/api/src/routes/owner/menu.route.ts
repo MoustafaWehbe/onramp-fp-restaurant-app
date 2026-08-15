@@ -1,5 +1,4 @@
 import { Router } from "express";
-
 import { menuController } from "../../controllers/owner/menu.controller";
 import { validate } from "src/middleware/validate";
 import {
@@ -20,6 +19,8 @@ import {
 import { authenticate } from "src/middleware/authenticate";
 import { authorize } from "src/middleware/authorize";
 import { verifyRestaurantOwnership } from "src/middleware/verifyRetsaurantOwnership";
+import { upload } from "src/middleware/upload";
+import { parseJsonFields } from "src/middleware/parse-json-fields";
 
 const router = Router({ mergeParams: true });
 
@@ -28,6 +29,8 @@ router.post(
   authenticate,
   authorize("owner"),
   verifyRestaurantOwnership,
+  upload.array("image"),
+  parseJsonFields("items"),
   validate(createMenuParamsSchema, "params"),
   validate(createMenuBodySchema, "body"),
   menuController.create,
@@ -85,6 +88,7 @@ router.patch(
   authenticate,
   authorize("owner"),
   verifyRestaurantOwnership,
+  upload.single("image"),
   validate(updateMenuItemParamsSchema, "params"),
   validate(updateMenuItemBodySchema, "body"),
   menuController.updateMenuItem,
@@ -95,6 +99,7 @@ router.post(
   authenticate,
   authorize("owner"),
   verifyRestaurantOwnership,
+  upload.single("image"),
   validate(createMenuItemParamsSchema, "params"),
   validate(createMenuItemBodySchema, "body"),
   menuController.addMenuItem,
