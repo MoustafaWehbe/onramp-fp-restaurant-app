@@ -47,10 +47,6 @@ export const restaurantController = {
       if (!restaurantSlug || Array.isArray(restaurantSlug)) {
         return next(createError("Restaurant Slug is required", 400));
       }
-
-      console.log("REQ BODY:", req.body);
-      console.log("REQ FILE:", req.file);
-
       const restaurant = await restaurantService.update(
         restaurantSlug,
         {
