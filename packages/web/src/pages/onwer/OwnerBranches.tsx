@@ -223,7 +223,7 @@ export function OwnerBranchesPage() {
                             type="button"
                             onClick={() =>
                                 navigate(
-                                    `/owner/${restaurantSlug}/branches/new`,
+                                    `/owner/${restaurantSlug}/branches`,
                                 )
                             }
                             className="mt-6 gap-2 rounded-xl"

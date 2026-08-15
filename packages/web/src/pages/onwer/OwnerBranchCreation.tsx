@@ -54,6 +54,9 @@ export function OwnerBranchCreationPage() {
     const [error, setError] =
         useState<string | null>(null);
 
+    const [isLocationProcessing, setIsLocationProcessing] =
+        useState(false);
+
     const handleChange = (
         field: keyof BranchForm,
         value: string,
@@ -71,6 +74,13 @@ export function OwnerBranchCreationPage() {
 
         if (!restaurantSlug) {
             setError("Restaurant not found.");
+            return;
+        }
+        
+        if (isLocationProcessing) {
+            setError(
+                "Please wait for the location to finish processing.",
+            );
             return;
         }
 
@@ -330,24 +340,19 @@ export function OwnerBranchCreationPage() {
 
                     <div className="border-t border-[#EEE9E2] pt-6">
                         <LocationPicker
-                            restaurantSlug={
-                                restaurantSlug
-                            }
+                            restaurantSlug={restaurantSlug}
                             value={{
-                                latitude:
-                                    form.latitude,
-                                longitude:
-                                    form.longitude,
+                                latitude: form.latitude,
+                                longitude: form.longitude,
                             }}
                             onChange={(location) =>
                                 setForm((prev) => ({
                                     ...prev,
-                                    latitude:
-                                        location.latitude,
-                                    longitude:
-                                        location.longitude,
+                                    latitude: location.latitude,
+                                    longitude: location.longitude,
                                 }))
                             }
+                            onProcessingChange={setIsLocationProcessing}
                         />
                     </div>
 
@@ -388,7 +393,7 @@ export function OwnerBranchCreationPage() {
 
                         <Button
                             type="submit"
-                            disabled={isSaving}
+                            disabled={isSaving || isLocationProcessing}
                             className="gap-2 rounded-xl"
                         >
                             {isSaving ? (

@@ -17,12 +17,14 @@ interface LocationPickerProps {
     restaurantSlug: string;
     value: Location;
     onChange: (location: Location) => void;
+    onProcessingChange?: (isProcessing: boolean) => void;
 }
 
 export function LocationPicker({
     restaurantSlug,
     value,
     onChange,
+    onProcessingChange,
 }: LocationPickerProps) {
     const [googleMapsUrl, setGoogleMapsUrl] =
         useState("");
@@ -57,6 +59,7 @@ export function LocationPicker({
 
             try {
                 setIsProcessing(true);
+                onProcessingChange?.(true);
                 setLocationError(null);
 
                 const response =
@@ -87,17 +90,6 @@ export function LocationPicker({
                     "Google Maps location error:",
                     error,
                 );
-
-                console.log(
-                    "STATUS:",
-                    error?.response?.status,
-                );
-
-                console.log(
-                    "BACKEND RESPONSE:",
-                    error?.response?.data,
-                );
-
                 const message =
                     error?.response?.data?.message ??
                     error?.response?.data?.error ??
@@ -106,6 +98,7 @@ export function LocationPicker({
                 setLocationError(message);
             } finally {
                 setIsProcessing(false);
+                onProcessingChange?.(false);
             }
         },
         [

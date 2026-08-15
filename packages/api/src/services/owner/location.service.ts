@@ -1,5 +1,6 @@
 import { createError } from "src/middleware/error-handler";
 import { Restaurant } from "@starter-kit/shared";
+import { GOOGLE_MAPS_HOSTS } from "src/schemas/owner/location.schema";
 
 interface ResolveGoogleMapsLocationData {
     restaurantSlug: string;
@@ -10,6 +11,10 @@ interface Coordinates {
     latitude: number;
     longitude: number;
 }
+
+const MAX_REDIRECTS = 5;
+const REQUEST_TIMEOUT = 5000;
+const MAX_RESPONSE_SIZE = 1024 * 1024; // 1 MB
 
 export const locationService = {
     resolveGoogleMaps: async ({
@@ -54,10 +59,7 @@ async function extractCoordinatesFromGoogleMapsUrl(
         return null;
     }
 
-    /*
-     * First try to extract coordinates directly
-     * from the URL.
-     */
+    // First try extracting coordinates directly.
     const directCoordinates =
         extractCoordinates(cleanUrl);
 
@@ -65,68 +67,146 @@ async function extractCoordinatesFromGoogleMapsUrl(
         return directCoordinates;
     }
 
-    /*
-     * If this is a shortened Google Maps URL
-     * such as:
-     *
-     * https://maps.app.goo.gl/xxxxxxxx
-     *
-     * follow the redirect and inspect the final URL.
-     */
-    if (isGoogleMapsShortUrl(cleanUrl)) {
+    if (!isGoogleMapsShortUrl(cleanUrl)) {
+        return extractCoordinates(cleanUrl);
+    }
+
+    let currentUrl = cleanUrl;
+
+    for (
+        let redirectCount = 0;
+        redirectCount <= MAX_REDIRECTS;
+        redirectCount++
+    ) {
         try {
-            const response = await fetch(cleanUrl, {
-                method: "GET",
-                redirect: "follow",
-                headers: {
-                    "User-Agent":
-                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36",
-                },
-            });
+            const controller =
+                new AbortController();
 
-            /*
-             * fetch follows redirects automatically.
-             * response.url contains the final URL.
-             */
-            const finalUrl = response.url;
+            const timeout = setTimeout(
+                () => controller.abort(),
+                REQUEST_TIMEOUT,
+            );
 
-            const redirectedCoordinates =
-                extractCoordinates(finalUrl);
+            let response: Response;
 
-            if (redirectedCoordinates) {
-                return redirectedCoordinates;
+            try {
+                response = await fetch(
+                    currentUrl,
+                    {
+                        method: "GET",
+                        redirect: "manual",
+                        signal: controller.signal,
+                        headers: {
+                            "User-Agent":
+                                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36",
+                        },
+                    },
+                );
+            } finally {
+                clearTimeout(timeout);
             }
 
             /*
-             * Sometimes Google returns an HTML page
-             * instead of putting the coordinates in
-             * response.url.
-             *
-             * Try extracting coordinates from the
-             * response body as a fallback.
+             * Handle redirects manually so every
+             * redirect destination can be validated.
              */
-            const html = await response.text();
+            if (
+                response.status >= 300 &&
+                response.status < 400
+            ) {
+                if (
+                    redirectCount >=
+                    MAX_REDIRECTS
+                ) {
+                    return null;
+                }
 
-            const htmlCoordinates =
-                extractCoordinates(html);
+                const location =
+                    response.headers.get(
+                        "location",
+                    );
 
-            if (htmlCoordinates) {
-                return htmlCoordinates;
+                if (!location) {
+                    return null;
+                }
+
+                const redirectUrl =
+                    new URL(
+                        location,
+                        currentUrl,
+                    );
+
+                if (
+                    !isAllowedRedirectUrl(
+                        redirectUrl,
+                    )
+                ) {
+                    return null;
+                }
+
+                currentUrl =
+                    redirectUrl.toString();
+
+                const redirectedCoordinates =
+                    extractCoordinates(
+                        currentUrl,
+                    );
+
+                if (redirectedCoordinates) {
+                    return redirectedCoordinates;
+                }
+
+                continue;
             }
+
+            /*
+             * Check the final response URL too.
+             */
+            const finalUrl = new URL(
+                response.url || currentUrl,
+            );
+
+            if (
+                !isAllowedRedirectUrl(finalUrl)
+            ) {
+                return null;
+            }
+
+            const finalUrlCoordinates =
+                extractCoordinates(
+                    finalUrl.toString(),
+                );
+
+            if (finalUrlCoordinates) {
+                return finalUrlCoordinates;
+            }
+
+            /*
+             * Read only a limited amount of the
+             * response body.
+             */
+            const html =
+                await readLimitedResponse(
+                    response,
+                    MAX_RESPONSE_SIZE,
+                );
+
+            if (!html) {
+                return null;
+            }
+
+            return extractCoordinates(html);
         } catch (error) {
             console.error(
                 "Failed to resolve Google Maps short URL:",
                 error,
             );
+
+            return null;
         }
     }
 
-    /*
-     * Last attempt:
-     * try extracting coordinates from the URL
-     * even if it isn't recognized as a short URL.
-     */
-    return extractCoordinates(cleanUrl);
+    return null;
 }
 
 function isGoogleMapsShortUrl(
@@ -138,26 +218,104 @@ function isGoogleMapsShortUrl(
         return (
             parsedUrl.hostname ===
                 "maps.app.goo.gl" ||
-            parsedUrl.hostname ===
-                "goo.gl"
+            parsedUrl.hostname === "goo.gl"
         );
     } catch {
         return false;
     }
 }
 
+/**
+ * Validates redirect destinations.
+ *
+ * The initial URL is already validated by Zod.
+ * This check is only needed because redirect URLs
+ * never pass through the request schema.
+ */
+function isAllowedRedirectUrl(
+    url: URL,
+): boolean {
+    const hostname =
+        url.hostname.toLowerCase();
+
+    if (!GOOGLE_MAPS_HOSTS.has(hostname)) {
+        return false;
+    }
+
+    /*
+     * Reject IP literals.
+     */
+    if (
+        url.hostname ===
+            url.hostname.match(
+                /^\d{1,3}(?:\.\d{1,3}){3}$/,
+            )?.[0] ||
+        url.hostname.includes(":")
+    ) {
+        return false;
+    }
+
+    return true;
+}
+
+async function readLimitedResponse(
+    response: Response,
+    maxBytes: number,
+): Promise<string | null> {
+    if (!response.body) {
+        return null;
+    }
+
+    const reader =
+        response.body.getReader();
+
+    const chunks: Uint8Array[] = [];
+    let totalBytes = 0;
+
+    try {
+        while (true) {
+            const { done, value } =
+                await reader.read();
+
+            if (done) {
+                break;
+            }
+
+            if (!value) {
+                continue;
+            }
+
+            totalBytes += value.byteLength;
+
+            if (totalBytes > maxBytes) {
+                await reader.cancel();
+                return null;
+            }
+
+            chunks.push(value);
+        }
+    } finally {
+        reader.releaseLock();
+    }
+
+    const combined =
+        new Uint8Array(totalBytes);
+
+    let offset = 0;
+
+    for (const chunk of chunks) {
+        combined.set(chunk, offset);
+        offset += chunk.byteLength;
+    }
+
+    return new TextDecoder().decode(
+        combined,
+    );
+}
+
 function extractCoordinates(
     value: string,
 ): Coordinates | null {
-    /*
-     * Format:
-     *
-     * https://www.google.com/maps/@33.8938,35.5018,17z
-     *
-     * Also handles:
-     *
-     * /place/Restaurant/@33.8938,35.5018,17z
-     */
     const atPattern =
         /@(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/;
 
@@ -170,15 +328,6 @@ function extractCoordinates(
         );
     }
 
-    /*
-     * Format:
-     *
-     * https://www.google.com/maps?q=33.8938,35.5018
-     *
-     * or:
-     *
-     * https://www.google.com/maps?ll=33.8938,35.5018
-     */
     const queryPattern =
         /[?&](?:q|ll)=(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/;
 
@@ -192,12 +341,9 @@ function extractCoordinates(
         );
     }
 
-    /*
-     * Google sometimes uses encoded URLs.
-     * Decode the value and try again.
-     */
     try {
-        const decoded = decodeURIComponent(value);
+        const decoded =
+            decodeURIComponent(value);
 
         if (decoded !== value) {
             const decodedCoordinates =
@@ -228,9 +374,6 @@ function createCoordinates(
         return null;
     }
 
-    /*
-     * Validate geographic ranges.
-     */
     if (lat < -90 || lat > 90) {
         return null;
     }
