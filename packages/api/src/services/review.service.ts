@@ -3,6 +3,8 @@ import { createError } from "../middleware/error-handler";
 import { Branch } from "../models/Branch";
 import { Review } from "../models/Review";
 import { Restaurant } from "../models/Restaurant";
+import { getDatabase } from "../lib/db";
+import { reviewStatsService } from "./reviewStats.service";
 
 interface CreateReviewInput {
     userId: string;
@@ -56,14 +58,24 @@ export const reviewService = {
 
         if (existingReview) {
             if (existingReview.deletedAt) {
-                await existingReview.restore();
+                return await getDatabase().transaction(async (transaction) => {
+                    await existingReview.restore({ transaction });
 
-                await existingReview.update({
-                    rating,
-                    comment,
+                    await existingReview.update(
+                        {
+                            rating,
+                            comment,
+                        },
+                        { transaction },
+                    );
+
+                    await reviewStatsService.recalculate(
+                        branch.id,
+                        transaction,
+                    );
+
+                    return existingReview;
                 });
-
-                return existingReview;
             }
 
             throw createError(
@@ -73,15 +85,24 @@ export const reviewService = {
         }
 
         try {
-            const review = await Review.create({
-                userId,
-                branchId: branch.id,
-                rating,
-                comment,
+            return await getDatabase().transaction(async (transaction) => {
+                const review = await Review.create(
+                    {
+                        userId,
+                        branchId: branch.id,
+                        rating,
+                        comment,
+                    },
+                    { transaction },
+                );
+
+                await reviewStatsService.recalculate(
+                    branch.id,
+                    transaction,
+                );
+
+                return review;
             });
-
-            return review;
-
         } catch (error) {
             if (error instanceof UniqueConstraintError) {
                 throw createError(
@@ -112,17 +133,22 @@ export const reviewService = {
             );
         }
 
-        await review.update(input);
+        return await getDatabase().transaction(async (transaction) => {
+            await review.update(input, { transaction });
 
-        return review;
+            await reviewStatsService.recalculate(
+                review.branchId,
+                transaction,
+            );
+
+            return review;
+        });
     },
 
     delete: async (reviewId: string, userId: string) => {
         const review = await Review.findByPk(reviewId, {
             paranoid: false,
         });
-
-        console.log("Before delete:", review?.toJSON());
 
         if (!review) {
             throw createError("Review not found", 404);
@@ -135,9 +161,16 @@ export const reviewService = {
             );
         }
 
-        await review.destroy();
+        return await getDatabase().transaction(async (transaction) => {
+            await review.destroy({ transaction });
 
-        return review;
+            await reviewStatsService.recalculate(
+                review.branchId,
+                transaction,
+            );
+
+            return review;
+        });
     },
 
     getBranchReviews: async (restaurantSlug: string, branchSlug: string) => {

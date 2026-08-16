@@ -38,7 +38,7 @@ export function OwnerBranchesPage() {
                 setError(null);
 
                 const response = await apiClient.get(
-                    `/owner/${restaurantSlug}/branches`,
+                    `/owner/restaurants/${restaurantSlug}/branches`,
                 );
 
                 setBranches(
@@ -187,7 +187,7 @@ export function OwnerBranchesPage() {
                         type="button"
                         onClick={() =>
                             navigate(
-                                `/owner/${restaurantSlug}/branches`,
+                                `/owner/restaurants/${restaurantSlug}/branches`,
                             )
                         }
                         className="w-fit gap-2 rounded-xl"
@@ -223,7 +223,7 @@ export function OwnerBranchesPage() {
                             type="button"
                             onClick={() =>
                                 navigate(
-                                    `/owner/${restaurantSlug}/branches`,
+                                    `/owner/restaurants/${restaurantSlug}/branches`,
                                 )
                             }
                             className="mt-6 gap-2 rounded-xl"

@@ -126,7 +126,7 @@ export function OwnerBranchDetailsPage() {
             setError(null);
 
             const response = await apiClient.get(
-                `/owner/${encodeURIComponent(
+                `/owner/restaurants/${encodeURIComponent(
                     restaurantSlug,
                 )}/branches/${encodeURIComponent(
                     branchSlug,
@@ -214,7 +214,7 @@ export function OwnerBranchDetailsPage() {
             setSaveError(null);
 
             const response = await apiClient.patch(
-                `/owner/${encodeURIComponent(
+                `/owner/restaurants/${encodeURIComponent(
                     restaurantSlug,
                 )}/branches/${encodeURIComponent(
                     branchSlug,
