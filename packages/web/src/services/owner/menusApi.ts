@@ -15,7 +15,7 @@ export const ownerMenusApi = {
     return data;
   },
 
-  createMenu: async (restaurantSlug: string, payload: any) => {
+  createMenu: async (restaurantSlug: string, payload: FormData) => {
     const { data } = await apiClient.post(
       `/owner/restaurants/${restaurantSlug}/menus`,
       payload,
@@ -26,7 +26,11 @@ export const ownerMenusApi = {
   updateMenu: async (
     restaurantSlug: string,
     menuId: string,
-    payload: { name?: string; description?: string | null; is_active?: boolean },
+    payload: {
+      name?: string;
+      description?: string | null;
+      is_active?: boolean;
+    },
   ) => {
     const { data } = await apiClient.patch(
       `/owner/restaurants/${restaurantSlug}/menus/${menuId}`,

@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { ownerMenusApi } from "@/services/owner/menusApi";
-import type { Menu, MenuPayload, MenuUpdatePayload } from "@/types/menu";
+import type { Menu, MenuUpdatePayload } from "@/types/menu";
 
 interface UseOwnerMenusOptions {
   selectedBranchSlug: string | null;
@@ -39,7 +39,7 @@ export function useOwnerMenus(
   });
 
   const createMenuMutation = useMutation({
-    mutationFn: (payload: MenuPayload) =>
+    mutationFn: (payload: FormData) =>
       ownerMenusApi.createMenu(restaurantSlug!, payload),
     onSuccess: (newMenu: Menu) => {
       invalidateMenuQueries();

@@ -16,12 +16,6 @@ export interface Menu {
   menuItems?: MenuItem[];
 }
 
-export interface MenuPayload {
-  name: string;
-  description?: string;
-  is_active?: boolean;
-}
-
 export interface MenuUpdatePayload {
   name?: string;
   description?: string | null;
