@@ -49,7 +49,7 @@ export function OwnerSidebar({
         {
             label: "Menus",
             icon: Menu,
-            disabled: true,
+            path: "/owner/menus",
         },
     ];
 
