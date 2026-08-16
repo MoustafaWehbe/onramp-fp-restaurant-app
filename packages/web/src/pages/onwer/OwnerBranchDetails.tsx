@@ -126,7 +126,7 @@ export function OwnerBranchDetailsPage() {
             setError(null);
 
             const response = await apiClient.get(
-                `/owner/${encodeURIComponent(
+                `/owner/restaurants/${encodeURIComponent(
                     restaurantSlug,
                 )}/branches/${encodeURIComponent(
                     branchSlug,
@@ -168,7 +168,7 @@ export function OwnerBranchDetailsPage() {
         loadBranch();
     }, [restaurantSlug, branchSlug]);
 
-    const initialValues = useMemo<BranchForm>(() => {
+    const initialValues = useMemo(() => {
         if (!data?.branch) {
             return {
                 name: "",
@@ -192,19 +192,9 @@ export function OwnerBranchDetailsPage() {
             latitude: branch.latitude,
             longitude: branch.longitude,
         };
-    }, [
-        data?.branch?.name,
-        data?.branch?.city,
-        data?.branch?.address,
-        data?.branch?.phone,
-        data?.branch?.opening_hours,
-        data?.branch?.latitude,
-        data?.branch?.longitude,
-    ]);
+    }, [data?.branch]);
 
-    const handleUpdate = async (
-        form: BranchForm,
-    ) => {
+    const handleUpdate = async (form: BranchForm) => {
         if (!restaurantSlug || !branchSlug) {
             return;
         }
@@ -213,26 +203,38 @@ export function OwnerBranchDetailsPage() {
             setIsSaving(true);
             setSaveError(null);
 
+            const formData = new FormData();
+
+            formData.append("name", form.name);
+            formData.append("city", form.city);
+            formData.append("address", form.address);
+            formData.append("latitude", form.latitude);
+            formData.append("longitude", form.longitude);
+            formData.append("phone", form.phone || "");
+            formData.append("opening_hours", form.opening_hours);
+
+            form.images.forEach((image) => {
+                formData.append("images", image);
+            });
+
+            if (form.deletedImageIds.length > 0) {
+                formData.append(
+                    "deletedImageIds",
+                    JSON.stringify(form.deletedImageIds),
+                );
+            }
+
             const response = await apiClient.patch(
-                `/owner/${encodeURIComponent(
+                `/owner/restaurants/${encodeURIComponent(
                     restaurantSlug,
                 )}/branches/${encodeURIComponent(
                     branchSlug,
                 )}`,
-                {
-                    name: form.name,
-                    city: form.city,
-                    address: form.address,
-                    latitude: form.latitude,
-                    longitude: form.longitude,
-                    phone: form.phone || null,
-                    opening_hours:
-                        form.opening_hours,
-                    images: [],
-                },
+                formData,
             );
 
             const updatedBranch =
+                response.data.data?.branch ??
                 response.data.data ??
                 response.data;
 
@@ -247,23 +249,21 @@ export function OwnerBranchDetailsPage() {
 
             setIsEditing(false);
 
-            /*
-            * Reload because the branch slug may change
-            * if the branch name was updated.
-            */
             if (updatedBranch.slug !== branchSlug) {
                 navigate(
-                    `/owner/${encodeURIComponent(restaurantSlug)}/branches/${encodeURIComponent(updatedBranch.slug)}`,
+                    `/owner/restaurants/${encodeURIComponent(
+                        restaurantSlug,
+                    )}/branches/${encodeURIComponent(
+                        updatedBranch.slug,
+                    )}`,
                     { replace: true },
                 );
                 return;
             }
+
             await loadBranch();
         } catch (error) {
-            console.error(
-                "Failed to update branch:",
-                error,
-            );
+            console.error("Failed to update branch:", error);
 
             const response = (
                 error as {
@@ -285,7 +285,6 @@ export function OwnerBranchDetailsPage() {
             setIsSaving(false);
         }
     };
-
     const handleDelete = async () => {
         if (!restaurantSlug || !branchSlug) {
             return;
@@ -296,7 +295,7 @@ export function OwnerBranchDetailsPage() {
             setDeleteError(null);
 
             await apiClient.delete(
-                `/owner/${encodeURIComponent(
+                `/owner/restaurants/${encodeURIComponent(
                     restaurantSlug,
                 )}/branches/${encodeURIComponent(
                     branchSlug,
@@ -448,6 +447,7 @@ export function OwnerBranchDetailsPage() {
                     restaurantSlug={restaurantSlug}
                     mode="edit"
                     initialValues={initialValues}
+                    existingImages={branch.images}
                     onSubmit={handleUpdate}
                     onCancel={() =>
                         setIsEditing(false)
