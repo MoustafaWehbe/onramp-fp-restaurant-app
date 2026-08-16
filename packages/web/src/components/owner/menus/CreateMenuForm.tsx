@@ -70,7 +70,11 @@ export function CreateMenuForm({
   const handleSubmit = () => {
     const formData = new FormData();
     formData.append("name", name.trim());
-    formData.append("description", description.trim());
+
+    const trimmedDescription = description.trim();
+    if(trimmedDescription) {
+      formData.append("description", description.trim());
+    }
     formData.append("is_active", String(isActive));
 
     let imageIndex = 0;

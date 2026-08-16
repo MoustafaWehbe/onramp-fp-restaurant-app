@@ -1,26 +1,42 @@
 import { apiClient } from "@/lib/api-client";
+import { unwrapResponse } from "@/lib/api-response";
+import type {
+  BranchMenu,
+  Menu,
+} from "@/types/menu";
 
 export const ownerMenusApi = {
-  getRestaurantMenus: async (restaurantSlug: string) => {
-    const { data } = await apiClient.get(
+  getRestaurantMenus: async (
+    restaurantSlug: string,
+  ): Promise<Menu[]> => {
+    const response = await apiClient.get(
       `/owner/restaurants/${restaurantSlug}/menus`,
     );
-    return data;
+
+    return unwrapResponse<Menu[]>(response.data);
   },
 
-  getBranchMenus: async (restaurantSlug: string, branchSlug: string) => {
-    const { data } = await apiClient.get(
+  getBranchMenus: async (
+    restaurantSlug: string,
+    branchSlug: string,
+  ): Promise<BranchMenu[]> => {
+    const response = await apiClient.get(
       `/owner/restaurants/${restaurantSlug}/branches/${branchSlug}/menus`,
     );
-    return data;
+
+    return unwrapResponse<BranchMenu[]>(response.data);
   },
 
-  createMenu: async (restaurantSlug: string, payload: FormData) => {
-    const { data } = await apiClient.post(
+  createMenu: async (
+    restaurantSlug: string,
+    payload: FormData,
+  ): Promise<Menu> => {
+    const response = await apiClient.post(
       `/owner/restaurants/${restaurantSlug}/menus`,
       payload,
     );
-    return data;
+
+    return unwrapResponse<Menu>(response.data);
   },
 
   updateMenu: async (
@@ -31,31 +47,35 @@ export const ownerMenusApi = {
       description?: string | null;
       is_active?: boolean;
     },
-  ) => {
-    const { data } = await apiClient.patch(
+  ): Promise<Menu> => {
+    const response = await apiClient.patch(
       `/owner/restaurants/${restaurantSlug}/menus/${menuId}`,
       payload,
     );
-    return data;
+
+    return unwrapResponse<Menu>(response.data);
   },
 
-  deleteMenu: async (restaurantSlug: string, menuId: string) => {
-    const { data } = await apiClient.delete(
+  deleteMenu: async (
+    restaurantSlug: string,
+    menuId: string,
+  ): Promise<void> => {
+    await apiClient.delete(
       `/owner/restaurants/${restaurantSlug}/menus/${menuId}`,
     );
-    return data;
   },
 
   addMenuItem: async (
     restaurantSlug: string,
     menuId: string,
     payload: FormData,
-  ) => {
-    const { data } = await apiClient.post(
+  ): Promise<Menu> => {
+    const response = await apiClient.post(
       `/owner/restaurants/${restaurantSlug}/menus/${menuId}`,
       payload,
     );
-    return data;
+
+    return unwrapResponse<Menu>(response.data);
   },
 
   updateMenuItem: async (
@@ -63,24 +83,29 @@ export const ownerMenusApi = {
     menuId: string,
     menuItemId: string,
     payload: FormData,
-  ) => {
-    const { data } = await apiClient.patch(
+  ): Promise<Menu> => {
+    const response = await apiClient.patch(
       `/owner/restaurants/${restaurantSlug}/menus/${menuId}/menu-items/${menuItemId}`,
       payload,
     );
-    return data;
+
+    return unwrapResponse<Menu>(response.data);
   },
 
   overrideBranchMenuItem: async (
     restaurantSlug: string,
     branchSlug: string,
     menuItemId: string,
-    payload: { customPrice?: number | null; isAvailable?: boolean },
-  ) => {
-    const { data } = await apiClient.patch(
+    payload: {
+      customPrice?: number | null;
+      isAvailable?: boolean;
+    },
+  ): Promise<BranchMenu> => {
+    const response = await apiClient.patch(
       `/owner/restaurants/${restaurantSlug}/branches/${branchSlug}/menu-items/${menuItemId}`,
       payload,
     );
-    return data;
+
+    return unwrapResponse<BranchMenu>(response.data);
   },
 };

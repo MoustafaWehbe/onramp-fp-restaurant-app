@@ -30,13 +30,35 @@ export function EditMenuItemForm({
   const [image, setImage] = useState<File | null>(null);
 
   const handleSubmit = () => {
+    const trimmedPrice = basePrice.trim();
+    const price = Number(trimmedPrice);
+
+    if (trimmedPrice === "" || !Number.isFinite(price) || price < 0) {
+      return;
+    }
+
     const formData = new FormData();
+
     formData.append("name", name.trim());
-    formData.append("description", description.trim());
-    formData.append("base_price", basePrice);
-    if (displayOrder.trim()) formData.append("display_order", displayOrder);
+
+    const trimmedDescription = description.trim();
+    if (trimmedDescription) {
+      formData.append("description", trimmedDescription);
+    }
+
+    formData.append("base_price", String(price));
+
+    const trimmedDisplayOrder = displayOrder.trim();
+    if (trimmedDisplayOrder) {
+      formData.append("display_order", trimmedDisplayOrder);
+    }
+
     formData.append("is_active", String(isActive));
-    if (image) formData.append("image", image);
+
+    if (image) {
+      formData.append("image", image);
+    }
+
     onSubmit(formData);
   };
 

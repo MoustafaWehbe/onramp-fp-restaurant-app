@@ -27,6 +27,7 @@ export function MenuItemCard({ item, onEdit }: MenuItemCardProps) {
             <button
               type="button"
               onClick={onEdit}
+              aria-label={`Edit ${item.name}`}
               className="text-[#A8A29E] hover:text-[#57534E]"
             >
               <Pencil className="h-3.5 w-3.5" />

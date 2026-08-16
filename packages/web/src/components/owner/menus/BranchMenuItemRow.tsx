@@ -30,9 +30,16 @@ export function BranchMenuItemRow({ item, onSave }: BranchMenuItemRowProps) {
   }, [item.base_price, item.customPrice, item.price]);
 
   const savePrice = () => {
-    const price = Number(priceInput);
+    const trimmed = priceInput.trim();
+    const price = Number(trimmed);
 
-    if (Number.isFinite(price) && price !== Number(displayedPrice)) {
+    if (trimmed === "" || !Number.isFinite(price) || price < 0) {
+      setPriceInput(String(displayedPrice));
+      setEditingPrice(false);
+      return;
+    }
+
+    if (price !== Number(displayedPrice)) {
       onSave({ customPrice: price });
     }
 

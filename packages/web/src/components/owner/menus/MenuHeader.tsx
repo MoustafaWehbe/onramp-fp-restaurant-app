@@ -30,10 +30,11 @@ export function MenuHeader({
   const [isActive, setIsActive] = useState(menu.is_active ?? true);
 
   useEffect(() => {
+    if(editing)
     setName(menu.name);
     setDescription(menu.description ?? "");
     setIsActive(menu.is_active ?? true);
-  }, [menu.name, menu.description, menu.is_active]);
+  }, [editing, menu.name, menu.description, menu.is_active]);
 
   const save = () => {
     onSave({

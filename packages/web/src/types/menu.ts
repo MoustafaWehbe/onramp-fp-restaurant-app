@@ -2,7 +2,7 @@ export interface MenuItem {
   id: string;
   name: string;
   description?: string | null;
-  base_price: number;
+  base_price: number | string;
   display_order?: number;
   is_active?: boolean;
   image_url?: string | null;
