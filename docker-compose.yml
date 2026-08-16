@@ -31,7 +31,6 @@ services:
 
 volumes:
   postgres_data:
-    external: true
     name: onramp-project-starter-kit_postgres_data
 
   redis_data:
