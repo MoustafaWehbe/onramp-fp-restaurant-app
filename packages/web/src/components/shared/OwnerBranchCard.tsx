@@ -254,7 +254,7 @@ export function OwnerBranchCard({
                         className="w-full gap-2 rounded-xl"
                     >
                         <Link
-                            to={`/owner/${restaurantSlug}/branches/${slug}`}
+                            to={`/owner/restaurants/${restaurantSlug}/branches/${slug}`}
                         >
                             Manage Branch
 
