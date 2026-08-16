@@ -38,7 +38,7 @@ export function OwnerBranchesPage() {
                 setError(null);
 
                 const response = await apiClient.get(
-                    `/owner/${restaurantSlug}/branches`,
+                    `/owner/restaurants/${restaurantSlug}/branches`,
                 );
 
                 setBranches(

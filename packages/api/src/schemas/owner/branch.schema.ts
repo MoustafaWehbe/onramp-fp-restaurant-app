@@ -114,4 +114,8 @@ export const updateBranchSchema = z.object({
     .string()
     .min(1, "Opening hours are required")
     .optional(),
+    
+  deletedImageIds: z
+    .array(z.string().uuid())
+    .optional(),
 });

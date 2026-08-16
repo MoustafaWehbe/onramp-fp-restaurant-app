@@ -1,11 +1,23 @@
 import { useEffect, useState } from "react";
-import { Loader2, Save } from "lucide-react";
+import {
+    ImagePlus,
+    Loader2,
+    Save,
+    Trash2,
+    X,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LocationPicker } from "@/components/shared/LocationPicker";
+
+export interface BranchImage {
+    id: string;
+    url: string;
+    type: string;
+}
 
 export interface BranchForm {
     name: string;
@@ -15,6 +27,8 @@ export interface BranchForm {
     opening_hours: string;
     latitude: string;
     longitude: string;
+    images: File[];
+    deletedImageIds: string[];
 }
 
 export const EMPTY_BRANCH_FORM: BranchForm = {
@@ -25,12 +39,20 @@ export const EMPTY_BRANCH_FORM: BranchForm = {
     opening_hours: "",
     latitude: "",
     longitude: "",
+    images: [],
+    deletedImageIds: [],
 };
+
+const EMPTY_IMAGES: BranchImage[] = [];
 
 interface OwnerBranchFormProps {
     restaurantSlug: string;
     mode: "create" | "edit";
-    initialValues?: BranchForm;
+    initialValues?: Omit<
+        BranchForm,
+        "images" | "deletedImageIds"
+    >;
+    existingImages?: BranchImage[];
     onSubmit: (data: BranchForm) => Promise<void>;
     onCancel: () => void;
     isSaving?: boolean;
@@ -41,33 +63,140 @@ export function OwnerBranchForm({
     restaurantSlug,
     mode,
     initialValues,
+    existingImages = EMPTY_IMAGES,
     onSubmit,
     onCancel,
     isSaving = false,
     error = null,
 }: OwnerBranchFormProps) {
-    const [form, setForm] = useState<BranchForm>(
-        initialValues ?? EMPTY_BRANCH_FORM,
-    );
+    const [form, setForm] = useState<BranchForm>({
+        ...EMPTY_BRANCH_FORM,
+        ...initialValues,
+    });
 
     const [isLocationProcessing, setIsLocationProcessing] =
         useState(false);
-    const [locationError, setLocationError] = useState<string | null>(null);
 
+    const [locationError, setLocationError] =
+        useState<string | null>(null);
+
+    const [previewUrls, setPreviewUrls] =
+        useState<string[]>([]);
+
+    const [remainingImages, setRemainingImages] =
+        useState<BranchImage[]>(existingImages);
+
+    /*
+     * Sync the form when editing data changes.
+     */
     useEffect(() => {
-        if (initialValues) {
-            setForm(initialValues);
-        }
-    }, [initialValues]);
+        if (!initialValues) return;
+
+        setForm({
+            ...EMPTY_BRANCH_FORM,
+            ...initialValues,
+            images: [],
+            deletedImageIds: [],
+        });
+
+        setRemainingImages(existingImages);
+    }, [initialValues, existingImages]);
+    /*
+     * Create previews for newly selected images.
+     */
+    useEffect(() => {
+        const urls = form.images.map((file) =>
+            URL.createObjectURL(file),
+        );
+
+        setPreviewUrls(urls);
+
+        return () => {
+            urls.forEach((url) => {
+                URL.revokeObjectURL(url);
+            });
+        };
+    }, [form.images]);
 
     const handleChange = (
-        field: keyof BranchForm,
+        field: keyof Omit<
+            BranchForm,
+            "images" | "deletedImageIds"
+        >,
         value: string,
     ) => {
         setForm((current) => ({
             ...current,
             [field]: value,
         }));
+    };
+
+    const handleImageChange = (
+        event: React.ChangeEvent<HTMLInputElement>,
+    ) => {
+        const files = Array.from(
+            event.target.files ?? [],
+        );
+
+        if (!files.length) {
+            return;
+        }
+
+        setForm((current) => ({
+            ...current,
+            images: [
+                ...current.images,
+                ...files,
+            ],
+        }));
+
+        /*
+         * Allows selecting the same file again later.
+         */
+        event.target.value = "";
+    };
+
+    const removeNewImage = (index: number) => {
+        setForm((current) => ({
+            ...current,
+            images: current.images.filter(
+                (_, imageIndex) =>
+                    imageIndex !== index,
+            ),
+        }));
+    };
+
+    const removeExistingImage = (
+        image: BranchImage,
+    ) => {
+        setRemainingImages((current) =>
+            current.filter(
+                (existing) =>
+                    existing.id !== image.id,
+            ),
+        );
+
+        setForm((current) => {
+            /*
+             * Prevent the same image ID from being
+             * added to deletedImageIds twice.
+             */
+            if (
+                current.deletedImageIds.includes(
+                    image.id,
+                )
+            ) {
+                return current;
+            }
+
+            return {
+                ...current,
+                deletedImageIds: [
+                    ...current.deletedImageIds,
+                    image.id,
+                ],
+            };
+        });
     };
 
     const handleSubmit = async (
@@ -79,13 +208,18 @@ export function OwnerBranchForm({
             return;
         }
 
-        if (!form.latitude || !form.longitude) {
+        if (
+            !form.latitude ||
+            !form.longitude
+        ) {
             setLocationError(
                 "Please add a branch location before saving.",
-            ); return;
+            );
+            return;
         }
 
         setLocationError(null);
+
         await onSubmit(form);
     };
 
@@ -97,7 +231,7 @@ export function OwnerBranchForm({
                 onSubmit={handleSubmit}
                 className="space-y-8"
             >
-                {/* Section heading */}
+                {/* Branch details */}
 
                 <div>
                     <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#A8A29E]">
@@ -230,33 +364,172 @@ export function OwnerBranchForm({
                     <LocationPicker
                         restaurantSlug={restaurantSlug}
                         value={{
-                            latitude: form.latitude,
-                            longitude: form.longitude,
+                            latitude:
+                                form.latitude,
+                            longitude:
+                                form.longitude,
                         }}
                         onChange={(location) =>
                             setForm((previous) => ({
                                 ...previous,
-                                latitude: location.latitude,
-                                longitude: location.longitude,
+                                latitude:
+                                    location.latitude,
+                                longitude:
+                                    location.longitude,
                             }))
                         }
                         onProcessingChange={
                             setIsLocationProcessing
                         }
                     />
+
+                    {locationError && (
+                        <p className="mt-3 text-sm text-red-600">
+                            {locationError}
+                        </p>
+                    )}
                 </div>
 
                 {/* Images */}
 
                 <div className="border-t border-[#EEE9E2] pt-6">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#A8A29E]">
-                        Branch images
-                    </p>
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#A8A29E]">
+                                Branch images
+                            </p>
 
-                    <p className="mt-2 text-sm leading-6 text-[#78716C]">
-                        Images can be added when the branch
-                        image upload flow is available.
-                    </p>
+                            <p className="mt-2 text-sm leading-6 text-[#78716C]">
+                                Upload one or more
+                                images for this
+                                branch.
+                            </p>
+                        </div>
+
+                        <label
+                            htmlFor="branch-images"
+                            className={`inline-flex items-center rounded-xl transition-all focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2 ${isSaving
+                                    ? "cursor-not-allowed opacity-50"
+                                    : "cursor-pointer"
+                                }`}
+                        >
+                            <span className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90">
+                                <ImagePlus className="h-4 w-4" />
+                                Add images
+                            </span>
+
+                            <input
+                                id="branch-images"
+                                type="file"
+                                accept="image/*"
+                                multiple
+                                className="sr-only"
+                                onChange={handleImageChange}
+                                disabled={isSaving}
+                            />
+                        </label>
+                    </div>
+
+                    {/* Existing images */}
+
+                    {remainingImages.length >
+                        0 && (
+                            <div className="mt-5">
+                                <p className="mb-3 text-xs font-medium text-[#78716C]">
+                                    Current images
+                                </p>
+
+                                <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
+                                    {remainingImages.map(
+                                        (image) => (
+                                            <div
+                                                key={
+                                                    image.id
+                                                }
+                                                className="group relative aspect-[4/3] overflow-hidden rounded-xl bg-[#FCFAF7]"
+                                            >
+                                                <img
+                                                    src={
+                                                        image.url
+                                                    }
+                                                    alt="Branch"
+                                                    className="h-full w-full object-cover"
+                                                />
+
+                                                <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        removeExistingImage(
+                                                            image,
+                                                        )
+                                                    }
+                                                    disabled={
+                                                        isSaving
+                                                    }
+                                                    className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-black/60 text-white transition-colors hover:bg-red-600"
+                                                    aria-label="Remove image"
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </button>
+                                            </div>
+                                        ),
+                                    )}
+                                </div>
+                            </div>
+                        )}
+
+                    {/* New images */}
+
+                    {previewUrls.length >
+                        0 && (
+                            <div className="mt-5">
+                                <p className="mb-3 text-xs font-medium text-[#78716C]">
+                                    New images
+                                </p>
+
+                                <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
+                                    {previewUrls.map(
+                                        (
+                                            url,
+                                            index,
+                                        ) => (
+                                            <div
+                                                key={
+                                                    url
+                                                }
+                                                className="relative aspect-[4/3] overflow-hidden rounded-xl bg-[#FCFAF7]"
+                                            >
+                                                <img
+                                                    src={
+                                                        url
+                                                    }
+                                                    alt={`New branch image ${index +
+                                                        1
+                                                        }`}
+                                                    className="h-full w-full object-cover"
+                                                />
+
+                                                <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        removeNewImage(
+                                                            index,
+                                                        )
+                                                    }
+                                                    disabled={
+                                                        isSaving
+                                                    }
+                                                    className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-black/60 text-white transition-colors hover:bg-red-600"
+                                                    aria-label="Remove selected image"
+                                                >
+                                                    <X className="h-4 w-4" />
+                                                </button>
+                                            </div>
+                                        ),
+                                    )}
+                                </div>
+                            </div>
+                        )}
                 </div>
 
                 {/* Error */}
@@ -288,26 +561,28 @@ export function OwnerBranchForm({
                             !form.latitude ||
                             !form.longitude
                         }
-                    className="gap-2 rounded-xl"
+                        className="gap-2 rounded-xl"
                     >
-                    {isSaving ? (
-                        <>
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                            {isEditMode
-                                ? "Saving..."
-                                : "Creating..."}
-                        </>
-                    ) : (
-                        <>
-                            <Save className="h-4 w-4" />
-                            {isEditMode
-                                ? "Save Changes"
-                                : "Create Branch"}
-                        </>
-                    )}
-                </Button>
-            </div>
-        </form>
-        </Card >
+                        {isSaving ? (
+                            <>
+                                <Loader2 className="h-4 w-4 animate-spin" />
+
+                                {isEditMode
+                                    ? "Saving..."
+                                    : "Creating..."}
+                            </>
+                        ) : (
+                            <>
+                                <Save className="h-4 w-4" />
+
+                                {isEditMode
+                                    ? "Save Changes"
+                                    : "Create Branch"}
+                            </>
+                        )}
+                    </Button>
+                </div>
+            </form>
+        </Card>
     );
 }

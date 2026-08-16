@@ -34,29 +34,30 @@ export function OwnerBranchCreationPage() {
             setIsSaving(true);
             setError(null);
 
+            const formData = new FormData();
+
+            formData.append("name", form.name);
+            formData.append("city", form.city);
+            formData.append("address", form.address);
+            formData.append("latitude", form.latitude);
+            formData.append("longitude", form.longitude);
+            formData.append("phone", form.phone || "");
+            formData.append("opening_hours", form.opening_hours);
+
+            form.images.forEach((image) => {
+                formData.append("images", image);
+            });
+
             await apiClient.post(
-                `/owner/${encodeURIComponent(
+                `/owner/restaurants/${encodeURIComponent(
                     restaurantSlug,
                 )}/branches`,
-                {
-                    name: form.name,
-                    city: form.city,
-                    address: form.address,
-                    latitude: form.latitude,
-                    longitude: form.longitude,
-                    phone: form.phone || null,
-                    opening_hours: form.opening_hours,
-                    images: [],
-                },
+                formData,
             );
 
             navigate("/owner/branches");
         } catch (error) {
-            console.error(
-                "Failed to create branch:",
-                error,
-            );
-
+            console.error("Failed to create branch:", error);
             const response = (
                 error as {
                     response?: {
@@ -67,11 +68,10 @@ export function OwnerBranchCreationPage() {
                     };
                 }
             ).response;
-
             setError(
                 response?.data?.message ??
-                    response?.data?.error ??
-                    "Unable to create the branch. Please try again.",
+                response?.data?.error ??
+                "Unable to create the branch. Please try again.",
             );
         } finally {
             setIsSaving(false);
