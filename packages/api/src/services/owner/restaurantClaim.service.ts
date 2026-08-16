@@ -1,7 +1,7 @@
 import { Restaurant } from "../../models/Restaurant";
 import { RestaurantClaim } from "../../models/RestaurantClaim";
 import { createError } from "src/middleware/error-handler";
-import { Op } from "sequelize";
+import { Op, UniqueConstraintError } from "sequelize";
 
 export const restaurantClaimService = {
   create: async (
@@ -35,16 +35,27 @@ export const restaurantClaimService = {
       );
     }
 
-    const claim = await RestaurantClaim.create({
-      userId,
-      restaurantId,
-      restaurantName,
-      email,
-      phone,
-      status: "pending",
-    });
+    try {
+      const claim = await RestaurantClaim.create({
+        userId,
+        restaurantId,
+        restaurantName,
+        email,
+        phone,
+        status: "pending",
+      });
 
-    return claim;
+      return claim;
+    } catch (error) {
+      if (error instanceof UniqueConstraintError) {
+        throw createError(
+          "You can only claim one restaurant",
+          409
+        );
+      }
+
+      throw error;
+    }
   },
 
   getMyClaim: async (userId: string) => {
@@ -64,7 +75,7 @@ export const restaurantClaimService = {
       );
     }
 
-    let restaurantName: string | null = null;
+    let restaurantName: string | null = claim.restaurantName;
     let restaurantSlug: string | null = null;
 
     if (claim.restaurantId) {

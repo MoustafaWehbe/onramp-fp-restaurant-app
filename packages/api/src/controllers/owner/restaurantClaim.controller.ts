@@ -25,7 +25,7 @@ export const restaurantClaimController = {
                 restaurantId,
                 restaurantName,
                 email,
-                phone
+                phone,
             );
 
             res.status(201).json({
