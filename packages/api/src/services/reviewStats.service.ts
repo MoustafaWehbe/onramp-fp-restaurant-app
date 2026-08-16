@@ -10,7 +10,7 @@ interface ReviewStats {
 
 const getBranchStats = async (
     branchId: string,
-    transaction?: Transaction,
+    transaction: Transaction,
 ): Promise<ReviewStats> => {
     const result = await Review.findOne({
         where: {
@@ -37,7 +37,7 @@ const getBranchStats = async (
 
 const getRestaurantStats = async (
     restaurantId: string,
-    transaction?: Transaction,
+    transaction: Transaction,
 ): Promise<ReviewStats> => {
     const result = await Review.findOne({
         include: [
@@ -73,10 +73,11 @@ const getRestaurantStats = async (
 export const reviewStatsService = {
     recalculate: async (
         branchId: string,
-        transaction?: Transaction,
+        transaction: Transaction,
     ): Promise<void> => {
         const branch = await Branch.findByPk(branchId, {
             transaction,
+            lock: transaction.LOCK.UPDATE,
         });
 
         if (!branch) {
@@ -98,7 +99,10 @@ export const reviewStatsService = {
 
         const restaurant = await Restaurant.findByPk(
             branch.restaurantId,
-            { transaction },
+            {
+                transaction,
+                lock: transaction.LOCK.UPDATE,
+            },
         );
 
         if (!restaurant) {
