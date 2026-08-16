@@ -40,31 +40,30 @@ module.exports = {
 
     const claims = [];
 
-    const approvedUserIds = new Set();
     const approvedRestaurantIds = new Set();
 
-    for (let i = 0; i < 10; i++) {
+    // One claim per user
+    const claimCount = Math.min(users.length, claimIds.length);
+
+    for (let i = 0; i < claimCount; i++) {
+      const userId = users[i].id;
+
       const restaurant =
-        i < 7 && restaurants.length
-          ? restaurants[i % restaurants.length]
+        i < restaurants.length
+          ? restaurants[i]
           : null;
 
-      const userId = users[i % users.length].id;
       const restaurantId = restaurant?.id ?? null;
 
       let status = "pending";
 
-      // Approve only existing restaurants where
-      // neither the owner nor restaurant already has
-      // an approved claim.
+      // Approve existing restaurants only if
+      // that restaurant has not already been approved.
       if (
         restaurantId &&
-        !approvedUserIds.has(userId) &&
         !approvedRestaurantIds.has(restaurantId)
       ) {
         status = "approved";
-
-        approvedUserIds.add(userId);
         approvedRestaurantIds.add(restaurantId);
       } else if (i % 3 === 0) {
         status = "rejected";
@@ -96,7 +95,10 @@ module.exports = {
       });
     }
 
-    await queryInterface.bulkInsert("restaurant_claims", claims);
+    await queryInterface.bulkInsert(
+      "restaurant_claims",
+      claims,
+    );
   },
 
   async down(queryInterface, Sequelize) {

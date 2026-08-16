@@ -50,6 +50,7 @@ export class RestaurantClaim
         userId: {
           type: DataTypes.UUID,
           allowNull: false,
+          unique:true,
         },
         restaurantName: {
           type: DataTypes.STRING,

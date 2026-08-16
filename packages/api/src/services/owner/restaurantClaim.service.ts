@@ -1,7 +1,7 @@
 import { Restaurant } from "../../models/Restaurant";
 import { RestaurantClaim } from "../../models/RestaurantClaim";
 import { createError } from "src/middleware/error-handler";
-import { Op } from "sequelize";
+import { Op, UniqueConstraintError } from "sequelize";
 
 export const restaurantClaimService = {
   create: async (
@@ -20,47 +20,42 @@ export const restaurantClaimService = {
       }
     }
 
-    // Check if the user already has an approved restaurant
-    const approvedClaim = await RestaurantClaim.findOne({
+    // A user can only have one restaurant claim,
+    // whether it is for an existing or a new restaurant.
+    const existingClaim = await RestaurantClaim.findOne({
       where: {
         userId,
-        status: "approved",
       },
     });
 
-    if (approvedClaim) {
+    if (existingClaim) {
       throw createError(
-        "You already have an approved restaurant ownership claim",
+        "You can only claim one restaurant",
         409
       );
     }
 
-    // Check for an existing pending claim
-    const pendingClaim = await RestaurantClaim.findOne({
-      where: {
+    try {
+      const claim = await RestaurantClaim.create({
         userId,
         restaurantId,
+        restaurantName,
+        email,
+        phone,
         status: "pending",
-      },
-    });
+      });
 
-    if (pendingClaim) {
-      throw createError(
-        "You already have a pending claim for this restaurant",
-        409
-      );
+      return claim;
+    } catch (error) {
+      if (error instanceof UniqueConstraintError) {
+        throw createError(
+          "You can only claim one restaurant",
+          409
+        );
+      }
+
+      throw error;
     }
-
-    const claim = await RestaurantClaim.create({
-      userId,
-      restaurantId,
-      restaurantName,
-      email,
-      phone,
-      status: "pending",
-    });
-
-    return claim;
   },
 
   getMyClaim: async (userId: string) => {
@@ -80,27 +75,27 @@ export const restaurantClaimService = {
       );
     }
 
-    let restaurantName: string | null = null;
+    let restaurantName: string | null = claim.restaurantName;
     let restaurantSlug: string | null = null;
 
     if (claim.restaurantId) {
-        const restaurant = await Restaurant.findByPk(
-            claim.restaurantId,
-            {
-                attributes: ["id", "slug", "name"],
-            },
-        );
+      const restaurant = await Restaurant.findByPk(
+        claim.restaurantId,
+        {
+          attributes: ["id", "slug", "name"],
+        },
+      );
 
-        if (restaurant) {
-            restaurantName = restaurant.name;
-            restaurantSlug = restaurant.slug;
-        }
+      if (restaurant) {
+        restaurantName = restaurant.name;
+        restaurantSlug = restaurant.slug;
+      }
     }
 
     return {
-        ...claim.toJSON(),
-        restaurantName,
-        restaurantSlug,
+      ...claim.toJSON(),
+      restaurantName,
+      restaurantSlug,
     };
   },
 };

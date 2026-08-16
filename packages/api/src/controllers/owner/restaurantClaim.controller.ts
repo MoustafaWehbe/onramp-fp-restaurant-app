@@ -8,7 +8,9 @@ export const restaurantClaimController = {
             const userId = req.user?.userId;
 
             if (!userId) {
-                return next();
+               return next(
+                    createError("Unauthenticated", 401),
+                );
             }
 
             const {
@@ -23,7 +25,7 @@ export const restaurantClaimController = {
                 restaurantId,
                 restaurantName,
                 email,
-                phone
+                phone,
             );
 
             res.status(201).json({
