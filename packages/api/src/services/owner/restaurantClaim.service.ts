@@ -20,33 +20,17 @@ export const restaurantClaimService = {
       }
     }
 
-    // Check if the user already has an approved restaurant
-    const approvedClaim = await RestaurantClaim.findOne({
+    // A user can only have one restaurant claim,
+    // whether it is for an existing or a new restaurant.
+    const existingClaim = await RestaurantClaim.findOne({
       where: {
         userId,
-        status: "approved",
       },
     });
 
-    if (approvedClaim) {
+    if (existingClaim) {
       throw createError(
-        "You already have an approved restaurant ownership claim",
-        409
-      );
-    }
-
-    // Check for an existing pending claim
-    const pendingClaim = await RestaurantClaim.findOne({
-      where: {
-        userId,
-        restaurantId,
-        status: "pending",
-      },
-    });
-
-    if (pendingClaim) {
-      throw createError(
-        "You already have a pending claim for this restaurant",
+        "You can only claim one restaurant",
         409
       );
     }
@@ -84,23 +68,23 @@ export const restaurantClaimService = {
     let restaurantSlug: string | null = null;
 
     if (claim.restaurantId) {
-        const restaurant = await Restaurant.findByPk(
-            claim.restaurantId,
-            {
-                attributes: ["id", "slug", "name"],
-            },
-        );
+      const restaurant = await Restaurant.findByPk(
+        claim.restaurantId,
+        {
+          attributes: ["id", "slug", "name"],
+        },
+      );
 
-        if (restaurant) {
-            restaurantName = restaurant.name;
-            restaurantSlug = restaurant.slug;
-        }
+      if (restaurant) {
+        restaurantName = restaurant.name;
+        restaurantSlug = restaurant.slug;
+      }
     }
 
     return {
-        ...claim.toJSON(),
-        restaurantName,
-        restaurantSlug,
+      ...claim.toJSON(),
+      restaurantName,
+      restaurantSlug,
     };
   },
 };
