@@ -15,6 +15,7 @@ import { MenuItem } from "./MenuItem";
 import { BranchImage } from "./BranchImage";
 export { User, Restaurant, Branch, BranchImage, Review, Session, RefreshToken, EmailVerificationToken, PasswordResetToken, AdminLog, Favorite, RestaurantClaim, Menu, MenuItem, BranchMenuItem };
 import { BranchMenuItem } from "./BranchMenuItem";
+import { SearchEmbedding } from "./SearchEmbedding";
 
 export function initModels(sequelize: Sequelize): void {
   User.initModel(sequelize);
@@ -32,6 +33,7 @@ export function initModels(sequelize: Sequelize): void {
   MenuItem.initModel(sequelize);
   BranchImage.initModel(sequelize);
   BranchMenuItem.initModel(sequelize);
+  SearchEmbedding.initModel(sequelize);
   // Associations
   User.hasMany(Session, { foreignKey: "userId", as: "sessions" });
   Session.belongsTo(User, { foreignKey: "userId", as: "user" });
