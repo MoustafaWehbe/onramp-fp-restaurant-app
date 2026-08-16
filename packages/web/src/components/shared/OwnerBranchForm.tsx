@@ -408,7 +408,10 @@ export function OwnerBranchForm({
 
                         <label
                             htmlFor="branch-images"
-                            className="cursor-pointer"
+                            className={`inline-flex items-center rounded-xl transition-all focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2 ${isSaving
+                                    ? "cursor-not-allowed opacity-50"
+                                    : "cursor-pointer"
+                                }`}
                         >
                             <span className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90">
                                 <ImagePlus className="h-4 w-4" />
@@ -420,13 +423,9 @@ export function OwnerBranchForm({
                                 type="file"
                                 accept="image/*"
                                 multiple
-                                className="hidden"
-                                onChange={
-                                    handleImageChange
-                                }
-                                disabled={
-                                    isSaving
-                                }
+                                className="sr-only"
+                                onChange={handleImageChange}
+                                disabled={isSaving}
                             />
                         </label>
                     </div>

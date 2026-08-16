@@ -23,7 +23,7 @@ export function OwnerBranchCreationPage() {
 
     const [error, setError] =
         useState<string | null>(null);
-        
+
     const handleSubmit = async (form: BranchForm) => {
         if (!restaurantSlug) {
             setError("Restaurant not found.");
@@ -57,7 +57,22 @@ export function OwnerBranchCreationPage() {
 
             navigate("/owner/branches");
         } catch (error) {
-            // keep your existing error handling
+            console.error("Failed to create branch:", error);
+            const response = (
+                error as {
+                    response?: {
+                        data?: {
+                            message?: string;
+                            error?: string;
+                        };
+                    };
+                }
+            ).response;
+            setError(
+                response?.data?.message ??
+                response?.data?.error ??
+                "Unable to create the branch. Please try again.",
+            );
         } finally {
             setIsSaving(false);
         }
