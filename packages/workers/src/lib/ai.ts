@@ -3,4 +3,4 @@ export {
   chatCompletion,
   generateEmbedding,
   generateEmbeddings,
-} from "@starter-kit/shared";
+} from "@fp_restaurant/shared";

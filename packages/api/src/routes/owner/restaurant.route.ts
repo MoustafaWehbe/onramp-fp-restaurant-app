@@ -1,13 +1,13 @@
 import { Router } from "express";
-import { authenticate } from "src/middleware/authenticate";
-import { validate } from "src/middleware/validate";
-import { restaurantController } from "src/controllers/owner/restaurant.controller";
-import { createRestaurantSchema, updateRestaurantSchema } from "src/schemas/owner/restaurant.schema";
-import { rateLimiter } from "src/middleware/rate-limiter";
-import { verifyRestaurantOwnership } from "src/middleware/verifyRetsaurantOwnership";
-import { authorize } from "src/middleware/authorize";
-import { upload } from "src/middleware/upload";
-import { parseJsonFields } from "src/middleware/parse-json-fields";
+import { authenticate } from "../../middleware/authenticate";
+import { validate } from "../../middleware/validate";
+import { restaurantController } from "../../controllers/owner/restaurant.controller";
+import { createRestaurantSchema, updateRestaurantSchema } from "../../schemas/owner/restaurant.schema";
+import { rateLimiter } from "../../middleware/rate-limiter";
+import { verifyRestaurantOwnership } from "../../middleware/verifyRetsaurantOwnership";
+import { authorize } from "../../middleware/authorize";
+import { upload } from "../../middleware/upload";
+import { parseJsonFields } from "../../middleware/parse-json-fields";
 
 const router = Router();
 

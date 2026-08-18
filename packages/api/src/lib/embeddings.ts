@@ -2,4 +2,4 @@ export {
   generateEmbedding,
   generateEmbeddings,
   cosineSimilarity,
-} from "@starter-kit/shared";
+} from "@fp_restaurant/shared";

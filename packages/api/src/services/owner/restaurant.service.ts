@@ -1,13 +1,13 @@
-import { Restaurant, RestaurantClaim } from "@starter-kit/shared";
+import { Restaurant, RestaurantClaim } from "@fp_restaurant/shared";
 import { UniqueConstraintError } from "sequelize";
-import { generateSlug } from "src/lib/slug";
-import { createError } from "src/middleware/error-handler";
-import { getDatabase } from "src/lib/db";
+import { generateSlug } from "../../lib/slug";
+import { createError } from "../../middleware/error-handler";
+import { getDatabase } from "../../lib/db";
 import {
   storageService,
   type UploadableFile,
 } from "../storage/storage.service";
-import { PriceRange } from "@starter-kit/shared";
+import { PriceRange } from "@fp_restaurant/shared";
 
 interface CreateRestaurantData {
   userId: string;

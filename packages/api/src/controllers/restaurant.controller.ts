@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { restaurantService } from "../services/restaurant.service";
-import { createError } from "src/middleware/error-handler";
+import { createError } from "../middleware/error-handler";
 
 export const restaurantController = {
   getRestaurantBySlug: async (
@@ -55,7 +55,7 @@ export const restaurantController = {
         message: "Restaurants retrieved successfully",
       });
     } catch (error) {
-      next(error);
+      return next(error);
     }
   },
 
@@ -87,7 +87,7 @@ export const restaurantController = {
         message: "Restaurants retrieved successfully",
       });
     } catch (error) {
-      next(error)
+      return next(error)
     }
   },
   searchByName: async (req: Request, res: Response, next: NextFunction) => {
@@ -107,7 +107,7 @@ export const restaurantController = {
         data: restaurants,
       });
     } catch (error) {
-        next(error);
+       return next(error);
     }
   },
 };

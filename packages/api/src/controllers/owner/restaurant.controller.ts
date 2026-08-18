@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
-import { createError } from "src/middleware/error-handler";
-import { restaurantService } from "src/services/owner/restaurant.service";
+import { createError } from "../../middleware/error-handler";
+import { restaurantService } from "../../services/owner/restaurant.service";
 
 export const restaurantController = {
   create: async (req: Request, res: Response, next: NextFunction) => {
@@ -31,12 +31,12 @@ export const restaurantController = {
         image: req.file,
       });
 
-      res.status(201).json({
+      return res.status(201).json({
         data: restaurant,
         message: "Restaurant created successfully",
       });
     } catch (error) {
-      next(error);
+      return next(error);
     }
   },
 
@@ -55,12 +55,12 @@ export const restaurantController = {
         }
       );
 
-      res.status(200).json({
+      return res.status(200).json({
         data: restaurant,
         message: "Restaurant updated successfully",
       });
     } catch (error) {
-      next(error);
+      return next(error);
     }
   },
 
@@ -74,11 +74,11 @@ export const restaurantController = {
 
       const restaurant = await restaurantService.getBySlug(restaurantSlug);
 
-      res.status(200).json({
+      return res.status(200).json({
         data: restaurant,
       });
     } catch (error) {
-      next(error);
+      return next(error);
     }
   },
 };

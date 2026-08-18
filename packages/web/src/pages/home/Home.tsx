@@ -1,7 +1,7 @@
 import { HeroSearch } from "@/components/shared/HeroSearch";
 import { StatsBar } from "@/components/shared/StatsBar";
 import { FeaturedRestaurants } from "@/components/shared/FeaturedRestaurants";
-import { HowItWorks } from "@/components/shared/HowItWorks";
+import { HowItWorks } from "@/components/shared/HowItworks";
 import { OwnerCta } from "@/components/shared/OwnerCta";
 import { RestaurantCta } from "@/components/shared/RestaurantCta";
 

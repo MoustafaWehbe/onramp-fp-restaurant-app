@@ -1,5 +1,5 @@
 import type { Job } from "bullmq";
-import type { EmailJobData, EmailJobResult } from "@starter-kit/shared";
+import type { EmailJobData, EmailJobResult } from "@fp_restaurant/shared";
 
 export async function processEmailJob(
   job: Job<EmailJobData, EmailJobResult>,

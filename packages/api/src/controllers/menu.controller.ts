@@ -1,4 +1,4 @@
-import { menuService } from "src/services/menu.service";
+import { menuService } from "../services/menu.service";
 import { Request, Response, NextFunction } from "express";
 
 type MenuParams = {

@@ -1,6 +1,6 @@
-import { createError } from "src/middleware/error-handler";
-import { Restaurant } from "@starter-kit/shared";
-import { GOOGLE_MAPS_HOSTS } from "src/schemas/owner/location.schema";
+import { createError } from "../../middleware/error-handler";
+import { Restaurant } from "@fp_restaurant/shared";
+import { GOOGLE_MAPS_HOSTS } from "../../schemas/owner/location.schema";
 
 interface ResolveGoogleMapsLocationData {
     restaurantSlug: string;

@@ -1,4 +1,4 @@
-import { verifyAccessToken } from "@starter-kit/shared";
+import { verifyAccessToken } from "@fp_restaurant/shared";
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 
