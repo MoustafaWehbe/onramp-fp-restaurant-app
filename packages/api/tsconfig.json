@@ -4,11 +4,7 @@
     "rootDir": "./",
     "outDir": "./dist",
     "jsx": "react-jsx",
-    "baseUrl": ".",
-    "paths": {
-      "@starter-kit/shared": ["../shared/src/index.ts"],
-      "@starter-kit/shared/*": ["../shared/src/*"]
-    }
+    "baseUrl": "."
   },
   "include": ["src/**/*", "app.ts", "server.ts"],
   "exclude": ["node_modules", "dist", "tests"]

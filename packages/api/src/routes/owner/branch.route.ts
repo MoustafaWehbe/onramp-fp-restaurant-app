@@ -1,18 +1,18 @@
 import { Router } from "express";
-import { authenticate } from "src/middleware/authenticate";
-import { rateLimiter } from "src/middleware/rate-limiter";
-import { validate } from "src/middleware/validate";
-import { verifyRestaurantOwnership } from "src/middleware/verifyRetsaurantOwnership";
+import { authenticate } from "../../middleware/authenticate";
+import { rateLimiter } from "../../middleware/rate-limiter";
+import { validate } from "../../middleware/validate";
+import { verifyRestaurantOwnership } from "../../middleware/verifyRetsaurantOwnership";
 import {
     ownerBranchParamsSchema,
     createBranchSchema,
     updateBranchSchema,
     ownerBranchUpdateParamsSchema,
-} from "src/schemas/owner/branch.schema";
-import { branchController } from "src/controllers/owner/branch.controller";
-import { authorize } from "src/middleware/authorize";
-import { upload } from "src/middleware/upload";
-import { parseJsonFields } from "src/middleware/parse-json-fields";
+} from "../../schemas/owner/branch.schema";
+import { branchController } from "../../controllers/owner/branch.controller";
+import { authorize } from "../../middleware/authorize";
+import { upload } from "../../middleware/upload";
+import { parseJsonFields } from "../../middleware/parse-json-fields";
 
 const router = Router();
 

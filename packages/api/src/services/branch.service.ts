@@ -4,7 +4,7 @@ import { BranchImage } from "../models/BranchImage";
 import { Review } from "../models/Review";
 import { User } from "../models/User";
 import { Menu } from "../models/Menu";
-import { createError } from "src/middleware/error-handler";
+import { createError } from "../middleware/error-handler";
 
 export const branchService = {
   getBranchBySlug: async (

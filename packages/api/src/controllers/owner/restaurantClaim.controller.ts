@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
-import { createError } from "src/middleware/error-handler";
-import { restaurantClaimService } from "src/services/owner/restaurantClaim.service";
+import { createError } from "../../middleware/error-handler";
+import { restaurantClaimService } from "../../services/owner/restaurantClaim.service";
 
 export const restaurantClaimController = {
     create: async (req: Request, res: Response, next: NextFunction) => {

@@ -1,9 +1,9 @@
 import { Router } from "express";
-import { favoriteController } from "src/controllers/favorite.controller";
-import { authenticate } from "src/middleware/authenticate";
-import { rateLimiter } from "src/middleware/rate-limiter";
-import { validate } from "src/middleware/validate";
-import { favoriteParamsSchema } from "src/schemas/favorite.schema";
+import { favoriteController } from "../controllers/favorite.controller";
+import { authenticate } from "../middleware/authenticate";
+import { rateLimiter } from "../middleware/rate-limiter";
+import { validate } from "../middleware/validate";
+import { favoriteParamsSchema } from "../schemas/favorite.schema";
 
 const router = Router();
 

@@ -1,7 +1,7 @@
-import { createError } from "src/middleware/error-handler";
+import { createError } from "../middleware/error-handler";
 import { Menu } from "../models/Menu";
 import { MenuItem } from "../models/MenuItem";
-import { Branch, BranchMenuItem, Restaurant } from "@starter-kit/shared";
+import { Branch, BranchMenuItem, Restaurant } from "@fp_restaurant/shared";
 
 export const menuService = {
     getMenuByIdForBranch: async (

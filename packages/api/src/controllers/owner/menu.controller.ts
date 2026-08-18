@@ -1,6 +1,6 @@
 import type { Express, Request, Response, NextFunction } from "express";
 import { menuService } from "../../services/owner/menu.service";
-import { UploadableFile } from "src/services/storage/storage.service";
+import { UploadableFile } from "../../services/storage/storage.service";
 
 export const menuController = {
   create: async (req: Request, res: Response, next: NextFunction) => {
@@ -28,7 +28,7 @@ export const menuController = {
 
       return res.status(201).json(menu);
     } catch (error) {
-      next(error);
+        return next(error);
     }
   },
 
@@ -50,7 +50,7 @@ export const menuController = {
 
       return res.status(200).json(result);
     } catch (error) {
-      next(error);
+      return next(error);
     }
   },
 
@@ -68,7 +68,7 @@ export const menuController = {
 
       return res.status(200).json(menus);
     } catch (error) {
-      next(error);
+      return next(error);
     }
   },
 
@@ -83,7 +83,7 @@ export const menuController = {
 
       return res.status(200).json(menus);
     } catch (error) {
-      next(error);
+      return next(error);
     }
   },
 
@@ -98,7 +98,7 @@ export const menuController = {
 
       return res.status(200).json(result);
     } catch (error) {
-      next(error);
+      return next(error);
     }
   },
 
@@ -114,7 +114,7 @@ export const menuController = {
 
       return res.status(200).json(menu);
     } catch (error) {
-      next(error);
+      return next(error);
     }
   },
 
@@ -133,7 +133,7 @@ export const menuController = {
 
       return res.status(201).json(menuItem);
     } catch (error) {
-      next(error);
+      return next(error);
     }
   },
 
@@ -153,7 +153,7 @@ export const menuController = {
 
       return res.status(200).json(menuItem);
     } catch (error) {
-      next(error);
+      return next(error);
     }
   },
 };

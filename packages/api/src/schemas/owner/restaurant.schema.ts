@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { PriceRange } from "@starter-kit/shared";
+import { PriceRange } from "@fp_restaurant/shared";
 
 
 export const createRestaurantSchema = z.object({

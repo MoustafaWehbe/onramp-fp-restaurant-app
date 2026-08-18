@@ -1,5 +1,5 @@
-import { storageConfig } from "src/config/storage";
-import { supabase } from "src/config/supabase";
+import { storageConfig } from "../../config/storage";
+import { supabase } from "../../config/supabase";
 
 export interface UploadableFile {
   originalname: string;

@@ -1,7 +1,7 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "declaration": true,
+    "declaration": false,
     "sourceMap": true
   },
   "include": ["src/**/*", "app.ts", "server.ts"],

@@ -5,14 +5,14 @@ WORKDIR /app
 COPY package*.json ./
 COPY packages/workers/package*.json ./packages/workers/
 COPY packages/shared/package*.json ./packages/shared/
-RUN npm ci --workspace=@starter-kit/workers --workspace=@starter-kit/shared
+RUN npm ci --workspace=@starter-kit/workers --workspace=@fp_restaurant/shared
 
 # Copy source
 COPY packages/shared ./packages/shared
 COPY packages/workers ./packages/workers
 
 # Build shared first, then workers
-RUN npm run build --workspace=@starter-kit/shared
+RUN npm run build --workspace=@fp_restaurant/shared
 RUN npm run build --workspace=@starter-kit/workers
 
 FROM node:20-alpine AS runner
