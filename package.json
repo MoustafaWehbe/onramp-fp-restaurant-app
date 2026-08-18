@@ -6,7 +6,7 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "turbo run dev",
+    "dev": "turbo run dev --filter=@fp_restaurant/api --filter=@fp_restaurant/web",
     "build": "turbo run build",
     "test": "turbo run test",
     "lint": "turbo run lint",

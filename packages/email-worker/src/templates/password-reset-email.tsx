@@ -1,4 +1,4 @@
-import { EmailLayout } from "./EmailLayout";
+import { EmailLayout } from "./email-layout";
 
 interface PasswordResetEmailProps {
   resetUrl: string;

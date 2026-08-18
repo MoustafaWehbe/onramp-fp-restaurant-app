@@ -29,6 +29,19 @@ services:
       timeout: 5s
       retries: 5
 
+  email-worker:
+    build:
+      context: .
+      dockerfile: packages/email-worker/Dockerfile
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      redis:
+        condition: service_healthy
+
   api:
     build:
       context: .

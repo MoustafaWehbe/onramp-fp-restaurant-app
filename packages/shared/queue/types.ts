@@ -9,9 +9,8 @@ export type QueueName = (typeof QUEUE_NAMES)[keyof typeof QUEUE_NAMES];
 // ─── Job data shapes ───────────────────────────────────────────────────────────
 export interface EmailJobData {
   to: string;
-  subject: string;
-  template: string;
-  variables?: Record<string, string>;
+  type: string;
+  variables?: Record<string, string>; 
 }
 
 export interface EmbeddingsJobData {
