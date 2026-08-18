@@ -1,10 +1,10 @@
-import { Branch } from "src/models/Branch";
-import { generateSlug } from "src/lib/slug";
-import { createError } from "src/middleware/error-handler";
-import { Menu, Restaurant, Review, User } from "@starter-kit/shared";
+import { Branch } from "../../models/Branch";
+import { generateSlug } from "../../lib/slug";
+import { createError } from "../../middleware/error-handler";
+import { Menu, Restaurant, Review, User } from "@fp_restaurant/shared";
 import { UniqueConstraintError } from "sequelize";
-import { BranchImage } from "src/models/BranchImage";
-import { getDatabase } from "src/lib/db";
+import { BranchImage } from "../../models/BranchImage";
+import { getDatabase } from "../../lib/db";
 import { storageService, UploadableFile } from "../storage/storage.service";
 
 interface CreateBranchData {

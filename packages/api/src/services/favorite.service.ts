@@ -1,6 +1,6 @@
 import { Restaurant } from "../models/Restaurant";
 import { Favorite } from "../models/Favorite";
-import { createError } from "src/middleware/error-handler";
+import { createError } from "../middleware/error-handler";
 
 export const favoriteService = {
   create: async (userId: string, restaurantSlug: string) => {

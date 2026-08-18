@@ -1,6 +1,6 @@
 import { Restaurant } from "../../models/Restaurant";
 import { RestaurantClaim } from "../../models/RestaurantClaim";
-import { createError } from "src/middleware/error-handler";
+import { createError } from "../../middleware/error-handler";
 import { Op, UniqueConstraintError } from "sequelize";
 
 export const restaurantClaimService = {

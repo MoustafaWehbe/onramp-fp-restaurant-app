@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { locationService } from "src/services/owner/location.service";
+import { locationService } from "../../services/owner/location.service";
 
 export const locationController = {
     resolveGoogleMaps: async (

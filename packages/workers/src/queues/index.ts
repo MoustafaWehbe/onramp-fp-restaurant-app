@@ -1,5 +1,5 @@
 import { Worker } from "bullmq";
-import { getRedisConnection, QUEUE_NAMES } from "@starter-kit/shared";
+import { getRedisConnection, QUEUE_NAMES } from "@fp_restaurant/shared";
 import { processEmailJob } from "../jobs/email.job";
 import { processEmbeddingsJob } from "../jobs/embeddings.job";
 

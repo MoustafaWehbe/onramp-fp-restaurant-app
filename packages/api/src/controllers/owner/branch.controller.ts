@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
-import { createError } from "src/middleware/error-handler";
-import { branchService } from "src/services/owner/branch.service";
+import { createError } from "../../middleware/error-handler";
+import { branchService } from "../../services/owner/branch.service";
 
 type RestaurantBranchParams = {
   restaurantSlug: string;

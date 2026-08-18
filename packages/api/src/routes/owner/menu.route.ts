@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { menuController } from "../../controllers/owner/menu.controller";
-import { validate } from "src/middleware/validate";
+import { validate } from "../../middleware/validate";
 import {
   createMenuParamsSchema,
   createMenuBodySchema,
@@ -16,11 +16,11 @@ import {
   createMenuItemParamsSchema,
   createMenuItemBodySchema,
 } from "../../schemas/owner/menu.schema";
-import { authenticate } from "src/middleware/authenticate";
-import { authorize } from "src/middleware/authorize";
-import { verifyRestaurantOwnership } from "src/middleware/verifyRetsaurantOwnership";
-import { upload } from "src/middleware/upload";
-import { parseJsonFields } from "src/middleware/parse-json-fields";
+import { authenticate } from "../../middleware/authenticate";
+import { authorize } from "../../middleware/authorize";
+import { verifyRestaurantOwnership } from "../../middleware/verifyRetsaurantOwnership";
+import { upload } from "../../middleware/upload";
+import { parseJsonFields } from "../../middleware/parse-json-fields";
 
 const router = Router({ mergeParams: true });
 

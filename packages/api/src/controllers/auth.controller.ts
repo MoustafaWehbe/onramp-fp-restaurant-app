@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
 import { authService } from "../services/auth.service";
-import { resetPasswordSchema } from "src/schemas/auth.schemas";
+import { resetPasswordSchema } from "../schemas/auth.schemas";
 
 const isProduction = process.env.NODE_ENV === "production";
 

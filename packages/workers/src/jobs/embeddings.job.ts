@@ -2,7 +2,7 @@ import type { Job } from "bullmq";
 import type {
   EmbeddingsJobData,
   EmbeddingsJobResult,
-} from "@starter-kit/shared";
+} from "@fp_restaurant/shared";
 import { generateEmbedding } from "../lib/ai";
 
 export async function processEmbeddingsJob(

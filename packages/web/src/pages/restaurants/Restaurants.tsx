@@ -11,7 +11,7 @@ import { HeroSearch } from "@/components/shared/HeroSearch";
 
 export function Restaurants() {
 
-  const [ searchParams, setSearchParams ] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const search = searchParams.get("search") ?? "";
   const city = searchParams.get("city");
@@ -25,7 +25,7 @@ export function Restaurants() {
 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
-  
+
 
   const page = Number(searchParams.get("page") ?? 1);
   const limit = 12;
@@ -54,17 +54,17 @@ export function Restaurants() {
 
         const response = hasFilters
           ? await restaurantsApi.search({
-              search,
-              city,
-              cuisine,
-              priceRange,
-              page,
-              limit,
-            })
+            search: search ?? undefined,
+            city: city ?? undefined,
+            cuisine: cuisine ?? undefined,
+            priceRange: priceRange ?? undefined,
+            page,
+            limit,
+          })
           : await restaurantsApi.getAll({
-              page,
-              limit,
-            });
+            page,
+            limit,
+          });
 
         if (cancelled) return;
 
@@ -196,40 +196,40 @@ export function Restaurants() {
         {/* Pagination placeholder */}
         {!isLoading && !error && meta && meta.totalPages > 1 && (
           <div className="mt-12 flex items-center justify-center gap-2">
-          <button
-            type="button"
-            onClick={() => handlePageChange(meta.page - 1)}
-            disabled={meta.page === 1}
-            className="rounded-md border border-border px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            Previous
-          </button>
+            <button
+              type="button"
+              onClick={() => handlePageChange(meta.page - 1)}
+              disabled={meta.page === 1}
+              className="rounded-md border border-border px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Previous
+            </button>
 
-          {Array.from({ length: meta.totalPages }, (_, index) => {
-            const pageNumber = index + 1;
+            {Array.from({ length: meta.totalPages }, (_, index) => {
+              const pageNumber = index + 1;
 
-            return (
-              <button
-                key={pageNumber}
-                type="button"
-                onClick={() => handlePageChange(pageNumber)}
-                aria-current={meta.page === pageNumber ? "page" : undefined}
-                className="rounded-md border border-border px-3 py-2 text-sm"
-              >
-                {pageNumber}
-              </button>
-            );
-          })}
+              return (
+                <button
+                  key={pageNumber}
+                  type="button"
+                  onClick={() => handlePageChange(pageNumber)}
+                  aria-current={meta.page === pageNumber ? "page" : undefined}
+                  className="rounded-md border border-border px-3 py-2 text-sm"
+                >
+                  {pageNumber}
+                </button>
+              );
+            })}
 
-          <button
-            type="button"
-            onClick={() => handlePageChange(meta.page + 1)}
-            disabled={meta.page === meta.totalPages}
-            className="rounded-md border border-border px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            Next
-          </button>
-        </div>        )}
+            <button
+              type="button"
+              onClick={() => handlePageChange(meta.page + 1)}
+              disabled={meta.page === meta.totalPages}
+              className="rounded-md border border-border px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Next
+            </button>
+          </div>)}
       </section>
     </main>
   );

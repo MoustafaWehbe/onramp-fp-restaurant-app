@@ -1,12 +1,12 @@
 import { Router } from "express";
-import { authenticate } from "src/middleware/authenticate";
-import { authorize } from "src/middleware/authorize";
-import { rateLimiter } from "src/middleware/rate-limiter";
-import { validate } from "src/middleware/validate";
-import { verifyRestaurantOwnership } from "src/middleware/verifyRetsaurantOwnership";
+import { authenticate } from "../../middleware/authenticate";
+import { authorize } from "../../middleware/authorize";
+import { rateLimiter } from "../../middleware/rate-limiter";
+import { validate } from "../../middleware/validate";
+import { verifyRestaurantOwnership } from "../../middleware/verifyRetsaurantOwnership";
 
 import { googleMapsLocationSchema } from "../../schemas/owner/location.schema";
-import { locationController } from "src/controllers/owner/location.controller";
+import { locationController } from "../../controllers/owner/location.controller";
 
 const router = Router();
 

@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
 import { reviewService } from "../services/review.service";
-import { reviewBranchParamsSchema } from "src/schemas/review.schema";
+import { reviewBranchParamsSchema } from "../schemas/review.schema";
 
 export const reviewController = {
   async create(

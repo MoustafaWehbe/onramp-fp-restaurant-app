@@ -3,7 +3,7 @@ import { Branch } from "../models/Branch";
 import { Review } from "../models/Review";
 import { User } from "../models/User";
 import { Menu } from "../models/Menu";
-import { createError } from "src/middleware/error-handler";
+import { createError } from "../middleware/error-handler";
 import { type Includeable, Op, literal, type WhereOptions } from "sequelize";
 import { Favorite } from "../models/Favorite";
 
@@ -24,7 +24,7 @@ interface SearchRestaurantsOptions {
 }
 
 export const restaurantService = {
-  getRestaurantBySlug: async (slug: string,  userId?: string) => {
+  getRestaurantBySlug: async (slug: string, userId?: string) => {
     const restaurant = await Restaurant.findOne({
       where: {
         slug,
@@ -108,7 +108,7 @@ export const restaurantService = {
     return serializeRestaurant(restaurant, favoriteIds.has(restaurant.id));
   },
 
-  getRestaurants: async({userId, page,limit}: GetRestaurantsOptions) => {
+  getRestaurants: async ({ userId, page, limit }: GetRestaurantsOptions) => {
 
     const offset = (page - 1) * limit;
 
@@ -135,7 +135,7 @@ export const restaurantService = {
 
 
     return {
-      data: rows.map((restaurant) => serializeRestaurant(restaurant, favoriteIds.has(restaurant.id))),
+      data: rows.map((restaurant: Restaurant) => serializeRestaurant(restaurant, favoriteIds.has(restaurant.id))),
       meta: {
         page,
         limit,
@@ -227,7 +227,7 @@ export const restaurantService = {
     const favoritIds = await getFavorites(userId);
 
     return {
-      data: rows.map((restaurant) => serializeRestaurant(restaurant, favoritIds.has(restaurant.id))),
+      data: rows.map((restaurant: Restaurant) => serializeRestaurant(restaurant, favoritIds.has(restaurant.id))),
       meta: {
         page,
         limit,
@@ -278,7 +278,7 @@ export const restaurantService = {
 //helper function to get the favorite restaurant ids for the logged in user
 
 const getFavorites = async (userId?: string): Promise<Set<string>> => {
-  if(!userId) {
+  if (!userId) {
     return new Set();
   }
   const favorites = await Favorite.findAll({
@@ -290,7 +290,7 @@ const getFavorites = async (userId?: string): Promise<Set<string>> => {
   });
 
   return new Set(
-    favorites.map((favorite) => favorite.restaurantId)
+    favorites.map((favorite: { restaurantId: string }) => favorite.restaurantId)
   );
 };
 
