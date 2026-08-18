@@ -248,7 +248,7 @@ export class AuthService {
         type: "password-reset",
         to: user.email,
         variables: {
-          verificationUrl:
+          resetUrl:
             `${process.env.APP_URL}/reset-password?token=${rawToken}`,
         },
       });

@@ -10,9 +10,7 @@ export type QueueName = (typeof QUEUE_NAMES)[keyof typeof QUEUE_NAMES];
 export interface EmailJobData {
   to: string;
   type: string;
-  variables: {
-    verificationUrl: string;
-  };
+  variables?: Record<string, string>; 
 }
 
 export interface EmbeddingsJobData {
