@@ -10,9 +10,10 @@ import {
 } from "@fp_restaurant/shared";
 import { User, Session, RefreshToken } from "../models";
 import { createError } from "../middleware/error-handler";
-import { sendVerificationEmail, sendPasswordResetEmail } from "../lib/mailer";
 import { UniqueConstraintError } from "sequelize";
 import { getSequelize } from "@fp_restaurant/shared";
+import { emailQueue } from "@fp_restaurant/shared";
+
 interface RegisterInput {
   email: string;
   password: string;
@@ -167,13 +168,15 @@ export class AuthService {
       expiresAt: new Date(Date.now() + 60 * 60 * 1_000),
     });
 
-    try {
-      await sendVerificationEmail(user.email, rawToken);
-    } catch (err) {
-      console.error("Failed to send verification email: ", err);
-    }
+    await emailQueue.add("email", {
+      type: "verification",
+      to: user.email,
+      variables: {
+        verificationUrl: `${process.env.APP_URL}/verify-email?token=${rawToken}`,
+      },
+    });
 
-    return { message: "Verification email sent" }
+    return { message: "Verification email queued" }
   }
 
   async verifyEmail(rawToken: string) {
@@ -241,10 +244,17 @@ export class AuthService {
     }
 
     try {
-      await sendPasswordResetEmail(user.email, rawToken);
+      await emailQueue.add("email", {
+        type: "password-reset",
+        to: user.email,
+        variables: {
+          verificationUrl:
+            `${process.env.APP_URL}/reset-password?token=${rawToken}`,
+        },
+      });
     } catch (err) {
       await resetToken.destroy();
-      console.error("Failed to send password reset email:", err);
+      console.error("Failed to enqueue password reset email:", err);
     }
 
     return {
