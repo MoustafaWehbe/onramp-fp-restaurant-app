@@ -22,6 +22,9 @@ export const embeddingRepository = {
             content,
             embedding,
             ...(metadata !== undefined ? {metadata} : {}),
+        },
+        {
+            conflictFields: ["entityType", "entityId"],
         });
     },
 
