@@ -10,6 +10,7 @@ import { ownerBranchRouter } from "./owner/branch.route";
 import { restaurantOwnerRouter } from "./owner/restaurant.route";
 import { ownerMenuRouter } from "./owner/menu.route";
 import { ownerLocationRouter } from "./owner/location.route";
+import { adminRestaurantClaim } from "./admin/restaurantClaim.routes";
 
 const router = Router();
 
@@ -27,4 +28,7 @@ router.use("/owner/restaurants",ownerBranchRouter);
 router.use("/owner/restaurants", restaurantOwnerRouter);
 router.use("/owner/restaurants/:restaurantSlug", ownerMenuRouter);
 router.use("/owner", ownerLocationRouter);
+
+//Admin Routes
+router.use("/admin",adminRestaurantClaim);
 export { router };
