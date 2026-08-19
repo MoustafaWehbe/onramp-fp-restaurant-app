@@ -1,4 +1,4 @@
-import { EmailLayout } from "./email-layout";
+import { AuthEmailLayout } from "./auth-email-layout";
 
 interface VerificationEmailProps {
   verifyUrl: string;
@@ -8,7 +8,7 @@ export function VerificationEmail({
   verifyUrl,
 }: VerificationEmailProps) {
   return (
-    <EmailLayout
+    <AuthEmailLayout
       preview="Verify your Platera account"
       title="Verify your email"
       description={
