@@ -57,6 +57,10 @@ export class AuthService {
       throw createError("Invalid credentials", 401);
     }
 
+    if (!user.emailVerified) {
+      throw createError("Please verify your email before logging in", 403);
+    }
+
     const session = await Session.create({
       userId: user.id,
       userAgent: input.userAgent,
@@ -179,6 +183,27 @@ export class AuthService {
     return { message: "Verification email queued" }
   }
 
+  async resendVerification(email: string) {
+    const user = await User.findOne({
+      where: {
+        email: email.trim().toLowerCase(),
+      },
+    });
+
+    if (!user) {
+      return {
+        message:
+          "If an account exists for this email, a verification email has been sent.",
+      };
+    }
+
+    if (user.emailVerified) {
+      throw createError("Email already verified", 409);
+    }
+
+    return this.requestEmailVerification(user.id);
+  }
+
   async verifyEmail(rawToken: string) {
     const tokenHash = crypto.createHash("sha256").update(rawToken).digest("hex");
     const tokenStored = await EmailVerificationToken.findOne({ where: { tokenHash } });
@@ -262,83 +287,83 @@ export class AuthService {
     };
   }
 
- async resetPassword(token: string, newPassword: string) {
-  const sequelize = getSequelize();
-  const transaction = await sequelize.transaction();
+  async resetPassword(token: string, newPassword: string) {
+    const sequelize = getSequelize();
+    const transaction = await sequelize.transaction();
 
-  try {
-    const tokenHash = crypto
-      .createHash("sha256")
-      .update(token)
-      .digest("hex");
+    try {
+      const tokenHash = crypto
+        .createHash("sha256")
+        .update(token)
+        .digest("hex");
 
-    const resetToken = await PasswordResetToken.findOne({
-      where: {
-        tokenHash,
-      },
-      transaction,
-      lock: transaction.LOCK.UPDATE,
-    });
+      const resetToken = await PasswordResetToken.findOne({
+        where: {
+          tokenHash,
+        },
+        transaction,
+        lock: transaction.LOCK.UPDATE,
+      });
 
-    if (!resetToken) {
-      throw new Error("Invalid or expired reset token");
-    }
+      if (!resetToken) {
+        throw new Error("Invalid or expired reset token");
+      }
 
-    if (!resetToken.isValid) {
+      if (!resetToken.isValid) {
+        await resetToken.destroy({
+          transaction,
+        });
+
+        throw new Error("Reset token has expired");
+      }
+
+      const user = await User.findByPk(resetToken.userId, {
+        transaction,
+      });
+
+      if (!user) {
+        throw new Error("User not found");
+      }
+
+      const passwordHash = await bcrypt.hash(newPassword, 12);
+
+      user.passwordHash = passwordHash;
+
+      await user.save({
+        transaction,
+      });
+
+      // Revoke active refresh tokens after password reset
+      await RefreshToken.destroy({
+        where: {
+          userId: user.id,
+        },
+        transaction,
+      });
+
+      // Terminate active sessions after password reset
+      await Session.destroy({
+        where: {
+          userId: user.id,
+        },
+        transaction,
+      });
+
+      // Consume reset token
       await resetToken.destroy({
         transaction,
       });
 
-      throw new Error("Reset token has expired");
+      await transaction.commit();
+
+      return {
+        message: "Password reset successfully",
+      };
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
     }
-
-    const user = await User.findByPk(resetToken.userId, {
-      transaction,
-    });
-
-    if (!user) {
-      throw new Error("User not found");
-    }
-
-    const passwordHash = await bcrypt.hash(newPassword, 12);
-
-    user.passwordHash = passwordHash;
-
-    await user.save({
-      transaction,
-    });
-
-    // Revoke active refresh tokens after password reset
-    await RefreshToken.destroy({
-      where: {
-        userId: user.id,
-      },
-      transaction,
-    });
-
-    // Terminate active sessions after password reset
-    await Session.destroy({
-      where: {
-        userId: user.id,
-      },
-      transaction,
-    });
-
-    // Consume reset token
-    await resetToken.destroy({
-      transaction,
-    });
-
-    await transaction.commit();
-
-    return {
-      message: "Password reset successfully",
-    };
-  } catch (error) {
-    await transaction.rollback();
-    throw error;
   }
-}
 }
 
 

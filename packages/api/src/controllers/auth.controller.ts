@@ -142,5 +142,19 @@ export const authController = {
         message: error instanceof Error ? error.message : "Something went wrong",
       });
     }
-  }
+  },
+
+  async resendVerification(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> {
+    try {
+      const result = await authService.resendVerification(req.body.email);
+
+      res.json({ data: result });
+    } catch (err) {
+      next(err);
+    }
+  },
 };
