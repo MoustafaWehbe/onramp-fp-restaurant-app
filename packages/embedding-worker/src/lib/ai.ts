@@ -1,60 +1,141 @@
 import { Ollama } from "ollama";
 
+const OLLAMA_TIMEOUT_MS = Number(process.env.OLLAMA_TIMEOUT_MS ?? 30000);
+const EMBEDDING_DIMENSION = 768;
+
+function createTimeoutFetch(timeoutMs: number): typeof fetch {
+    return async (input, init = {}) => {
+        const controller = new AbortController();
+
+        const timeout = setTimeout(() => {
+            controller.abort();
+        }, timeoutMs);
+
+        try {
+            return await fetch(input, {
+                ...init,
+                signal: controller.signal,
+            });
+        } finally {
+            clearTimeout(timeout);
+        }
+    };
+}
+
 const ollama = new Ollama({
-  host: process.env.OLLAMA_URL ?? "http://localhost:11434",
+    host: process.env.OLLAMA_URL ?? "http://localhost:11434",
+    fetch: createTimeoutFetch(OLLAMA_TIMEOUT_MS),
 });
 
-const EMBEDDING_MODEL = process.env.OLLAMA_EMBEDDING_MODEL ?? "nomic-embed-text";
+const EMBEDDING_MODEL =
+    process.env.OLLAMA_EMBEDDING_MODEL ?? "nomic-embed-text";
 
-export async function generateEmbedding(text: string): Promise<number[]> {
+function validateEmbedding(vector: unknown): vector is number[] {
+    if (!Array.isArray(vector)) {
+        return false;
+    }
+
+    if (vector.length !== EMBEDDING_DIMENSION) {
+        return false;
+    }
+
+    return vector.every(
+        (value) => typeof value === "number" && Number.isFinite(value)
+    );
+}
+
+export async function generateEmbedding(
+    text: string
+): Promise<number[]> {
     if (!text.trim()) {
-        throw new Error("cannot generate embedding for empty text");
+        throw new Error("Cannot generate embedding for empty text");
     }
 
     let response;
+
     try {
         response = await ollama.embed({
             model: EMBEDDING_MODEL,
             input: text,
         });
     } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
-        throw new Error(`Failed to generate embedding via ${EMBEDDING_MODEL}: ${message}`);
+        const message =
+            error instanceof Error ? error.message : String(error);
+
+        throw new Error(
+            `Failed to generate embedding via ${EMBEDDING_MODEL}: ${message}`
+        );
+    }
+
+    if (!Array.isArray(response.embeddings)) {
+        throw new Error("Ollama returned an invalid embeddings payload");
+    }
+
+    if (response.embeddings.length !== 1) {
+        throw new Error(
+            `Expected 1 embedding, received ${response.embeddings.length}`
+        );
     }
 
     const embedding = response.embeddings[0];
 
-    if (!embedding) {
-        throw new Error("Ollama returned an empty embedding");
+    if (!validateEmbedding(embedding)) {
+        throw new Error(
+            `Invalid embedding vector. Expected ${EMBEDDING_DIMENSION} numeric dimensions`
+        );
     }
 
     return embedding;
 }
 
-export async function generateEmbeddings(texts: string[]): Promise<number[][]> {
+export async function generateEmbeddings(
+    texts: string[]
+): Promise<number[][]> {
     if (!texts.length) {
         return [];
     }
 
-    const emptyIndex = texts.findIndex((t) => !t.trim());
+    const emptyIndex = texts.findIndex((text) => !text.trim());
+
     if (emptyIndex !== -1) {
-        throw new Error(`cannot generate embedding for empty text at index ${emptyIndex}`);
+        throw new Error(
+            `Cannot generate embedding for empty text at index ${emptyIndex}`
+        );
     }
 
     let response;
+
     try {
         response = await ollama.embed({
             model: EMBEDDING_MODEL,
             input: texts,
         });
     } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
-        throw new Error(`Failed to generate embeddings via ${EMBEDDING_MODEL}: ${message}`);
+        const message =
+            error instanceof Error ? error.message : String(error);
+
+        throw new Error(
+            `Failed to generate embeddings via ${EMBEDDING_MODEL}: ${message}`
+        );
+    }
+
+    if (!Array.isArray(response.embeddings)) {
+        throw new Error("Ollama returned an invalid embeddings payload");
     }
 
     if (response.embeddings.length !== texts.length) {
         throw new Error(
-            `Ollama returned ${response.embeddings.length} embeddings for ${texts.length} inputs`
+            `Expected ${texts.length} embeddings, received ${response.embeddings.length}`
+        );
+    }
+
+    const invalidIndex = response.embeddings.findIndex(
+        (embedding) => !validateEmbedding(embedding)
+    );
+
+    if (invalidIndex !== -1) {
+        throw new Error(
+            `Invalid embedding vector at index ${invalidIndex}. Expected ${EMBEDDING_DIMENSION} numeric dimensions`
         );
     }
 
