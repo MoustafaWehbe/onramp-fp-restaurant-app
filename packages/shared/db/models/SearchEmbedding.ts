@@ -69,6 +69,13 @@ export class SearchEmbedding
         modelName: "SearchEmbedding",
         underscored: true,
         timestamps: true,
+
+        indexes: [
+          {
+            unique: true,
+            fields: ["entityType", "entityId"],
+          },
+        ],
       }
     );
   }
