@@ -27,5 +27,8 @@ export async function indexMenu(
         entityId: menu.id,
         content,
         embedding,
+        metadata: {
+            restaurantId: menu.restaurantId,
+        },
     });
 }

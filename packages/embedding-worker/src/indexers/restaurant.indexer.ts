@@ -25,5 +25,10 @@ export async function indexRestaurant(
         entityId: restaurant.id,
         content,
         embedding,
+         metadata: {
+            priceRange: restaurant.price_range,
+            averageRating: restaurant.average_rating,
+            reviewCount: restaurant.review_count,
+        },
     });
 }

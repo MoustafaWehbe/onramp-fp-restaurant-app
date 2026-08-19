@@ -28,5 +28,8 @@ export async function indexMenuItem(
         entityId: menuItem.id,
         content,
         embedding,
+        metadata: {
+            menuId: menuItem.menuId,
+        }
     });
 }
