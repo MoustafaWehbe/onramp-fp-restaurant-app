@@ -158,50 +158,69 @@ export class AuthService {
 
   async requestEmailVerification(userId: string) {
     const user = await User.findByPk(userId);
-    if (!user) throw createError("User not found", 404);
-    if (user.emailVerified) throw createError("Email already verified", 409);
-
-    await EmailVerificationToken.destroy({ where: { userId } });
-
-    const rawToken = crypto.randomBytes(32).toString("hex");
-    const tokenHash = crypto.createHash("sha256").update(rawToken).digest("hex");
-
-    await EmailVerificationToken.create({
-      userId: user.id,
-      tokenHash,
-      expiresAt: new Date(Date.now() + 60 * 60 * 1_000),
-    });
-
-    await emailQueue.add("email", {
-      type: "verification",
-      to: user.email,
-      variables: {
-        verificationUrl: `${process.env.APP_URL}/verify-email?token=${rawToken}`,
-      },
-    });
-
-    return { message: "Verification email queued" }
-  }
-
-  async resendVerification(email: string) {
-    const user = await User.findOne({
-      where: {
-        email: email.trim().toLowerCase(),
-      },
-    });
 
     if (!user) {
-      return {
-        message:
-          "If an account exists for this email, a verification email has been sent.",
-      };
+      throw createError("User not found", 404);
     }
 
     if (user.emailVerified) {
       throw createError("Email already verified", 409);
     }
 
-    return this.requestEmailVerification(user.id);
+    const existingToken = await EmailVerificationToken.findOne({
+      where: { userId },
+    });
+
+    const rawToken = crypto.randomBytes(32).toString("hex");
+
+    const tokenHash = crypto
+      .createHash("sha256")
+      .update(rawToken)
+      .digest("hex");
+
+    const newToken = await EmailVerificationToken.create({
+      userId: user.id,
+      tokenHash,
+      expiresAt: new Date(Date.now() + 60 * 60 * 1_000),
+    });
+
+    try {
+      await emailQueue.add("email", {
+        type: "verification",
+        to: user.email,
+        variables: {
+          verificationUrl: `${process.env.APP_URL}/verify-email?token=${rawToken}`,
+        },
+      });
+    } catch (error) {
+      await newToken.destroy();
+      throw error;
+    }
+
+    if (existingToken) {
+      await existingToken.destroy();
+    }
+
+    return { message: "Verification email queued" };
+  }
+
+  async resendVerification(email: string) {
+    const genericMessage =
+      "If an account exists for this email and is not yet verified, a verification email will be sent shortly.";
+
+    const user = await User.findOne({
+      where: {
+        email: email.trim().toLowerCase(),
+      },
+    });
+
+    if (!user || user.emailVerified) {
+      return { message: genericMessage };
+    }
+
+    await this.requestEmailVerification(user.id);
+
+    return { message: genericMessage };
   }
 
   async verifyEmail(rawToken: string) {

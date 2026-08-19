@@ -47,6 +47,7 @@ router.post(
 router.post(
   "/resend-verification",
   authRateLimiter,
+  validate(forgotPasswordSchema),
   authController.resendVerification,
 );
 export { router as authRouter };

@@ -7,7 +7,6 @@ import {
 } from "react";
 import { apiClient } from "../lib/api-client";
 import { getErrorMessage } from "../lib/error-handler";
-import axios from "axios";
 
 interface AuthUser {
   id: string;
@@ -46,13 +45,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }>("/auth/login", { email, password });
       setUser(data.data.user);
     } catch (err) {
-      console.log("LOGIN ERROR:", err);
-
-      if (axios.isAxiosError(err)) {
-        console.log("STATUS:", err.response?.status);
-        console.log("RESPONSE DATA:", err.response?.data);
-      }
-
       throw new Error(getErrorMessage(err, "Login failed."));
     }
   }
