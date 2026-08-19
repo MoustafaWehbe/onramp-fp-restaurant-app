@@ -40,35 +40,44 @@ export function Login() {
     resolver: zodResolver(loginSchema),
   });
 
- const onSubmit = async (data: LoginFormData) => {
+  const onSubmit = async (data: LoginFormData) => {
     try {
-        setError(null);
-        await login(data.email, data.password);
+      setError(null);
+      await login(data.email, data.password);
     } catch {
-        setError("Invalid email or password");
-        return;
+      setError("Invalid email or password");
+      return;
     }
     try {
-        const response = await apiClient.get("/auth/me");
+      const response = await apiClient.get("/auth/me");
 
-        const user = response.data.data;
+      const user = response.data.data;
 
-        if (user.role === "owner") {
-            navigate("/owner");
-        } else {
-            navigate("/home");
-        }
+
+      switch (user.role) {
+        case "admin":
+          navigate("/admin");
+          break;
+
+        case "owner":
+          navigate("/owner");
+          break;
+
+        default:
+          navigate("/home");
+          break;
+      }
     } catch (error) {
-        console.error(
-            "Failed to load user profile after login:",
-            error,
-        );
+      console.error(
+        "Failed to load user profile after login:",
+        error,
+      );
 
-        setError(
-            "Signed in successfully, but we couldn't load your profile. Please try again.",
-        );
+      setError(
+        "Signed in successfully, but we couldn't load your profile. Please try again.",
+      );
     }
-};
+  };
 
   return (
     <Card className="w-full max-w-2xl rounded-3xl border-gray-200 bg-gray-50/80 px-8 py-8 shadow-lg">
