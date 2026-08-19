@@ -1,33 +1,36 @@
 import { apiClient } from "@/lib/api-client";
 
 export interface RestaurantClaim {
-  id: string;
+    id:string;
 
-  restaurant: {
-    id: string;
-    name: string;
-    slug: string;
-  };
+    restaurantId:string;
 
-  user: {
-    id: string;
-    name: string;
-    email: string;
-    phone?: string | null;
-  };
+    restaurantName:string;
 
-  message?: string | null;
+    email:string;
 
-  status: "pending" | "approved" | "rejected" | "completed";
+    phone:string | null;
 
-  createdAt: string;
+    status:
+        | "pending"
+        | "approved"
+        | "rejected"
+        | "completed";
+
+    user:{
+        id:string;
+        name:string;
+        email:string;
+    };
+
+    createdAt:string;
 }
 
 export const restaurantClaimsApi = {
   getAll: async (): Promise<RestaurantClaim[]> => {
     const response = await apiClient.get("/admin/restaurant-claims");
 
-    return response.data.data.data ?? response.data.data;
+    return response.data.data.claims;
   },
 
   approveClaim: async (claimId: string): Promise<RestaurantClaim> => {

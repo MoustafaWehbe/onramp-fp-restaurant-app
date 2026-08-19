@@ -30,6 +30,7 @@ import { OwnerBranchCreationPage } from "@/pages/onwer/OwnerBranchCreation";
 import { OwnerBranchDetailsPage } from "@/pages/onwer/OwnerBranchDetails";
 import { OwnerMenusPage } from "@/pages/onwer/OwnerMenusPage";
 import { AdminLayout } from "@/layouts/AdminLayout";
+import { RestaurantClaimsPage } from "@/pages/admin/AdminRestaurantClaimsPage";
 
 
 export function AppRoutes() {
@@ -100,7 +101,7 @@ export function AppRoutes() {
         </Route>
 
         <Route path="/admin" element={<AdminLayout />}>
-            <Route path="/admin/restaurant-claims"/>
+            <Route path="/admin/restaurant-claims" element= {<RestaurantClaimsPage />}/>
         </Route>
       </Route>
 

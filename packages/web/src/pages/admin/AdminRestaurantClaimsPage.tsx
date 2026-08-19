@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
@@ -8,33 +9,47 @@ import { restaurantClaimsApi } from "@/services/admin/restaurantClaimsApi";
 export function RestaurantClaimsPage() {
   const queryClient = useQueryClient();
 
-  const { data: claims, isLoading } = useQuery({
+  const [updatingClaimId, setUpdatingClaimId] = useState<string | null>(null);
+
+  const {
+    data: claims,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ["admin-restaurant-claims"],
 
     queryFn: restaurantClaimsApi.getAll,
   });
 
   const updateClaimMutation = useMutation({
-    mutationFn: ({
+    mutationFn: async ({
       claimId,
       action,
     }: {
       claimId: string;
       action: "approve" | "reject";
     }) => {
-      switch (action) {
-        case "approve":
-          return restaurantClaimsApi.approveClaim(claimId);
+      setUpdatingClaimId(claimId);
 
-        case "reject":
-          return restaurantClaimsApi.rejectClaim(claimId);
+      if (action === "approve") {
+        return restaurantClaimsApi.approveClaim(claimId);
       }
+
+      return restaurantClaimsApi.rejectClaim(claimId);
     },
 
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["admin-restaurant-claims"],
       });
+    },
+
+    onError: (error) => {
+      console.error("Failed updating restaurant claim:", error);
+    },
+
+    onSettled: () => {
+      setUpdatingClaimId(null);
     },
   });
 
@@ -56,6 +71,34 @@ export function RestaurantClaimsPage() {
 
   if (isLoading) {
     return <LoadingSpinner />;
+  }
+
+  if (error) {
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center">
+        <div className="text-center">
+          <h2
+            className="
+                            font-serif
+                            text-2xl
+                            text-[#292524]
+                        "
+          >
+            Something went wrong
+          </h2>
+
+          <p
+            className="
+                            mt-2
+                            text-sm
+                            text-[#78716C]
+                        "
+          >
+            Failed to load restaurant claims.
+          </p>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -125,7 +168,7 @@ export function RestaurantClaimsPage() {
 
             onReject={handleReject}
 
-            isUpdating={updateClaimMutation.isPending}
+            isUpdating={updatingClaimId === claim.id}
           />
         ))}
       </div>
