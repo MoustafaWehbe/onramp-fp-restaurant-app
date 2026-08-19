@@ -13,4 +13,20 @@ router.get(
   rateLimiter,
   restaurantClaimController.getAll,
 );
+
+router.patch(
+  "/restaurant-claims/:claimId/reject",
+  authenticate,
+  authorize("admin"),
+  rateLimiter,
+  restaurantClaimController.reject,
+);
+
+router.patch(
+  "/restaurant-claims/:claimId/approve",
+  authenticate,
+  authorize("admin"),
+  rateLimiter,
+  restaurantClaimController.approve,
+);
 export { router as adminRestaurantClaim };

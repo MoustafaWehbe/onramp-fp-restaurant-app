@@ -1,6 +1,5 @@
 import {
   Body,
-  Button,
   Container,
   Head,
   Heading,
@@ -12,21 +11,17 @@ import {
   Text,
 } from "@react-email/components";
 
-interface EmailLayoutProps {
+interface NotificationEmailLayoutProps {
   preview: string;
   title: string;
   description: string;
-  buttonText: string;
-  buttonUrl: string;
 }
 
-export function EmailLayout({
+export function NotificationEmailLayout({
   preview,
   title,
   description,
-  buttonText,
-  buttonUrl,
-}: EmailLayoutProps) {
+}: NotificationEmailLayoutProps) {
   return (
     <Html>
       <Head />
@@ -36,7 +31,6 @@ export function EmailLayout({
       <Tailwind>
         <Body className="bg-gray-100 py-10">
           <Container className="mx-auto max-w-xl rounded-lg bg-white p-10 shadow-md">
-
             {/* Brand */}
             <Heading className="text-center text-3xl font-bold text-orange-500">
               Platera
@@ -52,25 +46,6 @@ export function EmailLayout({
               <Text className="mt-4 text-base leading-7 text-gray-600">
                 {description}
               </Text>
-
-              <Button
-                href={buttonUrl}
-                className="mt-6 rounded-md bg-orange-500 px-6 py-3 text-white"
-              >
-                {buttonText}
-              </Button>
-
-              <Text className="mt-8 text-sm text-gray-500">
-                If the button does not work, copy and paste this link:
-              </Text>
-
-              <Text className="break-all text-sm text-blue-600">
-                {buttonUrl}
-              </Text>
-
-              <Text className="mt-6 text-sm text-gray-500">
-                This link expires in 1 hour.
-              </Text>
             </Section>
 
             <Hr className="my-8" />
@@ -78,7 +53,6 @@ export function EmailLayout({
             <Text className="text-center text-xs text-gray-400">
               © {new Date().getFullYear()} Platera. All rights reserved.
             </Text>
-
           </Container>
         </Body>
       </Tailwind>

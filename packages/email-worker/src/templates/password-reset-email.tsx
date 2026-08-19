@@ -1,4 +1,4 @@
-import { EmailLayout } from "./email-layout";
+import { AuthEmailLayout } from "./auth-email-layout";
 
 interface PasswordResetEmailProps {
   resetUrl: string;
@@ -8,7 +8,7 @@ export function PasswordResetEmail({
   resetUrl,
 }: PasswordResetEmailProps) {
   return (
-    <EmailLayout
+    <AuthEmailLayout
       preview="Reset your Platera password"
       title="Reset your password"
       description={

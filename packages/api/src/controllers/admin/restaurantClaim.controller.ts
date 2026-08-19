@@ -30,4 +30,42 @@ export const restaurantClaimController = {
             next(error);
         }
     },
+
+    reject: async (
+        req: Request<{ claimId: string }>,
+        res: Response,
+        next: NextFunction,
+    ) => {
+        try {
+            const { claimId } = req.params;
+
+            const result = await restaurantClaimService.rejectClaim(claimId);
+
+            res.status(200).json({
+                data: result,
+                message: "Restaurant claim rejected successfully",
+            });
+        } catch (error) {
+            next(error);
+        }
+    },
+
+    approve: async (
+        req: Request<{ claimId: string }>,
+        res: Response,
+        next: NextFunction,
+    ) => {
+        try {
+            const { claimId } = req.params;
+
+            const result = await restaurantClaimService.approveClaim(claimId);
+
+            res.status(200).json({
+                data: result,
+                message: "Restaurant claim approved successfully",
+            });
+        } catch (error) {
+            next(error);
+        }
+    },
 };
