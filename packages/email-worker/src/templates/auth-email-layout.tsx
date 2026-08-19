@@ -27,7 +27,7 @@ export function AuthEmailLayout({
   description,
   buttonText,
   buttonUrl,
-  expiresIn,
+  expiresIn="one hour",
 }: EmailLayoutProps) {
   return (
     <Html>

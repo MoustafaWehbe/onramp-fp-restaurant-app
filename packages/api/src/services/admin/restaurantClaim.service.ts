@@ -9,12 +9,38 @@ interface GetAllClaimsParams {
     limit: number;
 }
 
+const DEFAULT_PAGE = 1;
+const DEFAULT_LIMIT = 10;
+const MAX_LIMIT = 100;
+
+const normalizePagination = (page: number, limit: number) => {
+    const validPage =
+        Number.isSafeInteger(page) && page >= 1
+            ? page
+            : DEFAULT_PAGE;
+
+    const validLimit =
+        Number.isSafeInteger(limit) && limit >= 1
+            ? Math.min(limit, MAX_LIMIT)
+            : DEFAULT_LIMIT;
+
+    return {
+        page: validPage,
+        limit: validLimit,
+        offset: (validPage - 1) * validLimit,
+    };
+};
+
 export const restaurantClaimService = {
     getAll: async ({
         page,
         limit,
     }: GetAllClaimsParams) => {
-        const offset = (page - 1) * limit;
+        const {
+            page: normalizedPage,
+            limit: normalizedLimit,
+            offset,
+        } = normalizePagination(page, limit);
 
         const { rows, count } = await RestaurantClaim.findAndCountAll({
             where: {
@@ -28,64 +54,79 @@ export const restaurantClaimService = {
                 },
             ],
             order: [["createdAt", "DESC"]],
-            limit,
+            limit: normalizedLimit,
             offset,
         });
 
         return {
             claims: rows,
             pagination: {
-                page,
-                limit,
+                page: normalizedPage,
+                limit: normalizedLimit,
                 total: count,
-                totalPages: Math.ceil(count / limit),
+                totalPages: Math.ceil(count / normalizedLimit),
             },
         };
     },
 
-    async rejectClaim(claimId: string) {
-        const claim = await RestaurantClaim.findByPk(claimId);
-
-        if (!claim) {
-            throw createError("Restaurant claim not found", 404);
-        }
-
-        if (claim.status !== "pending") {
-            throw createError(
-                "Only pending restaurant claims can be rejected",
-                400,
-            );
-        }
-
-        const user = await User.findByPk(claim.userId);
-
-        if (!user) {
-            throw createError("User associated with this claim not found", 404);
-        }
-
-        await claim.update({
-            status: "rejected",
-        });
+    rejectClaim: async (claimId: string) => {
+        const transaction = await getDatabase().transaction();
 
         try {
-            await emailQueue.add("email", {
-                type: "restaurant-claim-rejected",
-                to: user.email,
-                variables: {
-                    restaurantName: claim.restaurantName,
-                },
+            const claim = await RestaurantClaim.findByPk(claimId, {
+                transaction,
+                lock: transaction.LOCK.UPDATE,
             });
-        } catch (err) {
-            console.error(
-                "Failed to enqueue restaurant claim rejection email:",
-                err,
-            );
-        }
 
-        return claim;
+            if (!claim) {
+                throw createError("Restaurant claim not found", 404);
+            }
+
+            if (claim.status !== "pending") {
+                throw createError(
+                    "Only pending restaurant claims can be rejected",
+                    400,
+                );
+            }
+
+            await claim.update(
+                {
+                    status: "rejected",
+                },
+                {
+                    transaction,
+                },
+            );
+
+            await transaction.commit();
+
+            try {
+                const user = await User.findByPk(claim.userId);
+
+                if (user) {
+                    await emailQueue.add("email", {
+                        type: "restaurant-claim-rejected",
+                        to: user.email,
+                        variables: {
+                            restaurantName: claim.restaurantName,
+                        },
+                    });
+                }
+            } catch (error) {
+                console.error(
+                    "Failed to enqueue restaurant claim rejection email:",
+                    error,
+                );
+            }
+
+            return claim;
+        } catch (error) {
+            await transaction.rollback();
+            throw error;
+        }
     },
 
-    async approveClaim (claimId: string) {
+    async approveClaim(claimId: string) {
         const transaction = await getDatabase().transaction();
 
         try {
