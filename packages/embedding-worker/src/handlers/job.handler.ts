@@ -4,16 +4,9 @@ import { indexRestaurant } from "../indexers/restaurant.indexer.js";
 import { indexMenu } from "../indexers/menu.indexer.js";
 import { indexMenuItem } from "../indexers/menu-item.indexer.js";
 import { embeddingRepository } from "../repositories/embedding.repository.js";
+import type { JobHandler, JobName } from "../types/jobs.js";
 
-type IndexJobData = {
-    restaurantId?: string;
-    menuId?: string;
-    menuItemId?: string;
-};
-
-type JobHandler = (job: Job<IndexJobData>) => Promise<void>;
-
-export const jobHandlers: Record<string, JobHandler> = {
+export const jobHandlers: Record<JobName, JobHandler> = {
     INDEX_RESTAURANT: async (job) => {
         const { restaurantId } = job.data;
 
