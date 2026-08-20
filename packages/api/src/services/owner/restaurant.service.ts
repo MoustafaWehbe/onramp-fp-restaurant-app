@@ -1,4 +1,4 @@
-import { Restaurant, RestaurantClaim } from "@fp_restaurant/shared";
+import { embeddingsQueue, Restaurant, RestaurantClaim } from "@fp_restaurant/shared";
 import { UniqueConstraintError } from "sequelize";
 import { generateSlug } from "../../lib/slug";
 import { createError } from "../../middleware/error-handler";
@@ -49,7 +49,11 @@ export const restaurantService = {
     image,
   }: CreateRestaurantData) => {
     const claim = await RestaurantClaim.findOne({
-      where: { userId, restaurantId: null, status: "approved" },
+      where: {
+        userId,
+        restaurantId: null,
+        status: "approved",
+      },
     });
 
     if (!claim) {
@@ -69,13 +73,14 @@ export const restaurantService = {
     }
 
     const restaurantId = crypto.randomUUID();
+
     const image_url = await storageService.uploadFile(
       image,
       `restaurants/${restaurantId}`,
     );
 
     try {
-      return await getDatabase().transaction(async (transaction) => {
+      const created = await getDatabase().transaction(async (transaction) => {
         const created = await Restaurant.create(
           {
             id: restaurantId,
@@ -95,12 +100,21 @@ export const restaurantService = {
         );
 
         await claim.update(
-          { restaurantId: created.id, status: "completed" },
+          {
+            restaurantId: created.id,
+            status: "completed",
+          },
           { transaction },
         );
 
         return created;
       });
+
+      await embeddingsQueue.add("INDEX_RESTAURANT", {
+        restaurantId: created.id,
+      });
+
+      return created;
     } catch (error) {
       await storageService.deleteFile(image_url).catch(() => {});
       handleUniqueSlugError(error);
@@ -158,6 +172,12 @@ export const restaurantService = {
       if (newImageUrl && oldImageUrl) {
         await storageService.deleteFile(oldImageUrl).catch(() => {});
       }
+
+      await embeddingsQueue.add("INDEX_RESTAURANT",
+        {
+          restaurantId: restaurant.id,
+        }
+      )
 
       return restaurant;
     } catch (error) {
