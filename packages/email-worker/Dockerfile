@@ -2,16 +2,16 @@ FROM node:22-alpine
 
 WORKDIR /app
 
-# Copy root package files
-COPY package*.json ./
+COPY package.json package-lock.json ./
 
-# Copy workspace packages
-COPY packages ./packages
+COPY packages/email-worker/package.json ./packages/email-worker/package.json
+COPY packages/shared/package.json ./packages/shared/package.json
 
-# Install dependencies
-RUN npm install
+RUN npm ci
 
-# Move into worker package
+COPY packages/email-worker ./packages/email-worker
+COPY packages/shared ./packages/shared
+
 WORKDIR /app/packages/email-worker
 
 CMD ["npm", "run", "dev"]
