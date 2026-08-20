@@ -1,4 +1,4 @@
-import { Restaurant, RestaurantClaim } from "@fp_restaurant/shared";
+import { embeddingsQueue, Restaurant, RestaurantClaim } from "@fp_restaurant/shared";
 import { UniqueConstraintError } from "sequelize";
 import { generateSlug } from "../../lib/slug";
 import { createError } from "../../middleware/error-handler";
@@ -49,7 +49,11 @@ export const restaurantService = {
     image,
   }: CreateRestaurantData) => {
     const claim = await RestaurantClaim.findOne({
-      where: { userId, restaurantId: null, status: "approved" },
+      where: {
+        userId,
+        restaurantId: null,
+        status: "approved",
+      },
     });
 
     if (!claim) {
@@ -69,14 +73,17 @@ export const restaurantService = {
     }
 
     const restaurantId = crypto.randomUUID();
+
     const image_url = await storageService.uploadFile(
       image,
       `restaurants/${restaurantId}`,
     );
 
+    let created: Restaurant;
+
     try {
-      return await getDatabase().transaction(async (transaction) => {
-        const created = await Restaurant.create(
+      created = await getDatabase().transaction(async (transaction) => {
+        const restaurant = await Restaurant.create(
           {
             id: restaurantId,
             name: claim.restaurantName,
@@ -95,16 +102,33 @@ export const restaurantService = {
         );
 
         await claim.update(
-          { restaurantId: created.id, status: "completed" },
+          {
+            restaurantId: restaurant.id,
+            status: "completed",
+          },
           { transaction },
         );
 
-        return created;
+        return restaurant;
       });
     } catch (error) {
       await storageService.deleteFile(image_url).catch(() => {});
+
       handleUniqueSlugError(error);
     }
+
+    try {
+      await embeddingsQueue.add("INDEX_RESTAURANT", {
+        restaurantId: created.id,
+      });
+    } catch (error) {
+      console.error(
+        `Failed to enqueue restaurant indexing job for ${created.id}:`,
+        error,
+      );
+    }
+
+    return created;
   },
 
   update: async (slug: string, data: UpdateRestaurantData) => {
@@ -158,6 +182,12 @@ export const restaurantService = {
       if (newImageUrl && oldImageUrl) {
         await storageService.deleteFile(oldImageUrl).catch(() => {});
       }
+
+      await embeddingsQueue.add("INDEX_RESTAURANT",
+        {
+          restaurantId: restaurant.id,
+        }
+      )
 
       return restaurant;
     } catch (error) {

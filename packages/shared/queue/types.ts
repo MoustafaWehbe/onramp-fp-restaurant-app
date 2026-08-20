@@ -13,11 +13,16 @@ export interface EmailJobData {
   variables?: Record<string, string>; 
 }
 
-export interface EmbeddingsJobData {
-  entityId: string;
-  entityType: string;
-  text: string;
-}
+export type EmbeddingsJobData =
+  | {
+      restaurantId: string;
+    }
+  | {
+      menuId: string;
+    }
+  | {
+      menuItemId: string;
+    };
 
 export type JobData = EmailJobData | EmbeddingsJobData;
 
