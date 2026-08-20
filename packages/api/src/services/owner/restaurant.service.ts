@@ -79,9 +79,11 @@ export const restaurantService = {
       `restaurants/${restaurantId}`,
     );
 
+    let created: Restaurant;
+
     try {
-      const created = await getDatabase().transaction(async (transaction) => {
-        const created = await Restaurant.create(
+      created = await getDatabase().transaction(async (transaction) => {
+        const restaurant = await Restaurant.create(
           {
             id: restaurantId,
             name: claim.restaurantName,
@@ -101,24 +103,32 @@ export const restaurantService = {
 
         await claim.update(
           {
-            restaurantId: created.id,
+            restaurantId: restaurant.id,
             status: "completed",
           },
           { transaction },
         );
 
-        return created;
+        return restaurant;
       });
+    } catch (error) {
+      await storageService.deleteFile(image_url).catch(() => {});
 
+      handleUniqueSlugError(error);
+    }
+
+    try {
       await embeddingsQueue.add("INDEX_RESTAURANT", {
         restaurantId: created.id,
       });
-
-      return created;
     } catch (error) {
-      await storageService.deleteFile(image_url).catch(() => {});
-      handleUniqueSlugError(error);
+      console.error(
+        `Failed to enqueue restaurant indexing job for ${created.id}:`,
+        error,
+      );
     }
+
+    return created;
   },
 
   update: async (slug: string, data: UpdateRestaurantData) => {
