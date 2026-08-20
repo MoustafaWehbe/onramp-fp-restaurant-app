@@ -54,10 +54,19 @@ export function Login() {
 
       const user = response.data.data;
 
-      if (user.role === "owner") {
-        navigate("/owner");
-      } else {
-        navigate("/home");
+
+      switch (user.role) {
+        case "admin":
+          navigate("/admin");
+          break;
+
+        case "owner":
+          navigate("/owner");
+          break;
+
+        default:
+          navigate("/home");
+          break;
       }
     } catch (error) {
       console.error(
