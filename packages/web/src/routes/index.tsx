@@ -31,6 +31,7 @@ import { OwnerBranchDetailsPage } from "@/pages/onwer/OwnerBranchDetails";
 import { OwnerMenusPage } from "@/pages/onwer/OwnerMenusPage";
 import { AdminLayout } from "@/layouts/AdminLayout";
 import { RestaurantClaimsPage } from "@/pages/admin/AdminRestaurantClaimsPage";
+import { RoleRoute } from "./RoleRoute";
 
 
 export function AppRoutes() {
@@ -60,7 +61,6 @@ export function AppRoutes() {
           <Route path="/restaurants/:slug" element={<RestaurantDetails />} />
           <Route path="/saved-restaurants" element={<SavedRestaurants />} />
           <Route path="/profile" element={<Profile />} />
-          <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/search" element={<Search />} />
           <Route
             path="/restaurants/:restaurantSlug/branches/:branchSlug"
@@ -76,28 +76,30 @@ export function AppRoutes() {
           />
         </Route>
         {/*Owner routes*/}
-        <Route path="/owner" element={<OwnerLayout />}>
-          <Route index element={<OwnerDashboard />} />
-          <Route
-            path="/owner/restaurant"
-            element={<RestaurantOwnerPage />}
-          />
-          <Route
-            path="/owner/branches"
-            element={<OwnerBranchesPage />}
-          />
-          <Route
-            path="/owner/restaurants/:restaurantSlug/branches"
-            element={<OwnerBranchCreationPage />}
-          />
-          <Route
-            path="/owner/restaurants/:restaurantSlug/branches/:branchSlug"
-            element={<OwnerBranchDetailsPage />}
-          />
-          <Route
-            path="/owner/menus"
-            element={<OwnerMenusPage />}
-          />
+        <Route element={<RoleRoute allowedRoles={["owner"]} />}>
+          <Route path="/owner" element={<OwnerLayout />}>
+            <Route index element={<OwnerDashboard />} />
+            <Route
+              path="/owner/restaurant"
+              element={<RestaurantOwnerPage />}
+            />
+            <Route
+              path="/owner/branches"
+              element={<OwnerBranchesPage />}
+            />
+            <Route
+              path="/owner/restaurants/:restaurantSlug/branches"
+              element={<OwnerBranchCreationPage />}
+            />
+            <Route
+              path="/owner/restaurants/:restaurantSlug/branches/:branchSlug"
+              element={<OwnerBranchDetailsPage />}
+            />
+            <Route
+              path="/owner/menus"
+              element={<OwnerMenusPage />}
+            />
+          </Route>
         </Route>
 
         <Route path="/admin" element={<AdminLayout />}>
@@ -105,7 +107,6 @@ export function AppRoutes() {
             <Route index element={<AdminDashboard />}></Route>
         </Route>
       </Route>
-
       <Route path="*" element={<NotFound />} />
 
 

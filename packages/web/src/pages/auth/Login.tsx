@@ -9,6 +9,7 @@ import { useAuth } from "../../hooks/useAuth";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
+import { getErrorMessage } from "../../lib/error-handler";
 import {
   Card,
   CardContent,
@@ -44,8 +45,8 @@ export function Login() {
     try {
       setError(null);
       await login(data.email, data.password);
-    } catch {
-      setError("Invalid email or password");
+    } catch (error: unknown) {
+      setError(error instanceof Error ? error.message : "Login failed.");
       return;
     }
     try {

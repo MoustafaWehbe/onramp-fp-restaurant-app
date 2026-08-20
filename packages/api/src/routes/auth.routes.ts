@@ -42,5 +42,12 @@ router.post(
   authRateLimiter,
   validate(resetPasswordSchema),
   authController.resetPassword,
-) 
+);
+
+router.post(
+  "/resend-verification",
+  authRateLimiter,
+  validate(forgotPasswordSchema),
+  authController.resendVerification,
+);
 export { router as authRouter };

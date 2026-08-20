@@ -39,10 +39,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   async function login(email: string, password: string): Promise<void> {
-    const { data } = await apiClient.post<{
-      data: { user: AuthUser };
-    }>("/auth/login", { email, password });
-    setUser(data.data.user);
+    try {
+      const { data } = await apiClient.post<{
+        data: { user: AuthUser };
+      }>("/auth/login", { email, password });
+      setUser(data.data.user);
+    } catch (err) {
+      throw new Error(getErrorMessage(err, "Login failed."));
+    }
   }
 
   async function register(
@@ -52,10 +56,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   ): Promise<void> {
     try {
       await apiClient.post("/auth/register", { email, password, name });
-    } catch(err) {
+    } catch (err) {
       throw new Error(getErrorMessage(err, "Registration failed. "));
     }
-    
+
   }
 
   async function logout(): Promise<void> {
