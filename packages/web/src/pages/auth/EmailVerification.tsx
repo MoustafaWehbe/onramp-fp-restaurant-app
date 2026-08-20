@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { CheckCircle2, Loader2, MailCheck } from "lucide-react";
-
+import { apiClient } from "../../lib/api-client";
+import { getErrorMessage } from "../../lib/error-handler";
 import { Button } from "../../components/ui/button";
 import {
   Card,
@@ -24,6 +25,7 @@ export function EmailVerification() {
   const [isResending, setIsResending] = useState(false);
   const [justResent, setJustResent] = useState(false);
   const [cooldown, setCooldown] = useState(0);
+  const [resendError, setResendError] = useState<string | null>(null);
 
   useEffect(() => {
     if (cooldown === 0) return;
@@ -46,13 +48,19 @@ export function EmailVerification() {
 
     setIsResending(true);
     setJustResent(false);
+    setResendError(null);
+
     try {
-      // Temporary simulation until the backend endpoint is ready.
-      await new Promise((resolve) => setTimeout(resolve, 800));
+      await apiClient.post("/auth/resend-verification", {
+        email,
+      });
+
       setJustResent(true);
       setCooldown(RESEND_COOLDOWN_SECONDS);
     } catch (error) {
-      console.error("Resend verification email error:", error);
+      setResendError(
+        getErrorMessage(error, "Failed to resend verification email."),
+      );
     } finally {
       setIsResending(false);
     }
@@ -81,13 +89,21 @@ export function EmailVerification() {
       </CardHeader>
 
       <CardContent className="space-y-4 px-6 md:px-10">
+        {resendError && (
+          <div
+            className="rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-base font-medium text-red-600"
+            role="alert"
+          >
+            {resendError}
+          </div>
+        )}
         {justResent && cooldown > 0 && (
           <div
             className="flex items-center gap-3 rounded-2xl bg-green-50 px-5 py-4 text-base font-medium text-green-700"
             role="status"
           >
             <CheckCircle2 className="h-5 w-5 shrink-0" aria-hidden="true" />
-            Verification email sent again. Check your inbox.
+            Your verification email will be sent shortly. Please check your inbox.
           </div>
         )}
 
