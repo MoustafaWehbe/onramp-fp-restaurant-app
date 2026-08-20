@@ -102,6 +102,7 @@ export function AppRoutes() {
 
         <Route path="/admin" element={<AdminLayout />}>
             <Route path="/admin/restaurant-claims" element= {<RestaurantClaimsPage />}/>
+            <Route index element={<AdminDashboard />}></Route>
         </Route>
       </Route>
 
