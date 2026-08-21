@@ -5,6 +5,8 @@ import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
 import { RestaurantClaimCard } from "@/components/admin/RestaurantClaimCard";
 
 import { restaurantClaimsApi } from "@/services/admin/restaurantClaimsApi";
+import ConfirmDialog from "@/components/shared/ConfirmDialog";
+import { AlertMessageDialog } from "@/components/shared/AlertMessageDialog";
 
 export function RestaurantClaimsPage() {
   const queryClient = useQueryClient();
@@ -12,6 +14,24 @@ export function RestaurantClaimsPage() {
   const [updatingClaimIds, setUpdatingClaimIds] = useState<Set<string>>(
     new Set(),
   );
+
+  const [claimAction, setClaimAction] = useState<{
+  claimId: string;
+  action: "approve" | "reject";
+} | null>(null);
+
+const [alertMessage, setAlertMessage] = useState<{
+  title: string;
+  description: string;
+} | null>(null);
+
+const confirmClaimAction = () => {
+  if (!claimAction) return;
+
+  updateClaimMutation.mutate(claimAction);
+
+  setClaimAction(null);
+};
 
   const {
     data: claims,
@@ -46,13 +66,21 @@ export function RestaurantClaimsPage() {
     },
 
     onSuccess: () => {
+      setAlertMessage({
+        title: "Success",
+        description: "Restaurant claim updated successfully.",
+      });
+
       return queryClient.invalidateQueries({
         queryKey: ["admin-restaurant-claims"],
       });
     },
 
     onError: (error) => {
-      console.error("Failed updating restaurant claim:", error);
+      setAlertMessage({
+        title: "Error",
+        description: "Failed to update restaurant claim.",
+      });
     },
 
     onSettled: (_data, _error, { claimId }) => {
@@ -65,25 +93,17 @@ export function RestaurantClaimsPage() {
   });
 
   const handleApprove = (claimId: string) => {
-    if (updatingClaimIds.has(claimId)) {
-      return;
-    }
-
-    updateClaimMutation.mutate({
+    setClaimAction({
       claimId,
       action: "approve",
-    });
+    })
   };
 
   const handleReject = (claimId: string) => {
-    if (updatingClaimIds.has(claimId)) {
-      return;
-    }
-
-    updateClaimMutation.mutate({
+    setClaimAction({
       claimId,
       action: "reject",
-    });
+    })
   };
 
   const pendingClaims =
@@ -190,6 +210,39 @@ export function RestaurantClaimsPage() {
           ))}
         </div>
       )}
+
+      <ConfirmDialog
+        open={!!claimAction}
+        title={
+          claimAction?.action === "approve"
+            ? "Approve restaurant claim?"
+            : "Reject restaurant claim?"
+        }
+        description={
+          claimAction?.action === "approve"
+            ? "This will approve the ownership request."
+            : "This will reject the ownership request."
+        }
+        confirmText={
+          claimAction?.action === "approve"
+            ? "Approve"
+            : "Reject"
+        }
+        variant={
+          claimAction?.action === "reject"
+            ? "destructive"
+            : "default"
+        }
+        onConfirm={confirmClaimAction}
+        onCancel={() => setClaimAction(null)}
+      />
+
+      <AlertMessageDialog
+        open={!!alertMessage}
+        title={alertMessage?.title ?? ""}
+        description={alertMessage?.description ?? ""}
+        onClose={() => setAlertMessage(null)}
+      />
     </div>
   );
 }

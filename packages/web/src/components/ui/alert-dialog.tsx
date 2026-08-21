@@ -190,9 +190,7 @@ function AlertDialogAction({
     <AlertDialogPrimitive.Action
       data-slot="alert-dialog-action"
       className={cn(
-        "rounded-lg bg-destructive px-5 py-2",
-        "text-destructive-foreground",
-        "hover:bg-destructive/90",
+        "rounded-lg px-5 py-2",
         className
       )}
       {...props}
