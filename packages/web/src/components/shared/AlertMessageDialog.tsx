@@ -42,7 +42,7 @@ export function AlertMessageDialog({
         </AlertDialogHeader>
 
         <AlertDialogFooter>
-          <AlertDialogAction onClick={onClose} className="bg-primary hover:bg-primary/90 text-white">
+          <AlertDialogAction className="bg-primary hover:bg-primary/90 text-white">
             OK
           </AlertDialogAction>
         </AlertDialogFooter>
