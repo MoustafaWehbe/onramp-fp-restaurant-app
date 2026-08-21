@@ -3,17 +3,17 @@ import { retrievalPlanSchema } from "./query-schema";
 import type { ValidatedRetrievalPlan } from "./query-schema";
 
 const OLLAMA_BASE_URL =
-  process.env.OLLAMA_BASE_URL ?? "http://localhost:11434";
+    process.env.OLLAMA_BASE_URL ?? "http://localhost:11434";
 
 const OLLAMA_LLM_MODEL =
-  process.env.OLLAMA_LLM_MODEL ?? "llama3.2";
+    process.env.OLLAMA_LLM_MODEL ?? "llama3.2";
 
 const OLLAMA_TIMEOUT_MS = Number(
-  process.env.OLLAMA_TIMEOUT_MS ?? 30_000,
+    process.env.OLLAMA_TIMEOUT_MS ?? 30_000,
 );
 
 const ollama = new Ollama({
-  host: OLLAMA_BASE_URL,
+    host: OLLAMA_BASE_URL,
 });
 
 const SYSTEM_PROMPT = `
@@ -106,71 +106,87 @@ Rules:
 `;
 
 async function callOllama(
-  query: string,
+    query: string,
 ): Promise<unknown> {
-  const timeout = new Promise<never>((_, reject) => {
-    setTimeout(() => {
-      reject(
-        new Error(
-          `Ollama query analysis timed out after ${OLLAMA_TIMEOUT_MS}ms`,
-        ),
-      );
-    }, OLLAMA_TIMEOUT_MS);
-  });
+    let timeoutId: ReturnType<typeof setTimeout>;
 
-  const request = ollama.generate({
-    model: OLLAMA_LLM_MODEL,
-    system: SYSTEM_PROMPT,
-    prompt: query,
-    stream: false,
-    format: "json",
-  });
+    const timeout = new Promise<never>((_, reject) => {
+        timeoutId = setTimeout(() => {
+            reject(
+                new Error(
+                    `Ollama query analysis timed out after ${OLLAMA_TIMEOUT_MS}ms`,
+                ),
+            );
+        }, OLLAMA_TIMEOUT_MS);
+    });
 
-  const response = await Promise.race([
-    request,
-    timeout,
-  ]);
+    const request = ollama.chat({
+        model: OLLAMA_LLM_MODEL,
+        messages: [
+            {
+                role: "system",
+                content: SYSTEM_PROMPT,
+            },
+            {
+                role: "user",
+                content: query,
+            },
+        ],
+        stream: false,
+        format: "json",
+    });
 
-  if (!response.response) {
-    throw new Error(
-      "Ollama returned an empty query-analysis response",
-    );
-  }
+    try {
+        const response = await Promise.race([
+            request,
+            timeout,
+        ]);
 
-  try {
-    return JSON.parse(response.response);
-  } catch {
-    throw new Error(
-      "Ollama returned malformed JSON",
-    );
-  }
+        const content = response.message?.content;
+
+        if (!content) {
+            throw new Error(
+                "Ollama returned an empty query-analysis response",
+            );
+        }
+
+        try {
+            return JSON.parse(content);
+        } catch {
+            throw new Error(
+                "Ollama returned malformed JSON",
+            );
+        }
+    } finally {
+        clearTimeout(timeoutId!);
+    }
 }
 
 export async function analyzeQuery(
-  query: string,
+    query: string,
 ): Promise<ValidatedRetrievalPlan> {
-  const normalizedQuery = query.trim();
+    const normalizedQuery = query.trim();
 
-  if (!normalizedQuery) {
-    throw new Error("Query cannot be empty");
-  }
+    if (!normalizedQuery) {
+        throw new Error("Query cannot be empty");
+    }
 
-  const llmOutput = await callOllama(normalizedQuery);
+    const llmOutput = await callOllama(normalizedQuery);
 
-  if (
-    typeof llmOutput !== "object" ||
-    llmOutput === null ||
-    Array.isArray(llmOutput)
-  ) {
-    throw new Error(
-      "Ollama query analysis must return a JSON object",
-    );
-  }
+    if (
+        typeof llmOutput !== "object" ||
+        llmOutput === null ||
+        Array.isArray(llmOutput)
+    ) {
+        throw new Error(
+            "Ollama query analysis must return a JSON object",
+        );
+    }
 
-  const plan = retrievalPlanSchema.parse({
-    ...llmOutput,
-    query: normalizedQuery,
-  });
+    const plan = retrievalPlanSchema.parse({
+        ...llmOutput,
+        query: normalizedQuery,
+    });
 
-  return plan;
+    return plan;
 }
