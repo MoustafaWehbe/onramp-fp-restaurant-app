@@ -102,10 +102,13 @@ export function AppRoutes() {
           </Route>
         </Route>
 
-        <Route path="/admin" element={<AdminLayout />}>
+        <Route element={<RoleRoute allowedRoles={["admin"]} />}>
+          <Route path="/admin" element={<AdminLayout />}>
             <Route path="/admin/restaurant-claims" element= {<RestaurantClaimsPage />}/>
             <Route index element={<AdminDashboard />}></Route>
+          </Route>
         </Route>
+  
       </Route>
       <Route path="*" element={<NotFound />} />
 

@@ -16,6 +16,7 @@ interface ConfirmDialogProps {
     description?: string;
     confirmText?: string;
     cancelText?: string;
+    variant?: "default" | "destructive";
     onConfirm: () => void;
     onCancel: () => void;
 }
@@ -26,6 +27,7 @@ const ConfirmDialog = ({
     description = "This action cannot be undone.",
     confirmText = "Delete",
     cancelText = "Cancel",
+    variant = "destructive",
     onConfirm,
     onCancel,
 }: ConfirmDialogProps) => {
@@ -61,7 +63,11 @@ const ConfirmDialog = ({
 
                     <AlertDialogAction
                         onClick={onConfirm}
-                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        className={
+                            variant === "destructive"
+                            ? "bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            : "bg-primary hover:bg-primary/90 text-white"
+                        }
                     >
                         {confirmText}
                     </AlertDialogAction>
