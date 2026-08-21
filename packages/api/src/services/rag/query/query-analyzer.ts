@@ -7,6 +7,10 @@ const OLLAMA_BASE_URL =
 const OLLAMA_LLM_MODEL =
   process.env.OLLAMA_LLM_MODEL ?? "llama3.2";
 
+const OLLAMA_TIMEOUT_MS = Number(
+  process.env.OLLAMA_TIMEOUT_MS ?? 30_000,
+);
+
 const SYSTEM_PROMPT = `
 You are the query planner for a restaurant discovery application.
 
@@ -112,42 +116,53 @@ function extractJson(response: string): unknown {
 async function callOllama(
   query: string,
 ): Promise<unknown> {
-  const response = await fetch(
-    `${OLLAMA_BASE_URL}/api/generate`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
+  const controller = new AbortController();
+
+  const timeout = setTimeout(() => {
+    controller.abort();
+  }, OLLAMA_TIMEOUT_MS);
+
+  try {
+    const response = await fetch(
+      `${OLLAMA_BASE_URL}/api/generate`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: OLLAMA_LLM_MODEL,
+          system: SYSTEM_PROMPT,
+          prompt: query,
+          stream: false,
+          format: "json",
+        }),
+        signal: controller.signal,
       },
-      body: JSON.stringify({
-        model: OLLAMA_LLM_MODEL,
-        system: SYSTEM_PROMPT,
-        prompt: query,
-        stream: false,
-        format: "json",
-      }),
-    },
-  );
-
-  if (!response.ok) {
-    const errorText = await response.text();
-
-    throw new Error(
-      `Ollama query analysis failed: ${response.status} ${errorText}`,
     );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+
+      throw new Error(
+        `Ollama query analysis failed: ${response.status} ${errorText}`,
+      );
+    }
+
+    const data = (await response.json()) as {
+      response?: string;
+    };
+
+    if (!data.response) {
+      throw new Error(
+        "Ollama returned an empty query-analysis response",
+      );
+    }
+
+    return extractJson(data.response);
+  } finally {
+    clearTimeout(timeout);
   }
-
-  const data = (await response.json()) as {
-    response?: string;
-  };
-
-  if (!data.response) {
-    throw new Error(
-      "Ollama returned an empty query-analysis response",
-    );
-  }
-
-  return extractJson(data.response);
 }
 
 export async function analyzeQuery(

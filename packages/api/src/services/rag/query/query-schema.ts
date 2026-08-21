@@ -1,5 +1,10 @@
 import { z } from "zod";
 
+export const queryAnalysisStatusSchema = z.enum([
+  "relevant",
+  "irrelevant",
+]);
+
 export const retrievalTypeSchema = z.enum([
   "database",
   "semantic",
@@ -14,6 +19,7 @@ export const priceRangeSchema = z.enum([
 ]);
 
 export const retrievalFiltersSchema = z.object({
+  // Restaurant / branch filters
   city: z.string().trim().min(1).optional(),
   cuisine: z.string().trim().min(1).optional(),
   price: priceRangeSchema.optional(),
@@ -31,15 +37,38 @@ export const retrievalFiltersSchema = z.object({
     .optional(),
 
   isOpenNow: z.boolean().optional(),
+
+  // Menu filters
+  menuName: z.string().trim().min(1).optional(),
+  menuDescription: z.string().trim().min(1).optional(),
+
+  // Menu item filters
+  menuItemName: z.string().trim().min(1).optional(),
+  menuItemDescription: z.string().trim().min(1).optional(),
+
+  minItemPrice: z
+    .number()
+    .min(0)
+    .optional(),
+
+  maxItemPrice: z
+    .number()
+    .min(0)
+    .optional(),
 });
 
 export const retrievalPlanSchema = z
   .object({
-    query: z.string().trim().min(1),
+    status: queryAnalysisStatusSchema,
 
-    retrievalType: retrievalTypeSchema,
+    query: z
+      .string()
+      .trim()
+      .min(1),
 
-    filters: retrievalFiltersSchema,
+    retrievalType: retrievalTypeSchema.optional(),
+
+    filters: retrievalFiltersSchema.optional(),
 
     semanticQuery: z
       .string()
@@ -48,29 +77,62 @@ export const retrievalPlanSchema = z
       .optional(),
   })
   .superRefine((plan, ctx) => {
-    if (
-      (plan.retrievalType === "semantic" ||
-        plan.retrievalType === "hybrid") &&
-      !plan.semanticQuery
-    ) {
+    if (plan.status === "irrelevant") {
+      return;
+    }
+
+    if (!plan.retrievalType) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        path: ["semanticQuery"],
+        path: ["retrievalType"],
         message:
-          "semanticQuery is required for semantic and hybrid retrieval",
+          "retrievalType is required for relevant queries",
       });
     }
 
     if (
-      plan.filters.minRating !== undefined &&
-      plan.filters.maxRating !== undefined &&
-      plan.filters.minRating > plan.filters.maxRating
+      plan.retrievalType === "semantic" ||
+      plan.retrievalType === "hybrid"
+    ) {
+      if (!plan.semanticQuery) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["semanticQuery"],
+          message:
+            "semanticQuery is required for semantic and hybrid retrieval",
+        });
+      }
+    }
+
+    const filters = plan.filters;
+
+    if (!filters) {
+      return;
+    }
+
+    if (
+      filters.minRating !== undefined &&
+      filters.maxRating !== undefined &&
+      filters.minRating > filters.maxRating
     ) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        path: ["filters"],
+        path: ["filters", "minRating"],
         message:
           "minRating cannot be greater than maxRating",
+      });
+    }
+
+    if (
+      filters.minItemPrice !== undefined &&
+      filters.maxItemPrice !== undefined &&
+      filters.minItemPrice > filters.maxItemPrice
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["filters", "minItemPrice"],
+        message:
+          "minItemPrice cannot be greater than maxItemPrice",
       });
     }
   });
