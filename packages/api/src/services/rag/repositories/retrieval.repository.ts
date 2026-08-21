@@ -240,7 +240,7 @@ export const retrievalRepository = {
       );
 
 
-    return Restaurant.findAll({
+    return Restaurant.findAndCountAll({
 
       where: restaurantWhere,
 
