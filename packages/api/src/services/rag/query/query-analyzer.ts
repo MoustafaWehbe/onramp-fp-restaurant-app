@@ -1,3 +1,4 @@
+import { Ollama } from "ollama";
 import { retrievalPlanSchema } from "./query-schema";
 import type { ValidatedRetrievalPlan } from "./query-schema";
 
@@ -10,6 +11,10 @@ const OLLAMA_LLM_MODEL =
 const OLLAMA_TIMEOUT_MS = Number(
   process.env.OLLAMA_TIMEOUT_MS ?? 30_000,
 );
+
+const ollama = new Ollama({
+  host: OLLAMA_BASE_URL,
+});
 
 const SYSTEM_PROMPT = `
 You are the query planner for a restaurant discovery application.
@@ -64,12 +69,23 @@ semantic requirements.
 
 Available filters:
 
+Restaurant / branch filters:
 - city: restaurant city
 - cuisine: cuisine type
 - price: "Budget", "Average", "Expensive", or "Luxury"
 - minRating: minimum rating from 0 to 5
 - maxRating: maximum rating from 0 to 5
 - isOpenNow: whether the restaurant should currently be open
+
+Menu filters:
+- menuName: name of the menu
+- menuDescription: description of the menu
+
+Menu item filters:
+- menuItemName: name of the menu item
+- menuItemDescription: description of the menu item
+- minItemPrice: minimum menu-item price, must be 0 or greater
+- maxItemPrice: maximum menu-item price, must be 0 or greater
 
 Rules:
 
@@ -79,6 +95,9 @@ Rules:
 - Normalize price to one of:
   "Budget", "Average", "Expensive", "Luxury".
 - Ratings must be between 0 and 5.
+- Menu-item prices must be 0 or greater.
+- If both minItemPrice and maxItemPrice are present,
+  minItemPrice must not be greater than maxItemPrice.
 - For semantic or hybrid retrieval, include semanticQuery.
 - For database retrieval, omit semanticQuery.
 - For irrelevant questions, only return status and query.
@@ -86,82 +105,44 @@ Rules:
 - Do not return markdown.
 `;
 
-function extractJson(response: string): unknown {
-  const trimmed = response.trim();
-
-  try {
-    return JSON.parse(trimmed);
-  } catch {
-    const start = trimmed.indexOf("{");
-    const end = trimmed.lastIndexOf("}");
-
-    if (start === -1 || end === -1 || start >= end) {
-      throw new Error(
-        "Ollama returned an invalid JSON response",
-      );
-    }
-
-    try {
-      return JSON.parse(
-        trimmed.slice(start, end + 1),
-      );
-    } catch {
-      throw new Error(
-        "Ollama returned malformed JSON",
-      );
-    }
-  }
-}
-
 async function callOllama(
   query: string,
 ): Promise<unknown> {
-  const controller = new AbortController();
+  const timeout = new Promise<never>((_, reject) => {
+    setTimeout(() => {
+      reject(
+        new Error(
+          `Ollama query analysis timed out after ${OLLAMA_TIMEOUT_MS}ms`,
+        ),
+      );
+    }, OLLAMA_TIMEOUT_MS);
+  });
 
-  const timeout = setTimeout(() => {
-    controller.abort();
-  }, OLLAMA_TIMEOUT_MS);
+  const request = ollama.generate({
+    model: OLLAMA_LLM_MODEL,
+    system: SYSTEM_PROMPT,
+    prompt: query,
+    stream: false,
+    format: "json",
+  });
+
+  const response = await Promise.race([
+    request,
+    timeout,
+  ]);
+
+  if (!response.response) {
+    throw new Error(
+      "Ollama returned an empty query-analysis response",
+    );
+  }
 
   try {
-    const response = await fetch(
-      `${OLLAMA_BASE_URL}/api/generate`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: OLLAMA_LLM_MODEL,
-          system: SYSTEM_PROMPT,
-          prompt: query,
-          stream: false,
-          format: "json",
-        }),
-        signal: controller.signal,
-      },
+    return JSON.parse(response.response);
+  } catch {
+    throw new Error(
+      "Ollama returned malformed JSON",
     );
-
-    if (!response.ok) {
-      const errorText = await response.text();
-
-      throw new Error(
-        `Ollama query analysis failed: ${response.status} ${errorText}`,
-      );
-    }
-
-    const data = (await response.json()) as {
-      response?: string;
-    };
-
-    if (!data.response) {
-      throw new Error(
-        "Ollama returned an empty query-analysis response",
-      );
-    }
-
-    return extractJson(data.response);
-  } finally {
-    clearTimeout(timeout);
   }
 }
 
