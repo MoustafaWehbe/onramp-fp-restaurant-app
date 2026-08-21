@@ -51,12 +51,6 @@ interface UpdateMenuItemInput {
 }
 
 export const menuService = {
-  /**
-   * Create a menu and optionally create its menu items.
-   *
-   * Images are uploaded before the DB transaction so that external
-   * storage operations never keep a DB transaction open.
-   */
   create: async (input: CreateMenuInput) => {
     const sequelize = Menu.sequelize;
 
@@ -174,9 +168,6 @@ export const menuService = {
     }
   },
 
-  /**
-   * Override a menu item's price/availability for a branch.
-   */
   overrideBranchMenuItem: async (input: BranchMenuItemOverrideInput) => {
     const sequelize = Menu.sequelize;
 
@@ -278,9 +269,6 @@ export const menuService = {
     });
   },
 
-  /**
-   * Get all menus for a restaurant.
-   */
   getRestaurantMenus: async (restaurantSlug: string) => {
     const restaurant = await Restaurant.findOne({
       where: {
@@ -319,12 +307,6 @@ export const menuService = {
     return menus;
   },
 
-  /**
-   * Get active menus for a specific branch.
-   *
-   * Branch-specific price and availability overrides are applied
-   * to the returned menu items.
-   */
   getBranchMenus: async (restaurantSlug: string, branchSlug: string) => {
     const restaurant = await Restaurant.findOne({
       where: {
@@ -420,9 +402,6 @@ export const menuService = {
     });
   },
 
-  /**
-   * Delete an entire menu and all of its menu items.
-   */
   delete: async (restaurantSlug: string, menuId: string) => {
     const sequelize = Menu.sequelize;
 
@@ -528,9 +507,6 @@ export const menuService = {
     };
   },
 
-  /**
-   * Update a menu.
-   */
   updateMenu: async (
     restaurantSlug: string,
     menuId: string,
@@ -557,6 +533,8 @@ export const menuService = {
       throw createError("Menu not found for this restaurant", 404);
     }
 
+    const wasActive = menu.is_active;
+
     if (input.name !== undefined) {
       menu.name = input.name;
     }
@@ -569,23 +547,54 @@ export const menuService = {
       menu.is_active = input.is_active;
     }
 
+    const availabilityChanged =
+      input.is_active !== undefined &&
+      wasActive !== input.is_active;
+
     await menu.save();
 
-    /**
-     * The menu itself changed, so regenerate its embedding.
-     */
-    await embeddingsQueue.add("INDEX_MENU", {
-      menuId: menu.id,
-    });
+    if (availabilityChanged) {
+      const menuItems = await MenuItem.findAll({
+        where: {
+          menuId: menu.id,
+        },
+        attributes: ["id"],
+      });
+
+      if (menu.is_active) {
+        await Promise.all([
+          embeddingsQueue.add("INDEX_MENU", {
+            menuId: menu.id,
+          }),
+
+          ...menuItems.map((item) =>
+            embeddingsQueue.add("INDEX_MENU_ITEM", {
+              menuItemId: item.id,
+            }),
+          ),
+        ]);
+      } else {
+        await Promise.all([
+          embeddingsQueue.add("DELETE_MENU", {
+            menuId: menu.id,
+          }),
+
+          ...menuItems.map((item) =>
+            embeddingsQueue.add("DELETE_MENU_ITEM", {
+              menuItemId: item.id,
+            }),
+          ),
+        ]);
+      }
+    } else {
+      await embeddingsQueue.add("INDEX_MENU", {
+        menuId: menu.id,
+      });
+    }
 
     return menu;
   },
 
-  /**
-   * Add a menu item.
-   *
-   * The image is uploaded before opening the DB transaction.
-   */
   addMenuItem: async (
     restaurantSlug: string,
     menuId: string,
@@ -691,9 +700,6 @@ export const menuService = {
     }
   },
 
-  /**
-   * Update a menu item.
-   */
   updateMenuItem: async (
     restaurantSlug: string,
     menuId: string,
@@ -735,6 +741,9 @@ export const menuService = {
     const oldImageUrl = menuItem.image_url;
     let newImageUrl: string | null = null;
 
+    const wasActive = menuItem.is_active;
+    let availabilityChanged = false;
+
     try {
       /**
        * Upload the new image before changing the DB.
@@ -766,29 +775,34 @@ export const menuService = {
 
       if (input.is_active !== undefined) {
         menuItem.is_active = input.is_active;
+
+        availabilityChanged = wasActive !== input.is_active;
       }
 
       await menuItem.save();
 
-      /**
-       * DB update succeeded.
-       *
-       * Re-index both the item and its parent menu.
-       */
-      await Promise.all([
-        embeddingsQueue.add("INDEX_MENU_ITEM", {
-          menuItemId: menuItem.id,
-        }),
-
-        embeddingsQueue.add("INDEX_MENU", {
-          menuId: menu.id,
-        }),
-      ]);
+      if(availabilityChanged) {
+        if(menuItem.is_active) {
+          await embeddingsQueue.add("INDEX_MENU_ITEM",
+            {
+              menuItemId: menuItem.id,
+            }
+          );
+        } else {
+          await embeddingsQueue.add("DELETE_MENU_ITEM",
+            {
+              menuItemId: menuItem.id,
+            }
+          );
+        }
+      } else {
+        await embeddingsQueue.add("INDEX_MENU_ITEM",
+          {
+            menuItemId: menuItem.id,
+          }
+        )
+      }
     } catch (error) {
-      /**
-       * The DB update failed after the new image was uploaded.
-       * Remove the new image because it is no longer referenced.
-       */
       if (newImageUrl) {
         await storageService.deleteFile(newImageUrl).catch(() => {});
       }
@@ -796,9 +810,6 @@ export const menuService = {
       throw error;
     }
 
-    /**
-     * Only remove the old image after the DB update succeeded.
-     */
     if (newImageUrl && oldImageUrl) {
       await storageService.deleteFile(oldImageUrl).catch(() => {});
     }
