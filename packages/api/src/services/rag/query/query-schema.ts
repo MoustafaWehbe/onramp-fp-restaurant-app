@@ -20,8 +20,8 @@ export const priceRangeSchema = z.enum([
 
 export const retrievalFiltersSchema = z.object({
   // Restaurant / branch filters
-  city: z.string().trim().min(1).optional(),
-  cuisine: z.string().trim().min(1).optional(),
+  city: z.array(z.string()).optional(),
+  cuisine: z.array(z.string()).optional(),
   price: priceRangeSchema.optional(),
 
   minRating: z
@@ -37,7 +37,7 @@ export const retrievalFiltersSchema = z.object({
     .optional(),
 
   isOpenNow: z.boolean().optional(),
-
+  ambianceTags: z.array(z.string()).optional(),
   // Menu filters
   menuName: z.string().trim().min(1).optional(),
   menuDescription: z.string().trim().min(1).optional(),
