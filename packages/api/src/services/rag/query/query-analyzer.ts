@@ -15,7 +15,75 @@ const OLLAMA_TIMEOUT_MS =
 
 const MAX_ATTEMPTS = 2;
 
-const ollama = new Ollama({ host: OLLAMA_BASE_URL });
+function createAbortableFetch(
+  timeoutMs: number,
+  externalSignal: AbortSignal,
+): typeof fetch {
+
+  return async (
+    input,
+    init = {},
+  ) => {
+
+    const controller = new AbortController();
+
+    const timeout = setTimeout(() => {
+      controller.abort(
+        new Error("Ollama request timeout"),
+      );
+    }, timeoutMs);
+
+    const abortHandler = () => {
+      controller.abort(
+        externalSignal?.reason,
+      );
+    };
+
+
+    if (externalSignal) {
+      if (externalSignal.aborted) {
+        controller.abort(
+          externalSignal.reason,
+        );
+      } else {
+        externalSignal.addEventListener(
+          "abort",
+          abortHandler,
+          {
+            once: true,
+          },
+        );
+      }
+    }
+
+
+    try {
+
+      return await fetch(input, {
+        ...init,
+        signal: controller.signal,
+      });
+
+    } finally {
+
+      clearTimeout(timeout);
+
+      externalSignal?.removeEventListener(
+        "abort",
+        abortHandler,
+      );
+
+    }
+  };
+}
+
+const ollama = new Ollama({
+  host: OLLAMA_BASE_URL,
+
+  fetch: createAbortableFetch(
+    OLLAMA_TIMEOUT_MS,
+  ),
+});
 
 const SYSTEM_PROMPT = `
 You are Platera's query planner.
@@ -430,16 +498,20 @@ markdown, no commentary, no explanation — JSON only.`;
 async function callOllama(
   query: string,
   attempt: number,
+  signal?: AbortSignal,
 ): Promise<unknown> {
-  const timerLabel = `ollama-query-analysis-attempt${attempt}-${Date.now()}`;
+
+  const timerLabel =
+    `ollama-query-analysis-attempt-${attempt}-${Date.now()}`;
+
   console.time(timerLabel);
 
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), OLLAMA_TIMEOUT_MS);
-
   try {
+
     const response = await ollama.chat({
+
       model: OLLAMA_LLM_MODEL,
+
       messages: [
         {
           role: "system",
@@ -448,40 +520,77 @@ async function callOllama(
               ? SYSTEM_PROMPT
               : SYSTEM_PROMPT + RETRY_SYSTEM_SUFFIX,
         },
-        { role: "user", content: query },
+
+        {
+          role: "user",
+          content: query,
+        },
       ],
+
+
       stream: false,
+
       format: "json",
     });
 
+
     const content = response.message?.content;
 
+
     if (!content) {
-      throw new Error("Ollama returned an empty query-analysis response");
+      throw new Error(
+        "Ollama returned an empty query-analysis response",
+      );
     }
 
+
     try {
+
       return JSON.parse(content);
+
     } catch {
+
       throw new Error(
         `Ollama returned malformed JSON (attempt ${attempt}): ${content.slice(0, 200)}`,
       );
     }
+
+
   } catch (error) {
-    if (controller.signal.aborted) {
+
+
+    if (
+      signal?.aborted
+    ) {
       throw new Error(
-        `Ollama query analysis timed out after ${OLLAMA_TIMEOUT_MS}ms (attempt ${attempt})`,
+        "Ollama request aborted because the client disconnected",
       );
     }
+
+
+    if (
+      error instanceof Error &&
+      error.name === "AbortError"
+    ) {
+      throw new Error(
+        `Ollama query analysis timed out after ${OLLAMA_TIMEOUT_MS}ms`,
+      );
+    }
+
+
     throw error;
+
+
   } finally {
-    clearTimeout(timeoutId);
+
     console.timeEnd(timerLabel);
+
   }
 }
 
 export async function analyzeQuery(
   query: string,
+  signal?: AbortSignal,
 ): Promise<ValidatedRetrievalPlan> {
   const normalizedQuery = query.trim();
 
@@ -493,7 +602,7 @@ export async function analyzeQuery(
 
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
     try {
-      const llmOutput = await callOllama(normalizedQuery, attempt);
+      const llmOutput = await callOllama(normalizedQuery, attempt, signal);
 
       if (
         typeof llmOutput !== "object" ||

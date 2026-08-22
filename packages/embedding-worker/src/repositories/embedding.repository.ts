@@ -1,4 +1,4 @@
-import { SearchEmbedding } from "@fp_restaurant/shared/db/models/SearchEmbedding.js";
+import { SearchEmbedding } from "@fp_restaurant/shared";
 
 interface UpsertEmbeddingInput {
     entityType: string;
@@ -20,11 +20,11 @@ export const embeddingRepository = {
             entityType,
             entityId,
             content,
-            embedding,
+            embedding: `[${embedding.join(",")}]` as any,
             ...(metadata !== undefined ? {metadata} : {}),
         },
         {
-            conflictFields: ["entityType", "entityId"],
+            conflictFields: ["entity_type", "entity_id"] as any,
         });
     },
 

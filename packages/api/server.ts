@@ -1,5 +1,7 @@
 import path from "path";
 import dotenv from "dotenv";
+import { createServer } from "http";
+import { registerAskWebSocket } from "./src/websockets/ask.handler";
 dotenv.config({ path: path.resolve(__dirname, "../../.env") });
 
 const PORT = parseInt(process.env.PORT ?? "3000", 10);
@@ -14,10 +16,15 @@ async function start(): Promise<void> {
     ]);
 
     await initializeDatabase();
+    
+    const httpServer = createServer(app);
 
-    app.listen(PORT, "0.0.0.0", () => {
+    registerAskWebSocket(httpServer);
+
+    httpServer.listen(PORT, "0.0.0.0", () => {
       console.info(`API server running on http://localhost:${PORT}`);
       console.info(`Health check: http://localhost:${PORT}/health`);
+      console.info(`WebSocket server running on ws://localhost:${PORT}/ws/ask`);
     });
   } catch (error) {
     console.error("Failed to start server:", error);

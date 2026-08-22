@@ -4,22 +4,43 @@ const OLLAMA_TIMEOUT_MS = Number(process.env.OLLAMA_TIMEOUT_MS ?? 30000);
 const EMBEDDING_DIMENSION = 768;
 
 function createTimeoutFetch(timeoutMs: number): typeof fetch {
-    return async (input, init = {}) => {
-        const controller = new AbortController();
+  return async (input, init = {}) => {
+    const controller = new AbortController();
 
-        const timeout = setTimeout(() => {
-            controller.abort();
-        }, timeoutMs);
+    const timeout = setTimeout(() => {
+      controller.abort(
+        new Error("Ollama request timeout"),
+      );
+    }, timeoutMs);
 
-        try {
-            return await fetch(input, {
-                ...init,
-                signal: controller.signal,
-            });
-        } finally {
-            clearTimeout(timeout);
-        }
+    const externalSignal = init.signal;
+
+    const abortHandler = () => {
+      controller.abort(
+        externalSignal?.reason,
+      );
     };
+
+    externalSignal?.addEventListener(
+      "abort",
+      abortHandler,
+      { once: true },
+    );
+
+    try {
+      return await fetch(input, {
+        ...init,
+        signal: controller.signal,
+      });
+    } finally {
+      clearTimeout(timeout);
+
+      externalSignal?.removeEventListener(
+        "abort",
+        abortHandler,
+      );
+    }
+  };
 }
 
 const ollama = new Ollama({
@@ -45,10 +66,15 @@ function validateEmbedding(vector: unknown): vector is number[] {
 }
 
 export async function generateEmbedding(
-    text: string
+    text: string,
+    signal?: AbortSignal
 ): Promise<number[]> {
     if (!text.trim()) {
         throw new Error("Cannot generate embedding for empty text");
+    }
+
+    if(signal?.aborted) {
+      throw new Error("Embedding generation aborted");
     }
 
     let response;

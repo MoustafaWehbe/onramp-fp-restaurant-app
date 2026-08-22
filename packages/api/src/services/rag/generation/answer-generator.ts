@@ -1,6 +1,7 @@
 export interface AnswerGeneratorInput {
     question: string;
     context: string;
+    signal?: AbortSignal;
     onChunk?: (
         chunk: string
     ) => void | Promise<void>;
@@ -137,6 +138,7 @@ ${question}
 export async function generateAnswer({
     question,
     context,
+    signal,
     onChunk,
 }: AnswerGeneratorInput): Promise<AnswerGeneratorResult> {
     const prompt = buildPrompt(
@@ -157,6 +159,7 @@ export async function generateAnswer({
                 prompt,
                 stream: true,
             }),
+            signal,
         }
     );
 

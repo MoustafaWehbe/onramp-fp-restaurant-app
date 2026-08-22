@@ -57,7 +57,7 @@ export function Login() {
 
       switch (user.role) {
         case "admin":
-          navigate("/admin");
+          navigate("/admin/restaurant-claims");
           break;
 
         case "owner": {

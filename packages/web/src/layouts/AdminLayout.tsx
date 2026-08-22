@@ -1,5 +1,5 @@
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
-import { LayoutDashboard, Store, FileCheck, LogOut } from "lucide-react";
+import { FileCheck, LogOut } from "lucide-react";
 
 import { useAuth } from "@/hooks/useAuth";
 
@@ -9,19 +9,9 @@ export function AdminLayout() {
 
   const links = [
     {
-      label: "Dashboard",
-      path: "/admin",
-      icon: LayoutDashboard,
-    },
-    {
       label: "Restaurant Claims",
       path: "/admin/restaurant-claims",
       icon: FileCheck,
-    },
-    {
-      label: "Restaurants",
-      path: "/admin/restaurants",
-      icon: Store,
     },
   ];
 

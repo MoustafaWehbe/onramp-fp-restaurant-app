@@ -13,7 +13,7 @@ import { RestaurantClaim } from "./RestaurantClaim";
 import { Menu } from "./Menu";
 import { MenuItem } from "./MenuItem";
 import { BranchImage } from "./BranchImage";
-export { User, Restaurant, Branch, BranchImage, Review, Session, RefreshToken, EmailVerificationToken, PasswordResetToken, AdminLog, Favorite, RestaurantClaim, Menu, MenuItem, BranchMenuItem };
+export { User, Restaurant, Branch, BranchImage, Review, Session, RefreshToken, EmailVerificationToken, PasswordResetToken, AdminLog, Favorite, RestaurantClaim, Menu, MenuItem, BranchMenuItem, SearchEmbedding };
 import { BranchMenuItem } from "./BranchMenuItem";
 import { SearchEmbedding } from "./SearchEmbedding";
 
