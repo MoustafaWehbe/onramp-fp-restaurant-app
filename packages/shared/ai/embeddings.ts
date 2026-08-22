@@ -1,11 +1,21 @@
 import { getAIClient } from "./client";
 
-export async function generateEmbedding(text: string): Promise<number[]> {
+export async function generateEmbedding(
+  text: string,
+  signal?: AbortSignal,
+): Promise<number[]> {
   const client = getAIClient();
-  const response = await client.embeddings.create({
-    model: "text-embedding-3-small",
-    input: text,
-  });
+
+  const response = await client.embeddings.create(
+    {
+      model: "text-embedding-3-small",
+      input: text,
+    },
+    {
+      signal,
+    },
+  );
+
   return response.data[0]?.embedding ?? [];
 }
 

@@ -14,7 +14,11 @@ ws.on("open", () => {
 });
 
 ws.on("message", (data) => {
-  console.log("📩", data.toString());
+  const event = JSON.parse(data.toString());
+  console.log("📩", event);
+  if (event.type === "completed" || event.type === "error") {
+    ws.close();
+  }
 });
 
 ws.on("close", () => {

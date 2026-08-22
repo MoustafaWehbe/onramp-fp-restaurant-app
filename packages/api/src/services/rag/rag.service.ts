@@ -55,6 +55,7 @@ export type RagProgressEvent =
     };
 
 export interface RagAnswerOptions {
+    signal?: AbortSignal;
     onChunk?: RagChunkHandler;
     onEvent?: (
         event: RagProgressEvent,
@@ -69,49 +70,53 @@ export interface RagAnswerResult {
 }
 
 async function createQueryEmbedding(
-    question: string
+  question: string,
+  signal?: AbortSignal,
 ): Promise<number[]> {
-    return generateEmbedding(question);
+  return generateEmbedding(question,signal);
 }
 
 async function executeRetrieval(
-    plan: ValidatedRetrievalPlan,
-    question: string
+  plan: ValidatedRetrievalPlan,
+  question: string,
+  signal?: AbortSignal,
 ) {
-    switch (plan.retrievalType) {
-        case "database":
-            return databaseRetrieval(plan);
+  switch (plan.retrievalType) {
+    case "database":
+      return databaseRetrieval(plan);
 
-        case "semantic": {
-            const embedding =
-                await createQueryEmbedding(
-                    question
-                );
+    case "semantic": {
+      const embedding =
+        await createQueryEmbedding(
+          question,
+          signal,
+        );
 
-            return semanticRetrieval(
-                embedding
-            );
-        }
-
-        case "hybrid": {
-            const embedding =
-                await createQueryEmbedding(
-                    question
-                );
-
-            return hybridRetrieval(
-                plan,
-                embedding
-            );
-        }
-
-        default:
-            throw new Error(
-                `Unsupported retrieval strategy: ${String(
-                    plan.retrievalType
-                )}`
-            );
+      return semanticRetrieval(
+        embedding,
+      );
     }
+
+    case "hybrid": {
+      const embedding =
+        await createQueryEmbedding(
+          question,
+          signal,
+        );
+
+      return hybridRetrieval(
+        plan,
+        embedding,
+      );
+    }
+
+    default:
+      throw new Error(
+        `Unsupported retrieval strategy: ${String(
+          plan.retrievalType,
+        )}`,
+      );
+  }
 }
 
 export async function answerQuestion(
@@ -128,7 +133,7 @@ export async function answerQuestion(
     });
 
     const plan =
-        await analyzeQuery(question);
+        await analyzeQuery(question,options.signal);
 
     await options.onEvent?.({
         type: "retrieving",
@@ -137,7 +142,8 @@ export async function answerQuestion(
     const retrievalResults =
         await executeRetrieval(
             plan,
-            question
+            question,
+            options.signal,
         );
 
     const context =
@@ -153,6 +159,7 @@ export async function answerQuestion(
         await generateAnswer({
             question,
             context,
+            signal: options.signal,
             onChunk: async (chunk) => {
                 await options.onEvent?.({
                     type: "answer_chunk",

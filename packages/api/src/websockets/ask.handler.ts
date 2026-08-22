@@ -54,25 +54,30 @@ function isAskMessage(
 async function handleAsk(
   socket: WebSocket,
   message: AskMessage,
+  controller: AbortController,
+  activeRequests: Set<AbortController>,
 ): Promise<void> {
   const question = message.question.trim();
 
   if (!question) {
     sendError(socket, "Question cannot be empty");
+    activeRequests.delete(controller);
     return;
   }
 
   try {
     await answerQuestion(question, {
+      signal: controller.signal,
       onEvent: async (event) => {
         send(socket, event);
       },
     });
   } catch (error) {
-    console.error(
-      "WebSocket RAG error:",
-      error,
-    );
+    if (controller.signal.aborted) {
+      return;
+    }
+
+    console.error("WebSocket RAG error:", error);
 
     sendError(
       socket,
@@ -80,6 +85,8 @@ async function handleAsk(
         ? error.message
         : "Failed to process question",
     );
+  } finally {
+    activeRequests.delete(controller);
   }
 }
 
@@ -98,6 +105,9 @@ export function registerAskWebSocket(
       socket: WebSocket,
       _request: IncomingMessage,
     ) => {
+      const activeRequests =
+        new Set<AbortController>();
+
       socket.on("message", async (data) => {
         try {
           const message: unknown =
@@ -111,7 +121,25 @@ export function registerAskWebSocket(
             return;
           }
 
-          await handleAsk(socket, message);
+          if (activeRequests.size > 0) {
+            sendError(
+              socket,
+              "Another question is already being processed",
+            );
+            return;
+          }
+
+          const controller =
+            new AbortController();
+
+          activeRequests.add(controller);
+
+          await handleAsk(
+            socket,
+            message,
+            controller,
+            activeRequests,
+          );
         } catch (error) {
           console.error(
             "WebSocket message error:",
@@ -123,6 +151,13 @@ export function registerAskWebSocket(
             "Invalid message format",
           );
         }
+      });
+      socket.on("close", () => {
+        for (const controller of activeRequests) {
+          controller.abort();
+        }
+
+        activeRequests.clear();
       });
 
       socket.on("error", (error) => {

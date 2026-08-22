@@ -239,6 +239,7 @@ RULES
 
 async function callOllama(
   query: string,
+  signal?: AbortSignal,
 ): Promise<unknown> {
   const timer = `ollama-query-analysis-${Date.now()}`;
   console.time(timer);
@@ -272,7 +273,7 @@ async function callOllama(
           stream: false,
           format: "json",
         }),
-        signal: controller.signal,
+        signal,
       },
     );
 
@@ -319,6 +320,7 @@ async function callOllama(
 
 export async function analyzeQuery(
   query: string,
+  signal?: AbortSignal,
 ): Promise<ValidatedRetrievalPlan> {
   const normalizedQuery = query.trim();
 
@@ -326,7 +328,10 @@ export async function analyzeQuery(
     throw new Error("Query cannot be empty");
   }
 
-  const llmOutput = await callOllama(normalizedQuery);
+  const llmOutput = await callOllama(
+    normalizedQuery,
+    signal,
+  );
 
   if (
     typeof llmOutput !== "object" ||
