@@ -16,6 +16,7 @@ interface Review {
 interface ReviewsProps {
     reviews: Review[];
     currentUserId?: string;
+    type?: "restaurant" | "branch";
     onUpdate: (review: Review) => void;
     onDelete: (reviewId: string) => void;
 }
@@ -23,6 +24,7 @@ interface ReviewsProps {
 const Reviews = ({
     reviews,
     currentUserId,
+    type,
     onUpdate,
     onDelete,
 }: ReviewsProps) => {
@@ -31,7 +33,11 @@ const Reviews = ({
         <div className="space-y-6">
             {reviews.length === 0 ? (
                 <p className="text-center text-gray-500">
-                    This branch has no reviews yet.
+                    {
+                        type == "branch"
+                        ? "Be the first to leave a review!"
+                        : "There are no reviews for this restaurant yet."
+                    }
                 </p>
             ) : (
                 reviews.map((review) => (

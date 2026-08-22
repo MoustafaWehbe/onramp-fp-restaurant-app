@@ -241,6 +241,7 @@ export function RestaurantDetails() {
 
           <Reviews
             reviews={allReviews}
+            type="restaurant"
             onUpdate={() => {}}
             onDelete={() => {}}
           />
