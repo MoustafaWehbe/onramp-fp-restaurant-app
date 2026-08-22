@@ -5,7 +5,7 @@ export interface SearchEmbeddingAttributes {
   entityType: string;
   entityId: string;
   content: string;
-  embedding?: number[] | null;
+  embedding?: string | null;
   metadata?: Record<string, unknown> | null;
   createdAt?: Date;
   updatedAt?: Date;
@@ -24,7 +24,7 @@ export class SearchEmbedding
   declare entityType: string;
   declare entityId: string;
   declare content: string;
-  declare embedding?: number[] | null;
+  declare embedding?: string | null;
   declare metadata?: Record<string, unknown> | null;
   declare createdAt?: Date;
   declare updatedAt?: Date;
@@ -73,7 +73,7 @@ export class SearchEmbedding
         indexes: [
           {
             unique: true,
-            fields: ["entityType", "entityId"],
+            fields: ["entity_type", "entity_id"],
           },
         ],
       }

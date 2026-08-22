@@ -23,7 +23,7 @@ function createTimeoutFetch(timeoutMs: number): typeof fetch {
 }
 
 const ollama = new Ollama({
-    host: process.env.OLLAMA_URL ?? "http://localhost:11434",
+    host: process.env.OLLAMA_BASE_URL ?? "http://localhost:11434",
     fetch: createTimeoutFetch(OLLAMA_TIMEOUT_MS),
 });
 
