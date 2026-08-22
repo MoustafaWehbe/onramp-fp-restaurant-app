@@ -33,13 +33,14 @@ export function Sidebar({
   return (
     <aside
       aria-hidden={!open}
+      {...({ inert: !open } as React.HTMLAttributes<HTMLElement>)}
       tabIndex={open ? 0 : -1}
       className={`
-        fixed left-0 top-0 z-50 flex h-full w-64 flex-col
-        border-r bg-background
-        transition-transform
-        ${open ? "translate-x-0" : "-translate-x-full"}
-      `}
+    fixed left-0 top-0 z-50 flex h-full w-64 flex-col
+    border-r bg-background
+    transition-transform
+    ${open ? "translate-x-0" : "-translate-x-full"}
+    `}
     >
       {/* Close button */}
       <div className="flex items-center justify-end p-4">
@@ -65,10 +66,9 @@ export function Sidebar({
               className={({ isActive }) =>
                 `
                 flex items-center gap-3 rounded-md px-3 py-2 text-sm
-                ${
-                  isActive
-                    ? "bg-primary text-primary-foreground"
-                    : "hover:bg-muted"
+                ${isActive
+                  ? "bg-primary text-primary-foreground"
+                  : "hover:bg-muted"
                 }
                 `
               }
