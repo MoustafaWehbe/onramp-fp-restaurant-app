@@ -2,6 +2,7 @@ import { Bookmark, Menu } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FAVORITE_ADDED_EVENT } from "@/lib/favorite-events";
+import { Link } from "react-router-dom";
 
 interface HeaderProps {
   onMenuClick: () => void;
@@ -50,9 +51,11 @@ export function Header({ onMenuClick }: HeaderProps) {
         <Menu className="h-6 w-6" />
       </button>
 
-      <h1 className="ml-4 text-2xl font-bold text-primary">
-        Platera
-      </h1>
+      <Link to= "/home">
+        <h1 className="ml-4 text-2xl font-bold text-primary">
+          Platera
+        </h1>
+      </Link>
 
       <div className="ml-auto flex items-center gap-2">
         {isBookmarkAnimating && (

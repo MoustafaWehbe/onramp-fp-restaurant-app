@@ -246,6 +246,7 @@ const BranchDetailsPage = () => {
                                 <Reviews
                                     reviews={reviews}
                                     currentUserId={user?.id}
+                                    type="branch"
                                     onUpdate={handleUpdateReview}
                                     onDelete={handleDeleteReview}
                                 />
