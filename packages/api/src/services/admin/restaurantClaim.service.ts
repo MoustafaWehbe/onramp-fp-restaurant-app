@@ -158,9 +158,11 @@ export const restaurantClaimService = {
                 );
             }
 
+            const isExistingRestaurant = claim.restaurantId !== null;
+
             await claim.update(
                 {
-                    status: "approved",
+                    status: isExistingRestaurant ? "completed" : "approved",
                 },
                 {
                     transaction,
@@ -198,5 +200,5 @@ export const restaurantClaimService = {
             await transaction.rollback();
             throw error;
         }
-    },
+    }
 };

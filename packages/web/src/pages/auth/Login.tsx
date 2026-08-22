@@ -9,7 +9,6 @@ import { useAuth } from "../../hooks/useAuth";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
-import { getErrorMessage } from "../../lib/error-handler";
 import {
   Card,
   CardContent,
@@ -60,9 +59,26 @@ export function Login() {
           navigate("/admin");
           break;
 
-        case "owner":
-          navigate("/owner");
+        case "owner": {
+          const claimResponse = await apiClient.get("/restaurant-claims");
+          const claim = claimResponse.data.data;
+
+          if (
+            claim.status === "approved" &&
+            claim.restaurantId === null
+          ) {
+            navigate("/owner/create-restaurant");
+          } else if (
+            claim.status === "completed" &&
+            claim.restaurantId !== null
+          ) {
+            navigate("/owner/dashboard");
+          } else {
+            navigate("/owner");
+          }
+
           break;
+        }
 
         default:
           navigate("/home");
