@@ -80,23 +80,23 @@ export function AppRoutes() {
           <Route path="/owner" element={<OwnerLayout />}>
             <Route index element={<OwnerDashboard />} />
             <Route
-              path="/owner/restaurant"
+              path="restaurant"
               element={<RestaurantOwnerPage />}
             />
             <Route
-              path="/owner/branches"
+              path="branches"
               element={<OwnerBranchesPage />}
             />
             <Route
-              path="/owner/restaurants/:restaurantSlug/branches"
+              path="restaurants/:restaurantSlug/branches"
               element={<OwnerBranchCreationPage />}
             />
             <Route
-              path="/owner/restaurants/:restaurantSlug/branches/:branchSlug"
+              path="restaurants/:restaurantSlug/branches/:branchSlug"
               element={<OwnerBranchDetailsPage />}
             />
             <Route
-              path="/owner/menus"
+              path="menus"
               element={<OwnerMenusPage />}
             />
           </Route>
@@ -104,8 +104,7 @@ export function AppRoutes() {
 
         <Route element={<RoleRoute allowedRoles={["admin"]} />}>
           <Route path="/admin" element={<AdminLayout />}>
-            <Route path="/admin/restaurant-claims" element= {<RestaurantClaimsPage />}/>
-            <Route index element={<AdminDashboard />}></Route>
+            <Route path="restaurant-claims" element= {<RestaurantClaimsPage />}/>
           </Route>
         </Route>
   

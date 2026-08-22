@@ -18,14 +18,6 @@ const mainNavigation = [
     },
 ];
 
-const analyticsNavigation = [
-    {
-        label: "Statistics",
-        icon: BarChart3,
-        disabled: true,
-    },
-];
-
 interface OwnerSidebarProps {
     userName: string;
     restaurantSlug: string | null;
@@ -99,11 +91,6 @@ export function OwnerSidebar({
                 <NavigationGroup
                     title="Management"
                     items={managementNavigation}
-                />
-
-                <NavigationGroup
-                    title="Analytics"
-                    items={analyticsNavigation}
                 />
             </nav>
 
