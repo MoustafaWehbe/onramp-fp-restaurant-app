@@ -29,7 +29,7 @@ module.exports = {
 
       description: {
         type: Sequelize.TEXT,
-        allowNull: true,
+        allowNull: false,
       },
 
       base_price: {

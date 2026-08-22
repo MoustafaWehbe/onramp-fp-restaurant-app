@@ -4,7 +4,7 @@ export interface MenuItemAttributes {
   id: string;
   menuId: string;
   name: string;
-  description?: string | null;
+  description: string;
   base_price: number;
   image_url?: string | null;
   display_order: number;
@@ -14,7 +14,7 @@ export interface MenuItemAttributes {
 export interface MenuItemCreationAttributes
   extends Optional<
     MenuItemAttributes,
-    "id" | "description" | "image_url" | "display_order" | "is_active"
+    "id" | "image_url" | "display_order" | "is_active"
   > {}
 
 export class MenuItem
@@ -24,7 +24,7 @@ export class MenuItem
   declare id: string;
   declare menuId: string;
   declare name: string;
-  declare description: string | null;
+  declare description: string;
   declare base_price: number;
   declare image_url: string | null;
   declare display_order: number;
@@ -51,7 +51,7 @@ export class MenuItem
 
         description: {
           type: DataTypes.TEXT,
-          allowNull: true,
+          allowNull: false,
         },
 
         base_price: {

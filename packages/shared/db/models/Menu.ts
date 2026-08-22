@@ -4,12 +4,12 @@ export interface MenuAttributes {
   id: string;
   restaurantId: string;
   name: string;
-  description?: string | null;
+  description: string;
   is_active: boolean;
 }
 
 export interface MenuCreationAttributes
-  extends Optional<MenuAttributes, "id" | "description" | "is_active"> {}
+  extends Optional<MenuAttributes, "id" | "is_active"> {}
 
 export class Menu
   extends Model<MenuAttributes, MenuCreationAttributes>
@@ -18,7 +18,7 @@ export class Menu
   declare id: string;
   declare restaurantId: string;
   declare name: string;
-  declare description: string | null;
+  declare description: string;
   declare is_active: boolean;
 
   static initModel(sequelize: Sequelize) {
@@ -42,7 +42,7 @@ export class Menu
 
         description: {
           type: DataTypes.TEXT,
-          allowNull: true,
+          allowNull: false,
         },
 
         is_active: {

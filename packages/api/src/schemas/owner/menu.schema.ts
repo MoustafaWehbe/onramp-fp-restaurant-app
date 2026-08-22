@@ -12,7 +12,7 @@ const menuItemFields = {
     .min(1, "Menu item name is required")
     .max(255, "Menu item name is too long"),
 
-  description: z.string().nullable().optional(),
+  description: z.string().min(1, "Menu item description is required"),
 
   base_price: z
     .union([z.number(), z.string().trim().min(1, "Base price is required")])
@@ -54,7 +54,7 @@ export const createMenuBodySchema = z.object({
     .min(1, "Menu name is required")
     .max(255, "Menu name is too long"),
 
-  description: z.string().nullable().optional(),
+  description: z.string().min(1, "Menu description is required"),
 
   is_active: booleanish.optional(),
 
@@ -104,7 +104,7 @@ export const updateMenuBodySchema = z
       .max(255, "Menu name is too long")
       .optional(),
 
-    description: z.string().nullable().optional(),
+    description: z.string().min(1, "Menu description is required").optional(),
 
     is_active: booleanish.optional(),
   })
@@ -126,7 +126,7 @@ export const updateMenuItemBodySchema = z
   .object({
     name: menuItemFields.name.optional(),
 
-    description: menuItemFields.description,
+    description: menuItemFields.description.optional(),
 
     base_price: menuItemFields.base_price.optional(),
 
