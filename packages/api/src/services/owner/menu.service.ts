@@ -12,7 +12,7 @@ import { embeddingsQueue } from "@fp_restaurant/shared";
 
 interface CreateMenuItemInput {
   name: string;
-  description?: string | null;
+  description: string;
   base_price: number;
   display_order?: number;
   is_active?: boolean;
@@ -22,14 +22,14 @@ interface CreateMenuItemInput {
 interface CreateMenuInput {
   restaurantSlug: string;
   name: string;
-  description?: string | null;
+  description: string;
   is_active?: boolean;
   items?: CreateMenuItemInput[];
 }
 
 interface UpdateMenuInput {
   name?: string;
-  description?: string | null;
+  description?: string;
   is_active?: boolean;
 }
 
@@ -43,12 +43,30 @@ interface BranchMenuItemOverrideInput {
 
 interface UpdateMenuItemInput {
   name?: string;
-  description?: string | null;
+  description?: string;
   base_price?: number;
   image?: UploadableFile | null;
   display_order?: number;
   is_active?: boolean;
 }
+
+const syncMenuItemEmbedding = async (
+  menu: Menu,
+  menuItem: MenuItem,
+) => {
+  const shouldBeIndexed =
+    menu.is_active && menuItem.is_active;
+
+  if (shouldBeIndexed) {
+    await embeddingsQueue.add("INDEX_MENU_ITEM", {
+      menuItemId: menuItem.id,
+    });
+  } else {
+    await embeddingsQueue.add("DELETE_MENU_ITEM", {
+      menuItemId: menuItem.id,
+    });
+  }
+};
 
 export const menuService = {
   create: async (input: CreateMenuInput) => {
@@ -553,44 +571,26 @@ export const menuService = {
 
     await menu.save();
 
-    if (availabilityChanged) {
-      const menuItems = await MenuItem.findAll({
-        where: {
-          menuId: menu.id,
-        },
-        attributes: ["id"],
-      });
-
-      if (menu.is_active) {
-        await Promise.all([
-          embeddingsQueue.add("INDEX_MENU", {
-            menuId: menu.id,
-          }),
-
-          ...menuItems.map((item) =>
-            embeddingsQueue.add("INDEX_MENU_ITEM", {
-              menuItemId: item.id,
-            }),
-          ),
-        ]);
-      } else {
-        await Promise.all([
-          embeddingsQueue.add("DELETE_MENU", {
-            menuId: menu.id,
-          }),
-
-          ...menuItems.map((item) =>
-            embeddingsQueue.add("DELETE_MENU_ITEM", {
-              menuItemId: item.id,
-            }),
-          ),
-        ]);
-      }
-    } else {
-      await embeddingsQueue.add("INDEX_MENU", {
+    const menuItems = await MenuItem.findAll({
+      where: {
         menuId: menu.id,
-      });
-    }
+      },
+    });
+
+    await embeddingsQueue.add(
+      menu.is_active
+        ? "INDEX_MENU"
+        : "DELETE_MENU",
+      {
+        menuId: menu.id,
+      },
+    );
+
+    await Promise.all(
+      menuItems.map((item) =>
+        syncMenuItemEmbedding(menu, item),
+      ),
+    );
 
     return menu;
   },
@@ -621,7 +621,7 @@ export const menuService = {
         );
       }
 
-      const menuItem = await sequelize.transaction(async (transaction) => {
+      const result = await sequelize.transaction(async (transaction) => {
         const restaurant = await Restaurant.findOne({
           where: {
             slug: restaurantSlug,
@@ -660,7 +660,7 @@ export const menuService = {
           displayOrder = lastItem ? lastItem.display_order + 1 : 0;
         }
 
-        return MenuItem.create(
+        const menuItem = await MenuItem.create(
           {
             id: menuItemId,
             menuId: menu.id,
@@ -675,22 +675,28 @@ export const menuService = {
             transaction,
           },
         );
+
+        return {
+          menu,
+          menuItem,
+        };
       });
 
       /**
-       * The menu item and parent menu now exist in the DB.
+       * Sync embeddings only after the transaction commits.
+       * The embedding state depends on the final effective availability:
+       *
+       * menu.is_active && menuItem.is_active
        */
       await Promise.all([
-        embeddingsQueue.add("INDEX_MENU_ITEM", {
-          menuItemId: menuItem.id,
-        }),
+        syncMenuItemEmbedding(result.menu, result.menuItem),
 
         embeddingsQueue.add("INDEX_MENU", {
-          menuId,
+          menuId: result.menu.id,
         }),
       ]);
 
-      return menuItem;
+      return result.menuItem;
     } catch (error) {
       if (uploadedImageUrl) {
         await storageService.deleteFile(uploadedImageUrl).catch(() => {});
@@ -781,27 +787,8 @@ export const menuService = {
 
       await menuItem.save();
 
-      if(availabilityChanged) {
-        if(menuItem.is_active) {
-          await embeddingsQueue.add("INDEX_MENU_ITEM",
-            {
-              menuItemId: menuItem.id,
-            }
-          );
-        } else {
-          await embeddingsQueue.add("DELETE_MENU_ITEM",
-            {
-              menuItemId: menuItem.id,
-            }
-          );
-        }
-      } else {
-        await embeddingsQueue.add("INDEX_MENU_ITEM",
-          {
-            menuItemId: menuItem.id,
-          }
-        )
-      }
+      await syncMenuItemEmbedding(menu, menuItem);
+
     } catch (error) {
       if (newImageUrl) {
         await storageService.deleteFile(newImageUrl).catch(() => {});
