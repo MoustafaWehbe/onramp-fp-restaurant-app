@@ -37,12 +37,10 @@ const FILTER_LEVELS = {
         "menuItemName",
         "minItemPrice",
         "maxItemPrice",
-        "menuItemDescription",
     ] as const,
 
     menu: [
         "menuName",
-        "menuDescription",
     ] as const,
 };
 

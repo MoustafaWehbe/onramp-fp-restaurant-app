@@ -1,6 +1,6 @@
 import { getMenuById } from "../repositories/menu.repository.js";
 import { embeddingRepository } from "../repositories/embedding.repository.js";
-import { generateEmbedding } from "../lib/ai.js";
+import { generateEmbedding } from "@fp_restaurant/shared";
 
 export async function indexMenu(
     menuId: string

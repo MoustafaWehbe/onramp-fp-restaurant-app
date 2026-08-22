@@ -40,11 +40,9 @@ export const retrievalFiltersSchema = z.object({
   ambianceTags: z.array(z.string()).optional(),
   // Menu filters
   menuName: z.string().trim().min(1).optional(),
-  menuDescription: z.string().trim().min(1).optional(),
 
   // Menu item filters
   menuItemName: z.string().trim().min(1).optional(),
-  menuItemDescription: z.string().trim().min(1).optional(),
 
   minItemPrice: z
     .number()
