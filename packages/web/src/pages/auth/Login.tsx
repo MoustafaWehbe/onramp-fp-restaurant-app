@@ -17,6 +17,7 @@ import {
   CardHeader,
   CardTitle,
 } from "../../components/ui/card";
+import axios from "axios";
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email"),
@@ -60,21 +61,35 @@ export function Login() {
           break;
 
         case "owner": {
-          const claimResponse = await apiClient.get("/restaurant-claims");
-          const claim = claimResponse.data.data;
+          try {
+            const claimResponse = await apiClient.get(
+              "/restaurant-claims",
+            );
 
-          if (
-            claim.status === "approved" &&
-            claim.restaurantId === null
-          ) {
-            navigate("/owner/create-restaurant");
-          } else if (
-            claim.status === "completed" &&
-            claim.restaurantId !== null
-          ) {
-            navigate("/owner/dashboard");
-          } else {
-            navigate("/owner");
+            const claim = claimResponse.data.data;
+
+            if (
+              claim.status === "approved" &&
+              claim.restaurantId === null
+            ) {
+              navigate("/owner/create-restaurant");
+            } else if (
+              claim.status === "completed" &&
+              claim.restaurantId !== null
+            ) {
+              navigate("/owner/dashboard");
+            } else {
+              navigate("/owner");
+            }
+          } catch (error: unknown) {
+            if (
+              axios.isAxiosError(error) &&
+              error.response?.status === 404
+            ) {
+              navigate("/owner");
+            } else {
+              throw error;
+            }
           }
 
           break;

@@ -35,7 +35,7 @@ export function CreateRestaurant() {
             "/restaurants",
           );
 
-        const restaurants = response.data.data;
+       const restaurants = response.data.data ?? [];
 
         const ranges: string[] = Array.from(
           new Set(

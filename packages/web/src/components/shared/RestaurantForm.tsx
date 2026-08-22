@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import {
   Image as ImageIcon,
   Loader2,
@@ -98,6 +98,22 @@ export function RestaurantForm({
     ...initialValues,
   });
 
+  const initialValuesKey = useMemo(
+    () =>
+      initialValues
+        ? JSON.stringify({
+          name: initialValues.name ?? "",
+          description: initialValues.description ?? "",
+          cuisine_type: initialValues.cuisine_type ?? "",
+          ambiance_tags: initialValues.ambiance_tags ?? [],
+          price_range: initialValues.price_range ?? "",
+          email: initialValues.email ?? "",
+          phone: initialValues.phone ?? "",
+        })
+        : null,
+    [initialValues],
+  );
+
   useEffect(() => {
     if (!initialValues) return;
 
@@ -106,7 +122,7 @@ export function RestaurantForm({
       ...initialValues,
       image: null,
     });
-  }, [initialValues]);
+  }, [initialValuesKey]);
 
   const handleSubmit = async (
     event: React.FormEvent<HTMLFormElement>,

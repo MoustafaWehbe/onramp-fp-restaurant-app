@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import {
   Image as ImageIcon,
   MapPin,
@@ -49,8 +49,10 @@ interface RestaurantPriceData {
 export function RestaurantOwnerPage() {
   const navigate = useNavigate();
 
-  const { restaurantSlug } =
-    useOutletContext<OwnerOutletContext>();
+  const {
+    restaurantSlug,
+    setRestaurantSlug,
+  } = useOutletContext<OwnerOutletContext>();
 
   const [restaurant, setRestaurant] =
     useState<Restaurant | null>(null);
@@ -252,12 +254,11 @@ export function RestaurantOwnerPage() {
         updatedRestaurant.slug &&
         updatedRestaurant.slug !== restaurantSlug
       ) {
-        navigate(
-          `/owner/restaurant/${updatedRestaurant.slug}`,
-          {
-            replace: true,
-          },
-        );
+        setRestaurantSlug(updatedRestaurant.slug);
+
+        navigate("/owner/restaurant", {
+          replace: true,
+        });
       }
     } catch (error) {
       console.error(
@@ -386,21 +387,19 @@ export function RestaurantOwnerPage() {
    * ============================================================
    */
 
-  const initialFormValues: Partial<RestaurantFormData> =
-    {
+  const initialFormValues = useMemo(
+    (): Partial<RestaurantFormData> => ({
       name: restaurant.name ?? "",
       image: null,
-      description:
-        restaurant.description ?? "",
-      cuisine_type:
-        restaurant.cuisine_type ?? "",
-      ambiance_tags:
-        restaurant.ambiance_tags ?? [],
-      price_range:
-        restaurant.price_range ?? "",
+      description: restaurant.description ?? "",
+      cuisine_type: restaurant.cuisine_type ?? "",
+      ambiance_tags: restaurant.ambiance_tags ?? [],
+      price_range: restaurant.price_range ?? "",
       email: restaurant.email ?? "",
       phone: restaurant.phone ?? "",
-    };
+    }),
+    [restaurant],
+  );
 
   /*
    * ============================================================
@@ -559,16 +558,16 @@ export function RestaurantOwnerPage() {
 
                 {restaurant.branch_count !==
                   undefined && (
-                  <div>
-                    <p className="font-serif text-2xl font-semibold text-[#292524]">
-                      {restaurant.branch_count}
-                    </p>
+                    <div>
+                      <p className="font-serif text-2xl font-semibold text-[#292524]">
+                        {restaurant.branch_count}
+                      </p>
 
-                    <p className="mt-1 text-[9px] font-semibold uppercase tracking-[0.16em] text-[#A8A29E]">
-                      Branches
-                    </p>
-                  </div>
-                )}
+                      <p className="mt-1 text-[9px] font-semibold uppercase tracking-[0.16em] text-[#A8A29E]">
+                        Branches
+                      </p>
+                    </div>
+                  )}
               </div>
             </div>
 
@@ -612,32 +611,32 @@ export function RestaurantOwnerPage() {
 
             {(restaurant.email ||
               restaurant.phone) && (
-              <>
-                <div className="border-t border-[#EEE9E2]" />
+                <>
+                  <div className="border-t border-[#EEE9E2]" />
 
-                <div>
-                  <p className="mb-4 text-[10px] font-semibold uppercase tracking-[0.22em] text-[#A8A29E]">
-                    Contact
-                  </p>
+                  <div>
+                    <p className="mb-4 text-[10px] font-semibold uppercase tracking-[0.22em] text-[#A8A29E]">
+                      Contact
+                    </p>
 
-                  <div className="flex flex-col gap-3 sm:flex-row sm:gap-8">
-                    {restaurant.email && (
-                      <div className="flex items-center gap-2 text-sm text-[#78716C]">
-                        <Mail className="h-4 w-4 text-[#A8A29E]" />
-                        {restaurant.email}
-                      </div>
-                    )}
+                    <div className="flex flex-col gap-3 sm:flex-row sm:gap-8">
+                      {restaurant.email && (
+                        <div className="flex items-center gap-2 text-sm text-[#78716C]">
+                          <Mail className="h-4 w-4 text-[#A8A29E]" />
+                          {restaurant.email}
+                        </div>
+                      )}
 
-                    {restaurant.phone && (
-                      <div className="flex items-center gap-2 text-sm text-[#78716C]">
-                        <Phone className="h-4 w-4 text-[#A8A29E]" />
-                        {restaurant.phone}
-                      </div>
-                    )}
+                      {restaurant.phone && (
+                        <div className="flex items-center gap-2 text-sm text-[#78716C]">
+                          <Phone className="h-4 w-4 text-[#A8A29E]" />
+                          {restaurant.phone}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              </>
-            )}
+                </>
+              )}
           </div>
         )}
       </Card>

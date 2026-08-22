@@ -8,6 +8,7 @@ import { apiClient } from "@/lib/api-client";
 export interface OwnerOutletContext {
     restaurantId: string | null;
     restaurantSlug: string | null;
+    setRestaurantSlug: (slug: string) => void;
     restaurantName: string | null;
     reviewCount: number;
     averageRating: number;
@@ -131,6 +132,7 @@ export function OwnerLayout() {
                             context={{
                                 restaurantId,
                                 restaurantSlug,
+                                setRestaurantSlug,
                                 restaurantName,
                                 reviewCount,
                                 averageRating,
