@@ -12,7 +12,7 @@ import { embeddingsQueue } from "@fp_restaurant/shared";
 
 interface CreateMenuItemInput {
   name: string;
-  description?: string | null;
+  description: string;
   base_price: number;
   display_order?: number;
   is_active?: boolean;
@@ -22,14 +22,14 @@ interface CreateMenuItemInput {
 interface CreateMenuInput {
   restaurantSlug: string;
   name: string;
-  description?: string | null;
+  description: string;
   is_active?: boolean;
   items?: CreateMenuItemInput[];
 }
 
 interface UpdateMenuInput {
   name?: string;
-  description?: string | null;
+  description?: string;
   is_active?: boolean;
 }
 
@@ -43,7 +43,7 @@ interface BranchMenuItemOverrideInput {
 
 interface UpdateMenuItemInput {
   name?: string;
-  description?: string | null;
+  description?: string;
   base_price?: number;
   image?: UploadableFile | null;
   display_order?: number;
@@ -85,7 +85,7 @@ export const menuService = {
           return {
             menuItemId,
             name: item.name,
-            description: item.description ?? null,
+            description: item.description,
             base_price: item.base_price,
             imageUrl,
             display_order: item.display_order ?? index,
@@ -110,7 +110,7 @@ export const menuService = {
           {
             restaurantId: restaurant.id,
             name: input.name,
-            description: input.description ?? null,
+            description: input.description,
             is_active: input.is_active ?? true,
           },
           {
@@ -597,6 +597,14 @@ export const menuService = {
       throw createError("Sequelize instance is not initialized");
     }
 
+    if(!item.description || !item.description.trim()) {
+      throw createError("Menu item description is required", 400);
+    }
+
+    if (!item.name || !item.name.trim()) {
+      throw createError("Menu item name is required", 400);
+    }
+
     const menuItemId = crypto.randomUUID();
 
     let uploadedImageUrl: string | null = null;
@@ -656,7 +664,7 @@ export const menuService = {
             id: menuItemId,
             menuId: menu.id,
             name: item.name,
-            description: item.description ?? null,
+            description: item.description,
             base_price: item.base_price,
             image_url: uploadedImageUrl,
             display_order: displayOrder,
@@ -753,6 +761,9 @@ export const menuService = {
       }
 
       if (input.description !== undefined) {
+        if(!input.description.trim()) {
+          throw createError("Menu item description is required", 400);
+        }
         menuItem.description = input.description;
       }
 

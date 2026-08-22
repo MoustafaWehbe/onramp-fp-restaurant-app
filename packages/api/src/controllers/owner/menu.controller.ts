@@ -1,4 +1,4 @@
-import type { Express, Request, Response, NextFunction } from "express";
+import type { Request, Response, NextFunction } from "express";
 import { menuService } from "../../services/owner/menu.service";
 import { UploadableFile } from "../../services/storage/storage.service";
 
