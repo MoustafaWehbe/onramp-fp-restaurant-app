@@ -1,6 +1,9 @@
 import { Worker } from "bullmq";
 import { getRedisConnection, QUEUE_NAMES } from "@fp_restaurant/shared";
 import { processor } from "./processor.js";
+import { initDatabase, sequelize } from "./lib/database.js";
+
+await initDatabase();
 
 const connection = getRedisConnection();
 
@@ -39,6 +42,7 @@ async function shutdown(signal: string): Promise<void> {
 
     try {
         await worker.close();
+        await sequelize.close();
         console.info("[embedding-worker] Worker shut down successfully");
         process.exit(0);
     } catch (error) {
