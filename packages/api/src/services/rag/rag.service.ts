@@ -107,11 +107,6 @@ export async function answerQuestion(
     const plan =
         await analyzeQuery(question);
 
-    console.log(
-        "[RAG] Retrieval plan:",
-        JSON.stringify(plan, null, 2)
-    );
-
     /*
      * ---------------------------------------------------------
      * 2. Execute retrieval
@@ -122,7 +117,7 @@ export async function answerQuestion(
             plan,
             question
         );
-
+  
     /*
      * ---------------------------------------------------------
      * 3. Build clean LLM context
@@ -132,7 +127,7 @@ export async function answerQuestion(
         buildContext(
             retrievalResults as any
         );
-
+   
     /*
      * ---------------------------------------------------------
      * 4. Generate answer

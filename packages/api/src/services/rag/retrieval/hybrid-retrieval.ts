@@ -14,24 +14,35 @@ export interface HybridRetrievalResult {
   entityType: string;
   entityId: string;
 
-   //Database result when the entity matched the structured query.
+  //Database result when the entity matched the structured query.
   databaseResult?: unknown;
 
-   // Semantic result when the entity matched the vector search.   
+  // Semantic result when the entity matched the vector search.   
   semanticResult?: SemanticRetrievalResult;
 
-    //Lower distance = better semantic match.
-   // null means that the result came only from database retrieval.
+  //Lower distance = better semantic match.
+  // null means that the result came only from database retrieval.
   semanticDistance: number | null;
 
-   //Indicates where the result came from.
+  //Indicates where the result came from.
   source: "database" | "semantic" | "hybrid";
 }
 
 function getRestaurantId(
   restaurant: any
 ): string | undefined {
-  return restaurant?.id;
+  const id = restaurant?.id;
+
+  return id === undefined || id === null
+    ? undefined
+    : String(id);
+}
+
+function buildKey(
+  entityType: string,
+  entityId: string
+): string {
+  return `${entityType.toLowerCase()}:${entityId}`;
 }
 
 export async function hybridRetrieval(
@@ -52,7 +63,7 @@ export async function hybridRetrieval(
       ),
     ]);
 
- 
+
   const databaseResults =
     databaseResponse.rows ?? [];
 
@@ -68,34 +79,34 @@ export async function hybridRetrieval(
     const restaurantId =
       getRestaurantId(restaurant);
 
-    if (!restaurantId) {
+    if (restaurantId === undefined) {
       continue;
     }
 
     databaseById.set(
-      restaurantId,
+      buildKey("restaurant", restaurantId),
       restaurant
     );
   }
 
- 
+
   const results = new Map<
     string,
     HybridRetrievalResult
   >();
 
-    //Add database candidates
- 
+  //Add database candidates
+
   for (const restaurant of databaseResults) {
     const restaurantId =
       getRestaurantId(restaurant);
 
-    if (!restaurantId) {
+    if (restaurantId === undefined) {
       continue;
     }
 
     const key =
-      `restaurant:${restaurantId}`;
+      buildKey("restaurant", restaurantId);
 
     results.set(key, {
       entityType: "restaurant",
@@ -106,7 +117,7 @@ export async function hybridRetrieval(
     });
   }
 
-   // Add semantic candidates
+  // Add semantic candidates
 
   for (const semanticResult of semanticResults) {
     const {
@@ -116,29 +127,34 @@ export async function hybridRetrieval(
     } = semanticResult;
 
     const key =
-      `${entityType}:${entityId}`;
+      buildKey(entityType, entityId);
 
-    //Restaurant semantic result that also matched structured retrieval.
-    
     if (
-      entityType === "restaurant" &&
-      databaseById.has(entityId)
-    ) {
-      const existing = results.get(key);
+      entityType.toLowerCase() === "restaurant" &&
+      databaseById.has(key)
+    )
 
-      if (existing) {
-        existing.semanticResult =
-          semanticResult;
+      //Restaurant semantic result that also matched structured retrieval.
 
-        existing.semanticDistance =
-          distance;
+      if (
+        entityType === "restaurant" &&
+        databaseById.has(entityId)
+      ) {
+        const existing = results.get(key);
 
-        existing.source =
-          "hybrid";
+        if (existing) {
+          existing.semanticResult =
+            semanticResult;
+
+          existing.semanticDistance =
+            distance;
+
+          existing.source =
+            "hybrid";
+        }
+
+        continue;
       }
-
-      continue;
-    }
 
     /*
      * Semantic-only result.

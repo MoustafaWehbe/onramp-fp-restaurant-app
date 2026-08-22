@@ -117,15 +117,17 @@ export const retrievalRepository = {
 
         const [results] = await sequelize.query(
             `
-      SELECT
-        id,
-        content,
-        metadata,
-        embedding <=> :embedding AS distance
-      FROM search_embeddings
-      ORDER BY embedding <=> :embedding
-      LIMIT :limit
-      `,
+        SELECT
+            id,
+            entity_type AS "entityType",
+            entity_id AS "entityId",
+            content,
+            metadata,
+            embedding <=> :embedding AS distance
+        FROM search_embeddings
+        ORDER BY embedding <=> :embedding
+        LIMIT :limit
+        `,
             {
                 replacements: {
                     embedding: vector,
@@ -213,7 +215,11 @@ export const retrievalRepository = {
             };
         }
 
-
+        if (filters.menuDescription) {
+            menuWhere.description = {
+                [Op.iLike]: `%${filters.menuDescription}%`,
+            };
+        }
 
         if (filters.menuItemName) {
             menuItemWhere.name = {
@@ -221,6 +227,11 @@ export const retrievalRepository = {
             };
         }
 
+        if (filters.menuItemDescription) {
+            menuItemWhere.description = {
+                [Op.iLike]: `%${filters.menuItemDescription}%`,
+            };
+        }
 
         const priceConditions: any[] = [];
 
@@ -244,11 +255,11 @@ export const retrievalRepository = {
             priceConditions.push(
                 sequelize.where(
                     Sequelize.literal(`
-            COALESCE(
-              "Branches->BranchMenuItems"."custom_price",
-              "Branches->BranchMenuItems->MenuItem"."base_price"
-            )
-          `),
+                    COALESCE(
+                            "branches->branchMenuItems"."custom_price",
+                            "branches->branchMenuItems->menuItem"."base_price"
+                        )
+                    `),
                     {
                         [Op.lte]: filters.maxItemPrice,
                     }

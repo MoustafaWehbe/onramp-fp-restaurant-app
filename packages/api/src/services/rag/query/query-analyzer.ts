@@ -7,10 +7,13 @@ const OLLAMA_BASE_URL =
 
 const OLLAMA_LLM_MODEL =
   process.env.OLLAMA_LLM_MODEL ?? "llama3.2";
-
-const OLLAMA_TIMEOUT_MS = Number(
-  process.env.OLLAMA_TIMEOUT_MS ?? 60_000,
+const parsedTimeoutMs = Number(
+  process.env.OLLAMA_TIMEOUT_MS,
 );
+const OLLAMA_TIMEOUT_MS =
+  Number.isFinite(parsedTimeoutMs) && parsedTimeoutMs > 0
+    ? parsedTimeoutMs
+    : 60_000;
 
 const ollama = new Ollama({
   host: OLLAMA_BASE_URL,
