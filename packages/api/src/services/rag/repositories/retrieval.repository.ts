@@ -178,9 +178,20 @@ export const retrievalRepository = {
         }
 
         if (filters.ambianceTags?.length) {
-            restaurantWhere.ambiance_tags = {
-                [Op.overlap]: filters.ambianceTags,
-            };
+            restaurantWhere[Op.and] = [
+                ...(restaurantWhere[Op.and] ?? []),
+                ...filters.ambianceTags.map((tag) =>
+                    Sequelize.literal(`
+                EXISTS (
+                    SELECT 1
+                    FROM json_array_elements_text(
+                        "Restaurant"."ambiance_tags"
+                    ) AS ambiance_tag
+                    WHERE ambiance_tag = ${sequelize.escape(tag)}
+                )
+            `)
+                ),
+            ];
         }
 
         if (filters.price) {
