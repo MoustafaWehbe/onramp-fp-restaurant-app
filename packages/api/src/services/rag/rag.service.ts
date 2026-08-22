@@ -32,8 +32,34 @@ export type RagChunkHandler = (
     chunk: string
 ) => void | Promise<void>;
 
+export type RagProgressEvent =
+    | {
+        type: "query_analyzing";
+    }
+    | {
+        type: "retrieving";
+    }
+    | {
+        type: "context_ready";
+    }
+    | {
+        type: "answer_chunk";
+        content: string;
+    }
+    | {
+        type: "completed";
+    }
+    | {
+        type: "error";
+        message: string;
+    };
+
 export interface RagAnswerOptions {
+    signal?: AbortSignal;
     onChunk?: RagChunkHandler;
+    onEvent?: (
+        event: RagProgressEvent,
+    ) => void | Promise<void>;
 }
 
 export interface RagAnswerResult {
@@ -44,49 +70,53 @@ export interface RagAnswerResult {
 }
 
 async function createQueryEmbedding(
-    question: string
+  question: string,
+  signal?: AbortSignal,
 ): Promise<number[]> {
-    return generateEmbedding(question);
+  return generateEmbedding(question,signal);
 }
 
 async function executeRetrieval(
-    plan: ValidatedRetrievalPlan,
-    question: string
+  plan: ValidatedRetrievalPlan,
+  question: string,
+  signal?: AbortSignal,
 ) {
-    switch (plan.retrievalType) {
-        case "database":
-            return databaseRetrieval(plan);
+  switch (plan.retrievalType) {
+    case "database":
+      return databaseRetrieval(plan);
 
-        case "semantic": {
-            const embedding =
-                await createQueryEmbedding(
-                    question
-                );
+    case "semantic": {
+      const embedding =
+        await createQueryEmbedding(
+          question,
+          signal,
+        );
 
-            return semanticRetrieval(
-                embedding
-            );
-        }
-
-        case "hybrid": {
-            const embedding =
-                await createQueryEmbedding(
-                    question
-                );
-
-            return hybridRetrieval(
-                plan,
-                embedding
-            );
-        }
-
-        default:
-            throw new Error(
-                `Unsupported retrieval strategy: ${String(
-                    plan.retrievalType
-                )}`
-            );
+      return semanticRetrieval(
+        embedding,
+      );
     }
+
+    case "hybrid": {
+      const embedding =
+        await createQueryEmbedding(
+          question,
+          signal,
+        );
+
+      return hybridRetrieval(
+        plan,
+        embedding,
+      );
+    }
+
+    default:
+      throw new Error(
+        `Unsupported retrieval strategy: ${String(
+          plan.retrievalType,
+        )}`,
+      );
+  }
 }
 
 export async function answerQuestion(
@@ -98,57 +128,52 @@ export async function answerQuestion(
             "Question cannot be empty"
         );
     }
+    await options.onEvent?.({
+        type: "query_analyzing",
+    });
 
-    /*
-     * ---------------------------------------------------------
-     * 1. Analyze the question
-     * ---------------------------------------------------------
-     */
     const plan =
-        await analyzeQuery(question);
+        await analyzeQuery(question,options.signal);
 
-    /*
-     * ---------------------------------------------------------
-     * 2. Execute retrieval
-     * ---------------------------------------------------------
-     */
+    await options.onEvent?.({
+        type: "retrieving",
+    });
+
     const retrievalResults =
         await executeRetrieval(
             plan,
-            question
+            question,
+            options.signal,
         );
-  
-    /*
-     * ---------------------------------------------------------
-     * 3. Build clean LLM context
-     * ---------------------------------------------------------
-     */
+
     const context =
         buildContext(
             retrievalResults as any
         );
-   
-    /*
-     * ---------------------------------------------------------
-     * 4. Generate answer
-     *
-     * The generator streams chunks through the callback.
-     * There is intentionally no WebSocket code here.
-     * ---------------------------------------------------------
-     */
+
+    await options.onEvent?.({
+        type: "context_ready",
+    });
+
     const generationResult =
         await generateAnswer({
             question,
             context,
-            onChunk:
-                options.onChunk,
+            signal: options.signal,
+            onChunk: async (chunk) => {
+                await options.onEvent?.({
+                    type: "answer_chunk",
+                    content: chunk,
+                });
+
+                await options.onChunk?.(chunk);
+            },
         });
 
-    /*
-     * ---------------------------------------------------------
-     * 5. Return complete result
-     * ---------------------------------------------------------
-     */
+    await options.onEvent?.({
+        type: "completed",
+    });
+
     return {
         answer:
             generationResult.answer,
