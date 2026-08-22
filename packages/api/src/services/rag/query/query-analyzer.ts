@@ -74,7 +74,7 @@ AVAILABLE FILTERS
 
 Restaurant / Branch:
 - city: array of location strings
-- cuisine: cuisine type
+- cuisine: array of cuisine strings
 - price: "Budget" | "Average" | "Expensive" | "Luxury"
 - minRating: number from 0 to 5
 - maxRating: number from 0 to 5
@@ -160,7 +160,7 @@ Output:
   "retrievalType": "database",
   "filters": {
     "city": ["Beirut"],
-    "cuisine": "Lebanese",
+    "cuisine": ["Lebanese"],
     "price": "Budget",
     "isOpenNow": true
   }
@@ -214,7 +214,7 @@ RULES
 - Preserve the user's original question exactly in "query".
 - Never invent filters, locations, restaurants, prices, ratings or other data.
 - Only extract information stated or clearly implied by the user.
-- city and ambianceTags MUST be arrays.
+- city, cuisine and ambianceTags MUST be arrays.
 - Ratings must be between 0 and 5.
 - Menu-item prices must be >= 0.
 - minItemPrice cannot be greater than maxItemPrice.
@@ -240,44 +240,55 @@ RULES
 async function callOllama(
   query: string,
 ): Promise<unknown> {
-  let timeoutId: ReturnType<typeof setTimeout> | undefined;
-
   const timer = `ollama-query-analysis-${Date.now()}`;
   console.time(timer);
 
-  const timeout = new Promise<never>((_, reject) => {
-    timeoutId = setTimeout(() => {
-      reject(
-        new Error(
-          `Ollama query analysis timed out after ${OLLAMA_TIMEOUT_MS}ms`,
-        ),
-      );
-    }, OLLAMA_TIMEOUT_MS);
-  });
+  const controller = new AbortController();
 
-  const request = ollama.chat({
-    model: OLLAMA_LLM_MODEL,
-    messages: [
-      {
-        role: "system",
-        content: SYSTEM_PROMPT,
-      },
-      {
-        role: "user",
-        content: query,
-      },
-    ],
-    stream: false,
-    format: "json",
-  });
+  const timeoutId = setTimeout(() => {
+    controller.abort();
+  }, OLLAMA_TIMEOUT_MS);
 
   try {
-    const response = await Promise.race([
-      request,
-      timeout,
-    ]);
+    const response = await fetch(
+      `${OLLAMA_BASE_URL}/api/chat`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: OLLAMA_LLM_MODEL,
+          messages: [
+            {
+              role: "system",
+              content: SYSTEM_PROMPT,
+            },
+            {
+              role: "user",
+              content: query,
+            },
+          ],
+          stream: false,
+          format: "json",
+        }),
+        signal: controller.signal,
+      },
+    );
 
-    const content = response.message?.content;
+    if (!response.ok) {
+      throw new Error(
+        `Ollama request failed with status ${response.status}`,
+      );
+    }
+
+    const data = (await response.json()) as {
+      message?: {
+        content?: string;
+      };
+    };
+
+    const content = data.message?.content;
 
     if (!content) {
       throw new Error(
@@ -292,11 +303,16 @@ async function callOllama(
         "Ollama returned malformed JSON",
       );
     }
-  } finally {
-    if (timeoutId) {
-      clearTimeout(timeoutId);
+  } catch (error) {
+    if (controller.signal.aborted) {
+      throw new Error(
+        `Ollama query analysis timed out after ${OLLAMA_TIMEOUT_MS}ms`,
+      );
     }
 
+    throw error;
+  } finally {
+    clearTimeout(timeoutId);
     console.timeEnd(timer);
   }
 }

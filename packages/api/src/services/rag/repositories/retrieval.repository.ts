@@ -15,10 +15,17 @@ type RetrievalFilters = NonNullable<
 >;
 
 const FILTER_LEVELS = {
+    restaurant: [
+        "cuisine",
+        "price",
+        "minRating",
+        "maxRating",
+        "ambianceTags",
+    ] as const,
+
     branch: [
         "city",
         "isOpenNow",
-        "ambianceTags",
     ] as const,
 
     branchMenuItem: [
@@ -171,10 +178,11 @@ export const retrievalRepository = {
         }
 
         if (filters.ambianceTags?.length) {
-            branchWhere.ambiance_tags = {
+            restaurantWhere.ambiance_tags = {
                 [Op.overlap]: filters.ambianceTags,
             };
         }
+
         if (filters.price) {
             restaurantWhere.price_range = filters.price;
         }
