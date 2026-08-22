@@ -31,6 +31,7 @@ import { OwnerBranchDetailsPage } from "@/pages/onwer/OwnerBranchDetails";
 import { OwnerMenusPage } from "@/pages/onwer/OwnerMenusPage";
 import { AdminLayout } from "@/layouts/AdminLayout";
 import { RestaurantClaimsPage } from "@/pages/admin/AdminRestaurantClaimsPage";
+import { CreateRestaurant } from "@/pages/onwer/CreateRestaurant";
 import { RoleRoute } from "./RoleRoute";
 
 
@@ -99,17 +100,25 @@ export function AppRoutes() {
               path="/owner/menus"
               element={<OwnerMenusPage />}
             />
-          </Route>
-        </Route>
 
-        <Route element={<RoleRoute allowedRoles={["admin"]} />}>
-          <Route path="/admin" element={<AdminLayout />}>
-            <Route path="/admin/restaurant-claims" element= {<RestaurantClaimsPage />}/>
-            <Route index element={<AdminDashboard />}></Route>
           </Route>
         </Route>
-  
+        <Route element={<RoleRoute allowedRoles={["owner"]} />}>
+          <Route
+            path="/owner/create-restaurant"
+            element={<CreateRestaurant />}
+          />
+        </Route>
       </Route>
+      {/*AdminRoutes*/}
+      <Route element={<RoleRoute allowedRoles={["admin"]} />}>
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route path="/admin/restaurant-claims" element={<RestaurantClaimsPage />} />
+          <Route index element={<AdminDashboard />}></Route>
+        </Route>
+      </Route>
+
+
       <Route path="*" element={<NotFound />} />
 
 

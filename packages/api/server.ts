@@ -15,7 +15,7 @@ async function start(): Promise<void> {
 
     await initializeDatabase();
 
-    app.listen(PORT, () => {
+    app.listen(PORT, "0.0.0.0", () => {
       console.info(`API server running on http://localhost:${PORT}`);
       console.info(`Health check: http://localhost:${PORT}/health`);
     });
