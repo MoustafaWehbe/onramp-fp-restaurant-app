@@ -9,7 +9,6 @@ import { useAuth } from "../../hooks/useAuth";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
-import { getErrorMessage } from "../../lib/error-handler";
 import {
   Card,
   CardContent,
@@ -18,6 +17,7 @@ import {
   CardHeader,
   CardTitle,
 } from "../../components/ui/card";
+import axios from "axios";
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email"),
@@ -60,9 +60,40 @@ export function Login() {
           navigate("/admin/restaurant-claims");
           break;
 
-        case "owner":
-          navigate("/owner");
+        case "owner": {
+          try {
+            const claimResponse = await apiClient.get(
+              "/restaurant-claims",
+            );
+
+            const claim = claimResponse.data.data;
+
+            if (
+              claim.status === "approved" &&
+              claim.restaurantId === null
+            ) {
+              navigate("/owner/create-restaurant");
+            } else if (
+              claim.status === "completed" &&
+              claim.restaurantId !== null
+            ) {
+              navigate("/owner/dashboard");
+            } else {
+              navigate("/owner");
+            }
+          } catch (error: unknown) {
+            if (
+              axios.isAxiosError(error) &&
+              error.response?.status === 404
+            ) {
+              navigate("/owner");
+            } else {
+              throw error;
+            }
+          }
+
           break;
+        }
 
         default:
           navigate("/home");
