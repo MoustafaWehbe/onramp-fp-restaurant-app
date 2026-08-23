@@ -5,9 +5,13 @@ import type { ValidatedRetrievalPlan } from "./query-schema";
 const OLLAMA_BASE_URL =
   process.env.OLLAMA_BASE_URL ?? "http://localhost:11434";
 
-const OLLAMA_LLM_MODEL = process.env.OLLAMA_LLM_MODEL ?? "llama3.2";
+const OLLAMA_LLM_MODEL =
+  process.env.OLLAMA_LLM_MODEL ?? "llama3.2";
 
-const parsedTimeoutMs = Number(process.env.OLLAMA_TIMEOUT_MS);
+const parsedTimeoutMs = Number(
+  process.env.OLLAMA_TIMEOUT_MS,
+);
+
 const OLLAMA_TIMEOUT_MS =
   Number.isFinite(parsedTimeoutMs) && parsedTimeoutMs > 0
     ? parsedTimeoutMs
@@ -17,17 +21,12 @@ const MAX_ATTEMPTS = 2;
 
 function createAbortableFetch(
   timeoutMs: number,
-  externalSignal: AbortSignal,
+  externalSignal?: AbortSignal,
 ): typeof fetch {
-
-  return async (
-    input,
-    init = {},
-  ) => {
-
+  return async (input, init = {}) => {
     const controller = new AbortController();
 
-    const timeout = setTimeout(() => {
+    const timeoutId = setTimeout(() => {
       controller.abort(
         new Error("Ollama request timeout"),
       );
@@ -38,7 +37,6 @@ function createAbortableFetch(
         externalSignal?.reason,
       );
     };
-
 
     if (externalSignal) {
       if (externalSignal.aborted) {
@@ -56,34 +54,21 @@ function createAbortableFetch(
       }
     }
 
-
     try {
-
       return await fetch(input, {
         ...init,
         signal: controller.signal,
       });
-
     } finally {
-
-      clearTimeout(timeout);
+      clearTimeout(timeoutId);
 
       externalSignal?.removeEventListener(
         "abort",
         abortHandler,
       );
-
     }
   };
 }
-
-const ollama = new Ollama({
-  host: OLLAMA_BASE_URL,
-
-  fetch: createAbortableFetch(
-    OLLAMA_TIMEOUT_MS,
-  ),
-});
 
 const SYSTEM_PROMPT = `
 You are Platera's query planner.
@@ -96,6 +81,7 @@ NEVER generate restaurant results.
 NEVER explain your reasoning.
 
 Your output must be ONLY a valid JSON object.
+
 
 
 Platera can answer questions about:
@@ -111,12 +97,14 @@ Platera can answer questions about:
 - restaurant recommendations
 
 
+
 If the question is unrelated to restaurants, return ONLY:
 
 {
   "status": "irrelevant",
   "query": "<original question>"
 }
+
 
 
 For relevant questions return:
@@ -131,7 +119,10 @@ For relevant questions return:
 
 
 
+
+
 RETRIEVAL TYPES
+
 
 
 DATABASE RETRIEVAL:
@@ -153,6 +144,7 @@ Examples of database fields:
 - item prices
 
 
+
 Examples:
 
 "Find Italian restaurants in Beirut"
@@ -164,6 +156,8 @@ Examples:
 "Show restaurants with pizza on the menu"
 
 "Find restaurants with a Japanese menu"
+
+
 
 
 
@@ -184,6 +178,7 @@ Semantic retrieval should be used for:
 - recommendations based on taste
 
 
+
 Examples:
 
 "I want a cozy place for dinner"
@@ -199,6 +194,8 @@ Examples:
 "I want seafood like the ones you find near the sea"
 
 "I want a restaurant with a relaxing atmosphere"
+
+
 
 
 
@@ -223,6 +220,7 @@ semanticQuery:
 "romantic Italian restaurant atmosphere"
 
 
+
 "Find affordable restaurants in Hamra that are good for families"
 
 Use:
@@ -238,7 +236,10 @@ semanticQuery:
 
 
 
+
+
 AVAILABLE FILTERS
+
 
 
 Restaurant / Branch:
@@ -263,10 +264,12 @@ Restaurant / Branch:
   array of exact stored ambiance tags
 
 
+
 Menu:
 
 - menuName:
   string
+
 
 
 Menu item:
@@ -282,7 +285,10 @@ Menu item:
 
 
 
+
+
 IMPORTANT SEMANTIC PRIORITY RULES
+
 
 
 Descriptions are NOT database filters.
@@ -299,7 +305,9 @@ The following should use semantic retrieval:
 - experiences
 
 
+
 Examples:
+
 
 
 User:
@@ -312,6 +320,8 @@ Output:
   "semanticQuery":
   "restaurants serving light healthy meals"
 }
+
+
 
 
 
@@ -328,6 +338,8 @@ Output:
 
 
 
+
+
 User:
 "a warm cozy place for winter dinner"
 
@@ -338,6 +350,8 @@ Output:
   "semanticQuery":
   "warm cozy restaurant suitable for winter dinner"
 }
+
+
 
 
 
@@ -356,6 +370,7 @@ Examples:
 }
 
 
+
 "restaurants in Jal El Deeb"
 
 {
@@ -363,11 +378,14 @@ Examples:
 }
 
 
+
 "restaurants in Hamra or Kaslik"
 
 {
  "city": ["Hamra", "Kaslik"]
 }
+
+
 
 
 
@@ -384,6 +402,7 @@ Examples:
 }
 
 
+
 "Italian or Japanese restaurants"
 
 {
@@ -392,7 +411,10 @@ Examples:
 
 
 
+
+
 AMBIANCE RULES
+
 
 
 Use ambianceTags ONLY when the user explicitly mentions a
@@ -412,11 +434,15 @@ database:
 
 
 
+
+
 However, if the user describes an experience, occasion, or feeling,
 use semantic retrieval.
 
 
+
 Examples:
+
 
 
 "restaurants suitable for a first date"
@@ -430,6 +456,8 @@ semantic:
 
 
 
+
+
 "somewhere intimate for an anniversary"
 
 semantic:
@@ -438,6 +466,8 @@ semantic:
  "semanticQuery":
  "intimate restaurant for an anniversary"
 }
+
+
 
 
 
@@ -455,6 +485,8 @@ hybrid:
 
 
 
+
+
 PRICE NORMALIZATION
 
 cheap, inexpensive, affordable -> "Budget"
@@ -464,6 +496,8 @@ average, moderate, mid-range -> "Average"
 expensive, pricey -> "Expensive"
 
 luxury, high-end, upscale -> "Luxury"
+
+
 
 
 
@@ -494,22 +528,34 @@ Your previous response was not valid JSON matching the required schema.
 Return ONLY a single valid JSON object matching the schema above. No
 markdown, no commentary, no explanation — JSON only.`;
 
-
 async function callOllama(
   query: string,
   attempt: number,
   signal?: AbortSignal,
 ): Promise<unknown> {
-
   const timerLabel =
     `ollama-query-analysis-attempt-${attempt}-${Date.now()}`;
 
   console.time(timerLabel);
 
+  
+  const ollama = new Ollama({
+    host: OLLAMA_BASE_URL,
+    fetch: createAbortableFetch(
+      OLLAMA_TIMEOUT_MS,
+      signal,
+    ),
+  });
+
   try {
+    if (signal?.aborted) {
+      throw new Error(
+        "Ollama request aborted because the client disconnected",
+      );
+    }
 
+  
     const response = await ollama.chat({
-
       model: OLLAMA_LLM_MODEL,
 
       messages: [
@@ -527,15 +573,13 @@ async function callOllama(
         },
       ],
 
-
       stream: false,
 
       format: "json",
     });
 
-
-    const content = response.message?.content;
-
+    const content =
+      response.message?.content;
 
     if (!content) {
       throw new Error(
@@ -543,48 +587,34 @@ async function callOllama(
       );
     }
 
-
     try {
-
       return JSON.parse(content);
-
     } catch {
-
       throw new Error(
         `Ollama returned malformed JSON (attempt ${attempt}): ${content.slice(0, 200)}`,
       );
     }
-
-
   } catch (error) {
-
-
-    if (
-      signal?.aborted
-    ) {
+   
+    if (signal?.aborted) {
       throw new Error(
         "Ollama request aborted because the client disconnected",
       );
     }
 
-
+   
     if (
       error instanceof Error &&
-      error.name === "AbortError"
+      error.message === "Ollama request timeout"
     ) {
       throw new Error(
         `Ollama query analysis timed out after ${OLLAMA_TIMEOUT_MS}ms`,
       );
     }
 
-
     throw error;
-
-
   } finally {
-
     console.timeEnd(timerLabel);
-
   }
 }
 
@@ -598,18 +628,44 @@ export async function analyzeQuery(
     throw new Error("Query cannot be empty");
   }
 
+  if (signal?.aborted) {
+    throw new Error(
+      "Query analysis aborted because the client disconnected",
+    );
+  }
+
   let lastError: unknown;
 
-  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+  for (
+    let attempt = 1;
+    attempt <= MAX_ATTEMPTS;
+    attempt++
+  ) {
+    /*
+     * Never start another retry after the client disconnected.
+     */
+    if (signal?.aborted) {
+      throw new Error(
+        "Query analysis aborted because the client disconnected",
+      );
+    }
+
     try {
-      const llmOutput = await callOllama(normalizedQuery, attempt, signal);
+      const llmOutput =
+        await callOllama(
+          normalizedQuery,
+          attempt,
+          signal,
+        );
 
       if (
         typeof llmOutput !== "object" ||
         llmOutput === null ||
         Array.isArray(llmOutput)
       ) {
-        throw new Error("Ollama query analysis must return a JSON object");
+        throw new Error(
+          "Ollama query analysis must return a JSON object",
+        );
       }
 
       return retrievalPlanSchema.parse({
@@ -617,11 +673,21 @@ export async function analyzeQuery(
         query: normalizedQuery,
       });
     } catch (error) {
+
+      if (signal?.aborted) {
+        throw new Error(
+          "Query analysis aborted because the client disconnected",
+        );
+      }
+
       lastError = error;
+
       if (attempt < MAX_ATTEMPTS) {
         console.warn(
           `analyzeQuery attempt ${attempt} failed, retrying:`,
-          error instanceof Error ? error.message : error,
+          error instanceof Error
+            ? error.message
+            : error,
         );
       }
     }
@@ -629,5 +695,7 @@ export async function analyzeQuery(
 
   throw lastError instanceof Error
     ? lastError
-    : new Error("Ollama query analysis failed after retries");
+    : new Error(
+        "Ollama query analysis failed after retries",
+      );
 }
