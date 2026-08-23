@@ -10,15 +10,17 @@ export function ChatMessage({
   return (
     <div
       className={`
+        w-fit
         max-w-[80%]
         rounded-xl
-        p-3
+        px-4
+        py-2.5
         text-sm
         whitespace-pre-line
-        ${
-          role === "user"
-            ? "ml-auto bg-primary text-white"
-            : "bg-gray-100"
+        break-words
+        ${role === "user"
+          ? "ml-auto bg-primary text-white"
+          : "bg-gray-100"
         }
       `}
     >

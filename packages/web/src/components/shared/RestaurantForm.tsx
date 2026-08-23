@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { TagInput } from "@/components/ui/tag-input";
+import { apiClient } from "@/lib/api-client";
 
 export interface RestaurantFormData {
   name: string;
@@ -54,19 +55,6 @@ const AMBIANCE_SUGGESTIONS = [
   "Lively",
 ];
 
-const CUISINE_OPTIONS = [
-  "Lebanese",
-  "Italian",
-  "French",
-  "Japanese",
-  "Chinese",
-  "Mediterranean",
-  "American",
-  "Mexican",
-  "Indian",
-  "Thai",
-  "International",
-];
 
 interface RestaurantFormProps {
   mode: "create" | "edit";
@@ -98,6 +86,9 @@ export function RestaurantForm({
     ...initialValues,
   });
 
+  const [cuisines, setCuisines] = useState<string[]>([]);
+  const [isLoadingCuisines, setIsLoadingCuisines] = useState(true);
+
   const initialValuesKey = useMemo(
     () =>
       initialValues
@@ -113,6 +104,22 @@ export function RestaurantForm({
         : null,
     [initialValues],
   );
+
+  useEffect(() => {
+    const fetchCuisines = async () => {
+      try {
+        const response = await apiClient.get("/restaurants/cuisines");
+
+        setCuisines(response.data.data);
+      } catch (error) {
+        console.error("Failed to fetch cuisines:", error);
+      } finally {
+        setIsLoadingCuisines(false);
+      }
+    };
+
+    fetchCuisines();
+  }, []);
 
   useEffect(() => {
     if (!initialValues) return;
@@ -204,27 +211,29 @@ export function RestaurantForm({
             <Select
               value={form.cuisine_type}
               onValueChange={(value) =>
-                updateField(
-                  "cuisine_type",
-                  value,
-                )
+                updateField("cuisine_type", value)
               }
+              disabled={isLoadingCuisines || isSaving}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Select cuisine" />
+                <SelectValue
+                  placeholder={
+                    isLoadingCuisines
+                      ? "Loading cuisines..."
+                      : "Select cuisine"
+                  }
+                />
               </SelectTrigger>
 
               <SelectContent>
-                {CUISINE_OPTIONS.map(
-                  (cuisine) => (
-                    <SelectItem
-                      key={cuisine}
-                      value={cuisine}
-                    >
-                      {cuisine}
-                    </SelectItem>
-                  ),
-                )}
+                {cuisines.map((cuisine) => (
+                  <SelectItem
+                    key={cuisine}
+                    value={cuisine}
+                  >
+                    {cuisine}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>

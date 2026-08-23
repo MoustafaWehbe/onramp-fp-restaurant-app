@@ -1,6 +1,6 @@
 import { HeroSearch } from "@/components/shared/HeroSearch";
 import { StatsBar } from "@/components/shared/StatsBar";
-import { FeaturedRestaurants } from "@/components/shared/FeaturedRestaurants";
+import { NewRestaurants } from "@/components/shared/NewRestaurants";
 import { HowItWorks } from "@/components/shared/HowItworks";
 import { OwnerCta } from "@/components/shared/OwnerCta";
 import { RestaurantCta } from "@/components/shared/RestaurantCta";
@@ -10,7 +10,7 @@ export default function Home() {
     <main>
       <HeroSearch />
       <StatsBar />
-      <FeaturedRestaurants />
+      <NewRestaurants />
       <HowItWorks />
         <RestaurantCta/>
       <OwnerCta />

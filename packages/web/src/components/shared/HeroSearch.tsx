@@ -11,53 +11,43 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CuisineFilterChips } from "@/components/shared/CuisineFilterChips";
-import { CITY_OPTIONS, CUISINE_FILTERS } from "@/data/mockRestaurants";
 import { apiClient } from "@/lib/api-client";
 export function HeroSearch() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
   const [query, setQuery] = useState("");
-  const [city, setCity] = useState<string>(CITY_OPTIONS[0]);
+  const [cities, setCities] = useState<string[]>([]);
+  const [cuisines, setCuisines] = useState<string[]>([]);
+  const [city, setCity] = useState("");
   const [activeCuisine, setActiveCuisine] = useState<string | null>(null);
   const [priceRange, setPriceRange] = useState("");
   const [priceRanges, setPriceRanges] = useState<string[]>([]);
 
   useEffect(() => {
-    const fetchPriceRanges = async () => {
+    const fetchFilters = async () => {
       try {
-        const response = await apiClient.get("/restaurants");
+        const [citiesResponse, cuisinesResponse] =
+          await Promise.all([
+            apiClient.get("/restaurants/cities"),
+            apiClient.get("/restaurants/cuisines"),
+          ]);
 
-        const restaurants = response.data.data;
-
-        const ranges: string[] = Array.from(
-          new Set(
-            restaurants
-              .map(
-                (restaurant: { price_range: string }) =>
-                  restaurant.price_range
-              )
-              .filter(Boolean)
-          )
-        );
-
-        setPriceRanges(ranges);
-
+        setCities(citiesResponse.data.data ?? []);
+        setCuisines(cuisinesResponse.data.data ?? []);
       } catch (error) {
-        console.error("Failed to fetch price ranges:", error);
+        console.error("Failed to fetch search filters:", error);
       }
     };
 
-    fetchPriceRanges();
+    fetchFilters();
   }, []);
   // Sync the search UI with the current URL.
   // This is important when HeroSearch is rendered on /restaurants.
   useEffect(() => {
     setQuery(searchParams.get("search") ?? "");
 
-    setCity(
-      searchParams.get("city") ?? CITY_OPTIONS[0]
-    );
+    setCity(searchParams.get("city") ?? "");
 
     setActiveCuisine(
       searchParams.get("cuisine")
@@ -78,7 +68,7 @@ export function HeroSearch() {
       params.set("search", trimmedQuery);
     }
 
-    if (city !== CITY_OPTIONS[0]) {
+    if (city) {
       params.set("city", city);
     }
 
@@ -127,7 +117,6 @@ export function HeroSearch() {
             text-background/90
           "
         >
-          ✨ Trusted by diners worldwide
         </span>
 
         <h1 className="mt-6 max-w-2xl text-5xl font-bold leading-tight tracking-tight sm:text-6xl">
@@ -193,7 +182,7 @@ export function HeroSearch() {
             </SelectTrigger>
 
             <SelectContent>
-              {CITY_OPTIONS.map((option) => (
+              {cities.map((option) => (
                 <SelectItem key={option} value={option}>
                   {option}
                 </SelectItem>
@@ -235,7 +224,7 @@ export function HeroSearch() {
 
         <div className="mt-4">
           <CuisineFilterChips
-            cuisines={CUISINE_FILTERS}
+            cuisines={cuisines}
             activeCuisine={activeCuisine}
             onSelect={handleCuisineSelect}
           />

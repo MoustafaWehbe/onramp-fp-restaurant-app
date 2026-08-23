@@ -90,6 +90,27 @@ export const restaurantController = {
       return next(error)
     }
   },
+
+  getCities: async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const cities = await restaurantService.getCities();
+
+      res.status(200).json({
+        data: cities,
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  getCuisineTypes: async (req: Request, res: Response) => {
+    const cuisines = await restaurantService.getCuisineTypes();
+
+    res.status(200).json({
+      data: cuisines,
+    });
+  },
+
   searchByName: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { name } = req.query;
@@ -107,7 +128,7 @@ export const restaurantController = {
         data: restaurants,
       });
     } catch (error) {
-       return next(error);
+      return next(error);
     }
   },
 };

@@ -6,6 +6,7 @@ import { Menu } from "../models/Menu";
 import { createError } from "../middleware/error-handler";
 import { type Includeable, Op, literal, type WhereOptions } from "sequelize";
 import { Favorite } from "../models/Favorite";
+import { CUISINE_TYPES } from "../constants/cuisine-types";
 
 interface GetRestaurantsOptions {
   page: number,
@@ -143,6 +144,21 @@ export const restaurantService = {
         totalPages: Math.ceil(count / limit),
       },
     };
+  },
+
+  getCities: async () => {
+    const cities = await Branch.findAll({
+      attributes: ["city"],
+      group: ["city"],
+      order: [["city", "ASC"]],
+      raw: true,
+    });
+
+    return cities.map((branch: { city: string }) => branch.city);
+  },
+
+  getCuisineTypes: async () => {
+    return CUISINE_TYPES;
   },
 
   searchRestaurants: async ({
