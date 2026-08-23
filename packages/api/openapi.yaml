@@ -12,20 +12,30 @@ servers:
 tags:
   - name: Auth
     description: Authentication and session management
+
   - name: Restaurants
     description: Restaurant brands and public discovery
+
   - name: Branches
     description: Physical restaurant branches
+
   - name: Reviews
     description: Customer reviews for branches
+
   - name: Images
     description: Branch images
+
   - name: Favorites
     description: Saved restaurants
+
   - name: Restaurant Claims
-    description: Ownership requests
+    description: Restaurant ownership requests
+
+  - name: Owner
+    description: Restaurant owner management
+
   - name: Admin
-    description: Admin moderation and logs
+    description: Admin moderation and management
 
 # ─── Reusable components ───────────────────────────────────────────────────────
 components:
@@ -195,8 +205,11 @@ components:
         updatedAt:
           type: string
           format: date-time
-# ─── Paths ─────────────────────────────────────────────────────────────────────
 paths:
+  # ============================================================================
+  # USER / AUTH
+  # ============================================================================
+
   /auth/register:
     post:
       tags: [Auth]
@@ -234,11 +247,11 @@ paths:
   /auth/login:
     post:
       tags: [Auth]
-      summary: Login and receive auth cookies
+      summary: Login and receive authentication cookies
       operationId: login
       description: >
-        On success, sets two HttpOnly cookies: `accessToken` (15 min) and
-        `refreshToken` (7 days). Include `credentials: "include"` in fetch calls.
+        On successful login, the API sets HttpOnly accessToken and refreshToken
+        cookies.
       requestBody:
         required: true
         content:
@@ -248,11 +261,6 @@ paths:
       responses:
         "200":
           description: Login successful
-          headers:
-            Set-Cookie:
-              schema:
-                type: string
-                example: accessToken=...; HttpOnly; Path=/api
           content:
             application/json:
               schema:
@@ -281,7 +289,8 @@ paths:
       tags: [Auth]
       summary: Refresh the access token
       operationId: refreshToken
-      description: Reads the `refreshToken` cookie and issues new auth cookies.
+      description: >
+        Reads the refreshToken cookie and issues new authentication cookies.
       responses:
         "200":
           description: Tokens refreshed
@@ -299,7 +308,7 @@ paths:
   /auth/logout:
     post:
       tags: [Auth]
-      summary: Logout and clear auth cookies
+      summary: Logout and clear authentication cookies
       operationId: logout
       security:
         - cookieAuth: []
@@ -341,10 +350,91 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  /auth/verify-email:
+    post:
+      tags: [Auth]
+      summary: Verify a user's email address
+      operationId: verifyEmail
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Email verification data.
+      responses:
+        "200":
+          description: Email verified successfully
+        "400":
+          description: Invalid or expired verification data
+        "422":
+          description: Validation error
+
+  /auth/forgot-password:
+    post:
+      tags: [Auth]
+      summary: Request a password reset
+      operationId: forgotPassword
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Password reset request data.
+      responses:
+        "200":
+          description: Password reset request processed
+        "422":
+          description: Validation error
+
+  /auth/reset-password:
+    post:
+      tags: [Auth]
+      summary: Reset a user's password
+      operationId: resetPassword
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Password reset data.
+      responses:
+        "200":
+          description: Password reset successfully
+        "400":
+          description: Invalid or expired reset token
+        "422":
+          description: Validation error
+
+  /auth/resend-verification:
+    post:
+      tags: [Auth]
+      summary: Resend email verification
+      operationId: resendVerification
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Email address for resending verification.
+      responses:
+        "200":
+          description: Verification email sent
+        "422":
+          description: Validation error
+
+  # ============================================================================
+  # USER / RESTAURANTS
+  # ============================================================================
+
   /restaurants:
     get:
       tags: [Restaurants]
       summary: Get all restaurants
+      operationId: getRestaurants
       responses:
         "200":
           description: List of restaurants
@@ -353,6 +443,7 @@ paths:
     get:
       tags: [Restaurants]
       summary: Get restaurant details
+      operationId: getRestaurant
       parameters:
         - in: path
           name: restaurantId
@@ -363,11 +454,14 @@ paths:
       responses:
         "200":
           description: Restaurant details
+        "404":
+          description: Restaurant not found
 
   /restaurants/{restaurantId}/branches:
     get:
       tags: [Branches]
       summary: Get branches for a restaurant
+      operationId: getRestaurantBranches
       parameters:
         - in: path
           name: restaurantId
@@ -378,11 +472,18 @@ paths:
       responses:
         "200":
           description: List of branches
+        "404":
+          description: Restaurant not found
+
+  # ============================================================================
+  # USER / BRANCHES
+  # ============================================================================
 
   /branches/{branchId}:
     get:
       tags: [Branches]
       summary: Get branch details
+      operationId: getBranch
       parameters:
         - in: path
           name: branchId
@@ -393,11 +494,18 @@ paths:
       responses:
         "200":
           description: Branch details
+        "404":
+          description: Branch not found
+
+  # ============================================================================
+  # USER / REVIEWS
+  # ============================================================================
 
   /branches/{branchId}/reviews:
     get:
       tags: [Reviews]
       summary: Get reviews for a branch
+      operationId: getBranchReviews
       parameters:
         - in: path
           name: branchId
@@ -408,10 +516,13 @@ paths:
       responses:
         "200":
           description: List of reviews
+        "404":
+          description: Branch not found
 
     post:
       tags: [Reviews]
       summary: Create a review for a branch
+      operationId: createReview
       security:
         - cookieAuth: []
       parameters:
@@ -427,7 +538,8 @@ paths:
           application/json:
             schema:
               type: object
-              required: [rating]
+              required:
+                - rating
               properties:
                 rating:
                   type: integer
@@ -442,11 +554,14 @@ paths:
           description: Review created
         "401":
           description: Unauthorized
+        "422":
+          description: Validation error
 
   /reviews/{reviewId}:
     patch:
       tags: [Reviews]
       summary: Update my review
+      operationId: updateReview
       security:
         - cookieAuth: []
       parameters:
@@ -478,10 +593,13 @@ paths:
           description: Unauthorized
         "403":
           description: Cannot edit another user's review
+        "404":
+          description: Review not found
 
     delete:
       tags: [Reviews]
       summary: Delete my review
+      operationId: deleteReview
       security:
         - cookieAuth: []
       parameters:
@@ -498,11 +616,18 @@ paths:
           description: Unauthorized
         "403":
           description: Cannot delete another user's review
+        "404":
+          description: Review not found
+
+  # ============================================================================
+  # USER / FAVORITES
+  # ============================================================================
 
   /favorites:
     get:
       tags: [Favorites]
       summary: Get my favorite restaurants
+      operationId: getFavorites
       security:
         - cookieAuth: []
       responses:
@@ -514,7 +639,8 @@ paths:
   /favorites/{restaurantId}:
     post:
       tags: [Favorites]
-      summary: Add restaurant to favorites
+      summary: Add a restaurant to favorites
+      operationId: addFavorite
       security:
         - cookieAuth: []
       parameters:
@@ -532,7 +658,8 @@ paths:
 
     delete:
       tags: [Favorites]
-      summary: Remove restaurant from favorites
+      summary: Remove a restaurant from favorites
+      operationId: removeFavorite
       security:
         - cookieAuth: []
       parameters:
@@ -547,10 +674,16 @@ paths:
           description: Restaurant removed from favorites
         "401":
           description: Unauthorized
+
+  # ============================================================================
+  # USER / RESTAURANT CLAIMS
+  # ============================================================================
+
   /restaurant-claims:
     post:
       tags: [Restaurant Claims]
       summary: Submit a restaurant ownership request
+      operationId: createRestaurantClaim
       security:
         - cookieAuth: []
       requestBody:
@@ -559,50 +692,596 @@ paths:
           application/json:
             schema:
               type: object
-              required:
-                - restaurantId
-              properties:
-                restaurantId:
-                  type: string
-                  format: uuid
-                message:
-                  type: string
-                  example: I am the owner of this restaurant.
+              description: Restaurant ownership claim request.
       responses:
         "201":
           description: Ownership request submitted
         "401":
           description: Unauthorized
+        "422":
+          description: Validation error
 
     get:
       tags: [Restaurant Claims]
-      summary: Get my ownership requests
+      summary: Get my restaurant ownership request
+      operationId: getMyRestaurantClaim
+      description: >
+        Returns the authenticated owner's restaurant ownership request.
       security:
         - cookieAuth: []
       responses:
         "200":
-          description: List of my ownership requests
+          description: Ownership request retrieved
         "401":
           description: Unauthorized
+        "403":
+          description: User is not an owner
+
+  # ============================================================================
+  # OWNER / RESTAURANT
+  # ============================================================================
+
+  /owner/restaurants:
+    post:
+      tags: [Owner]
+      summary: Create a restaurant
+      operationId: ownerCreateRestaurant
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              description: Restaurant information and optional restaurant image.
+      responses:
+        "201":
+          description: Restaurant created
+        "401":
+          description: Unauthorized
+        "403":
+          description: User is not an owner
+        "422":
+          description: Validation error
+
+  /owner/restaurants/{restaurantSlug}:
+    get:
+      tags: [Owner]
+      summary: Get owned restaurant
+      operationId: ownerGetRestaurant
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: restaurantSlug
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Restaurant details
+        "401":
+          description: Unauthorized
+        "403":
+          description: User does not own this restaurant
+        "404":
+          description: Restaurant not found
+
+    patch:
+      tags: [Owner]
+      summary: Update owned restaurant
+      operationId: ownerUpdateRestaurant
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: restaurantSlug
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              description: Updated restaurant information and optional image.
+      responses:
+        "200":
+          description: Restaurant updated
+        "401":
+          description: Unauthorized
+        "403":
+          description: User does not own this restaurant
+        "404":
+          description: Restaurant not found
+        "422":
+          description: Validation error
+
+  # ============================================================================
+  # OWNER / BRANCHES
+  # ============================================================================
+
+  /owner/restaurants/{restaurantSlug}/branches:
+    post:
+      tags: [Owner]
+      summary: Create a branch for an owned restaurant
+      operationId: ownerCreateBranch
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: restaurantSlug
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              description: Branch information and branch images.
+      responses:
+        "201":
+          description: Branch created
+        "401":
+          description: Unauthorized
+        "403":
+          description: User does not own this restaurant
+        "404":
+          description: Restaurant not found
+        "422":
+          description: Validation error
+
+    get:
+      tags: [Owner]
+      summary: Get all branches for an owned restaurant
+      operationId: ownerGetBranches
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: restaurantSlug
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of branches
+        "401":
+          description: Unauthorized
+        "403":
+          description: User does not own this restaurant
+        "404":
+          description: Restaurant not found
+
+  /owner/restaurants/{restaurantSlug}/branches/{branchSlug}:
+    get:
+      tags: [Owner]
+      summary: Get an owned restaurant branch
+      operationId: ownerGetBranch
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: restaurantSlug
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: branchSlug
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Branch details
+        "401":
+          description: Unauthorized
+        "403":
+          description: User does not own this restaurant
+        "404":
+          description: Branch not found
+
+    patch:
+      tags: [Owner]
+      summary: Update an owned restaurant branch
+      operationId: ownerUpdateBranch
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: restaurantSlug
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: branchSlug
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              description: Updated branch information, images, and deleted image IDs.
+      responses:
+        "200":
+          description: Branch updated
+        "401":
+          description: Unauthorized
+        "403":
+          description: User does not own this restaurant
+        "404":
+          description: Branch not found
+        "422":
+          description: Validation error
+
+    delete:
+      tags: [Owner]
+      summary: Delete an owned restaurant branch
+      operationId: ownerDeleteBranch
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: restaurantSlug
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: branchSlug
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Branch deleted
+        "401":
+          description: Unauthorized
+        "403":
+          description: User does not own this restaurant
+        "404":
+          description: Branch not found
+
+  # ============================================================================
+  # OWNER / MENUS
+  # ============================================================================
+
+  /owner/restaurants/{restaurantSlug}/menus:
+    post:
+      tags: [Owner]
+      summary: Create a menu
+      operationId: ownerCreateMenu
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: restaurantSlug
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              description: Menu information, optional image, and menu items.
+      responses:
+        "201":
+          description: Menu created
+        "401":
+          description: Unauthorized
+        "403":
+          description: User does not own this restaurant
+        "422":
+          description: Validation error
+
+    get:
+      tags: [Owner]
+      summary: Get menus for an owned restaurant
+      operationId: ownerGetRestaurantMenus
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: restaurantSlug
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of restaurant menus
+        "401":
+          description: Unauthorized
+        "403":
+          description: User does not own this restaurant
+        "404":
+          description: Restaurant not found
+
+  /owner/restaurants/{restaurantSlug}/branches/{branchSlug}/menus:
+    get:
+      tags: [Owner]
+      summary: Get menus for an owned restaurant branch
+      operationId: ownerGetBranchMenus
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: restaurantSlug
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: branchSlug
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of branch menus
+        "401":
+          description: Unauthorized
+        "403":
+          description: User does not own this restaurant
+        "404":
+          description: Branch not found
+
+  /owner/restaurants/{restaurantSlug}/branches/{branchSlug}/menu-items/{menuItemId}:
+    patch:
+      tags: [Owner]
+      summary: Override a branch menu item
+      operationId: ownerOverrideBranchMenuItem
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: restaurantSlug
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: branchSlug
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: menuItemId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Branch-specific menu item override.
+      responses:
+        "200":
+          description: Branch menu item updated
+        "401":
+          description: Unauthorized
+        "403":
+          description: User does not own this restaurant
+        "404":
+          description: Menu item or branch not found
+        "422":
+          description: Validation error
+
+  /owner/restaurants/{restaurantSlug}/menus/{menuId}:
+    patch:
+      tags: [Owner]
+      summary: Update a menu
+      operationId: ownerUpdateMenu
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: restaurantSlug
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: menuId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Updated menu information.
+      responses:
+        "200":
+          description: Menu updated
+        "401":
+          description: Unauthorized
+        "403":
+          description: User does not own this restaurant
+        "404":
+          description: Menu not found
+        "422":
+          description: Validation error
+
+    delete:
+      tags: [Owner]
+      summary: Delete a menu
+      operationId: ownerDeleteMenu
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: restaurantSlug
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: menuId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Menu deleted
+        "401":
+          description: Unauthorized
+        "403":
+          description: User does not own this restaurant
+        "404":
+          description: Menu not found
+
+    post:
+      tags: [Owner]
+      summary: Add a menu item to a menu
+      operationId: ownerAddMenuItem
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: restaurantSlug
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: menuId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              description: Menu item information and optional image.
+      responses:
+        "201":
+          description: Menu item added
+        "401":
+          description: Unauthorized
+        "403":
+          description: User does not own this restaurant
+        "404":
+          description: Menu not found
+        "422":
+          description: Validation error
+
+  /owner/restaurants/{restaurantSlug}/menus/{menuId}/menu-items/{menuItemId}:
+    patch:
+      tags: [Owner]
+      summary: Update a menu item
+      operationId: ownerUpdateMenuItem
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: restaurantSlug
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: menuId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: menuItemId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              description: Updated menu item information and optional image.
+      responses:
+        "200":
+          description: Menu item updated
+        "401":
+          description: Unauthorized
+        "403":
+          description: User does not own this restaurant
+        "404":
+          description: Menu item not found
+        "422":
+          description: Validation error
+
+  # ============================================================================
+  # OWNER / LOCATION
+  # ============================================================================
+
+  /owner/restaurants/{restaurantSlug}/google-maps:
+    post:
+      tags: [Owner]
+      summary: Resolve a restaurant location using Google Maps
+      operationId: ownerResolveGoogleMapsLocation
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: restaurantSlug
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Google Maps location information.
+      responses:
+        "200":
+          description: Location resolved successfully
+        "401":
+          description: Unauthorized
+        "403":
+          description: User does not own this restaurant
+        "404":
+          description: Restaurant not found
+        "422":
+          description: Validation error
+
+  # ============================================================================
+  # ADMIN
+  # ============================================================================
 
   /admin/restaurant-claims:
     get:
       tags: [Admin]
       summary: Get all restaurant ownership requests
+      operationId: adminGetRestaurantClaims
       security:
         - cookieAuth: []
       responses:
         "200":
-          description: List of ownership requests
+          description: List of restaurant ownership requests
         "401":
           description: Unauthorized
         "403":
-          description: Forbidden
+          description: Admin access required
 
   /admin/restaurant-claims/{claimId}/approve:
     patch:
       tags: [Admin]
       summary: Approve a restaurant ownership request
+      operationId: adminApproveRestaurantClaim
       security:
         - cookieAuth: []
       parameters:
@@ -618,12 +1297,15 @@ paths:
         "401":
           description: Unauthorized
         "403":
-          description: Forbidden
+          description: Admin access required
+        "404":
+          description: Ownership request not found
 
   /admin/restaurant-claims/{claimId}/reject:
     patch:
       tags: [Admin]
       summary: Reject a restaurant ownership request
+      operationId: adminRejectRestaurantClaim
       security:
         - cookieAuth: []
       parameters:
@@ -639,84 +1321,6 @@ paths:
         "401":
           description: Unauthorized
         "403":
-          description: Forbidden
-  
-  /admin/restaurants/{restaurantId}/verify:
-    patch:
-      tags: [Admin]
-      summary: Verify a restaurant
-      security:
-        - cookieAuth: []
-      parameters:
-        - in: path
-          name: restaurantId
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        "200":
-          description: Restaurant verified
-        "401":
-          description: Unauthorized
-        "403":
-          description: Forbidden
-
-  /admin/reviews:
-    get:
-      tags: [Admin]
-      summary: Get all reviews
-      security:
-        - cookieAuth: []
-      responses:
-        "200":
-          description: List of reviews
-
-  /admin/reviews/{reviewId}:
-    delete:
-      tags: [Admin]
-      summary: Remove a review
-      security:
-        - cookieAuth: []
-      parameters:
-        - in: path
-          name: reviewId
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        "200":
-          description: Review removed
-        "401":
-          description: Unauthorized
-        "403":
-          description: Forbidden
-
-  /admin/imports/restaurants:
-    post:
-      tags: [Admin]
-      summary: Import restaurants from external sources
-      security:
-        - cookieAuth: []
-      responses:
-        "200":
-          description: Import started
-        "401":
-          description: Unauthorized
-        "403":
-          description: Forbidden
-
-  /admin/imports/logs:
-    get:
-      tags: [Admin]
-      summary: Get restaurant import logs
-      security:
-        - cookieAuth: []
-      responses:
-        "200":
-          description: List of import logs
-        "401":
-          description: Unauthorized
-        "403":
-          description: Forbidden
+          description: Admin access required
+        "404":
+          description: Ownership request not found

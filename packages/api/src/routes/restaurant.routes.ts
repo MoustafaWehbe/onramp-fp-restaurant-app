@@ -12,7 +12,6 @@ const router = Router();
 
 router.get(
   "/",
-  authenticate,
   rateLimiter,
   validate(restaurantGetSchema, "query"),
   restaurantController.getRestaurants,
@@ -20,7 +19,6 @@ router.get(
 
 router.get(
   "/search",
-  authenticate,
   rateLimiter,
   validate(restaurantQuerySchema, "query"),
   restaurantController.searchRestaurants,
@@ -35,14 +33,12 @@ router.get(
 
 router.get(
   "/by-name",
-  authenticate,
   rateLimiter,
   restaurantController.searchByName
 );
 
 router.get(
   "/:slug",
-  authenticate,
   rateLimiter,
   validate(restaurantParamsSchema, "params"),
   restaurantController.getRestaurantBySlug,

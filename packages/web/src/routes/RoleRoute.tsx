@@ -1,6 +1,7 @@
 import { Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { LoadingSpinner } from "../components/shared/LoadingSpinner";
+import { useLocation } from "react-router-dom";
 
 type Role = "user" | "owner" | "admin";
 
@@ -16,7 +17,8 @@ const roleRedirects: Record<Role, string> = {
 
 export function RoleRoute({ allowedRoles }: RoleRouteProps) {
   const { user, isLoading } = useAuth();
-
+  const location = useLocation();
+  
   if (isLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
@@ -26,7 +28,14 @@ export function RoleRoute({ allowedRoles }: RoleRouteProps) {
   }
 
   if (!user) {
-    return <Navigate to="/login" replace />;
+    const redirect = `${location.pathname}${location.search}${location.hash}`;
+
+    return (
+      <Navigate
+        to={`/login?redirect=${encodeURIComponent(redirect)}`}
+        replace
+      />
+    );
   }
 
   if (!allowedRoles.includes(user.role as Role)) {
