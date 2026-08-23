@@ -98,64 +98,78 @@ export const retrievalPlanSchema = z
             "intent is required for conversational queries",
         });
       }
-      return;
-    }
-
-    if (!plan.retrievalType) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ["retrievalType"],
-          message:
-            "retrievalType is required for relevant queries",
-        });
-      }
-
-      if (
-        plan.retrievalType === "semantic" ||
-        plan.retrievalType === "hybrid"
-      ) {
-        if (!plan.semanticQuery) {
+      for (const field of [
+        "retrievalType",
+        "filters",
+        "semanticQuery",
+      ] as const) {
+        if (plan[field] !== undefined) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
-            path: ["semanticQuery"],
-            message:
-              "semanticQuery is required for semantic and hybrid retrieval",
+            path: [field],
+            message: `${field} is not allowed for conversational queries`,
           });
         }
       }
+      return;
+    }
 
-      const filters = plan.filters;
 
-      if (!filters) {
-        return;
-      }
+    if (!plan.retrievalType) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["retrievalType"],
+        message:
+          "retrievalType is required for relevant queries",
+      });
+    }
 
-      if (
-        filters.minRating !== undefined &&
-        filters.maxRating !== undefined &&
-        filters.minRating > filters.maxRating
-      ) {
+    if (
+      plan.retrievalType === "semantic" ||
+      plan.retrievalType === "hybrid"
+    ) {
+      if (!plan.semanticQuery) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          path: ["filters", "minRating"],
+          path: ["semanticQuery"],
           message:
-            "minRating cannot be greater than maxRating",
+            "semanticQuery is required for semantic and hybrid retrieval",
         });
       }
+    }
 
-      if (
-        filters.minItemPrice !== undefined &&
-        filters.maxItemPrice !== undefined &&
-        filters.minItemPrice > filters.maxItemPrice
-      ) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ["filters", "minItemPrice"],
-          message:
-            "minItemPrice cannot be greater than maxItemPrice",
-        });
-      }
-    });
+    const filters = plan.filters;
+
+    if (!filters) {
+      return;
+    }
+
+    if (
+      filters.minRating !== undefined &&
+      filters.maxRating !== undefined &&
+      filters.minRating > filters.maxRating
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["filters", "minRating"],
+        message:
+          "minRating cannot be greater than maxRating",
+      });
+    }
+
+    if (
+      filters.minItemPrice !== undefined &&
+      filters.maxItemPrice !== undefined &&
+      filters.minItemPrice > filters.maxItemPrice
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["filters", "minItemPrice"],
+        message:
+          "minItemPrice cannot be greater than maxItemPrice",
+      });
+    }
+  });
 
 export type ValidatedRetrievalPlan = z.infer<
   typeof retrievalPlanSchema

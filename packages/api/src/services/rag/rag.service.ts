@@ -148,6 +148,8 @@ export async function answerQuestion(
             type: "answer_chunk",
             content: answer,
         });
+        
+        await options.onChunk?.(answer);
 
         await options.onEvent?.({
             type: "completed",
