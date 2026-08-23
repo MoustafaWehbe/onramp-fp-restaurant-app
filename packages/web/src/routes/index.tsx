@@ -101,6 +101,7 @@ export function AppRoutes() {
               element={<OwnerMenusPage />}
             />
          </Route>
+        </Route>
         <Route element={<RoleRoute allowedRoles={["owner"]} />}>
           <Route
             path="/owner/create-restaurant"

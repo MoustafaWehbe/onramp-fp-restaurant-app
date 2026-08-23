@@ -1,9 +1,14 @@
 import { Ollama } from "ollama";
 
-const OLLAMA_TIMEOUT_MS = Number(process.env.OLLAMA_TIMEOUT_MS ?? 30000);
+const OLLAMA_TIMEOUT_MS = Number(
+    process.env.OLLAMA_TIMEOUT_MS ?? 30000,
+);
 const EMBEDDING_DIMENSION = 768;
 
-function createTimeoutFetch(timeoutMs: number): typeof fetch {
+function createTimeoutFetch(
+    timeoutMs: number,
+    externalSignal?: AbortSignal,
+): typeof fetch {
     return async (input, init = {}) => {
         const controller = new AbortController();
 
@@ -13,8 +18,6 @@ function createTimeoutFetch(timeoutMs: number): typeof fetch {
             );
         }, timeoutMs);
 
-        const externalSignal = init.signal;
-
         const abortHandler = () => {
             controller.abort(
                 externalSignal?.reason,
@@ -23,7 +26,9 @@ function createTimeoutFetch(timeoutMs: number): typeof fetch {
 
         if (externalSignal) {
             if (externalSignal.aborted) {
-                controller.abort(externalSignal.reason);
+                controller.abort(
+                    externalSignal.reason,
+                );
             } else {
                 externalSignal.addEventListener(
                     "abort",
@@ -50,14 +55,21 @@ function createTimeoutFetch(timeoutMs: number): typeof fetch {
 }
 
 const ollama = new Ollama({
-    host: process.env.OLLAMA_BASE_URL ?? "http://localhost:11434",
-    fetch: createTimeoutFetch(OLLAMA_TIMEOUT_MS),
+    host:
+        process.env.OLLAMA_BASE_URL ??
+        "http://localhost:11434",
+    fetch: createTimeoutFetch(
+        OLLAMA_TIMEOUT_MS,
+    ),
 });
 
 const EMBEDDING_MODEL =
-    process.env.OLLAMA_EMBEDDING_MODEL ?? "nomic-embed-text";
+    process.env.OLLAMA_EMBEDDING_MODEL ??
+    "nomic-embed-text";
 
-function validateEmbedding(vector: unknown): vector is number[] {
+function validateEmbedding(
+    vector: unknown,
+): vector is number[] {
     if (!Array.isArray(vector)) {
         return false;
     }
@@ -67,26 +79,44 @@ function validateEmbedding(vector: unknown): vector is number[] {
     }
 
     return vector.every(
-        (value) => typeof value === "number" && Number.isFinite(value)
+        (value) =>
+            typeof value === "number" &&
+            Number.isFinite(value),
     );
 }
 
 export async function generateEmbedding(
     text: string,
-    signal?: AbortSignal
+    signal?: AbortSignal,
 ): Promise<number[]> {
     if (!text.trim()) {
-        throw new Error("Cannot generate embedding for empty text");
+        throw new Error(
+            "Cannot generate embedding for empty text",
+        );
     }
 
     if (signal?.aborted) {
-        throw new Error("Embedding generation aborted");
+        throw new Error(
+            "Embedding generation aborted",
+        );
     }
+
+    const client = signal
+        ? new Ollama({
+            host:
+                process.env.OLLAMA_BASE_URL ??
+                "http://localhost:11434",
+            fetch: createTimeoutFetch(
+                OLLAMA_TIMEOUT_MS,
+                signal,
+            ),
+        })
+        : ollama;
 
     let response;
 
     try {
-        response = await ollama.embed({
+        response = await client.embed({
             model: EMBEDDING_MODEL,
             input: text,
         });
@@ -96,21 +126,26 @@ export async function generateEmbedding(
                 "Embedding generation aborted because the client disconnected",
             );
         }
+
         const message =
-            error instanceof Error ? error.message : String(error);
+            error instanceof Error
+                ? error.message
+                : String(error);
 
         throw new Error(
-            `Failed to generate embedding via ${EMBEDDING_MODEL}: ${message}`
+            `Failed to generate embedding via ${EMBEDDING_MODEL}: ${message}`,
         );
     }
 
     if (!Array.isArray(response.embeddings)) {
-        throw new Error("Ollama returned an invalid embeddings payload");
+        throw new Error(
+            "Ollama returned an invalid embeddings payload",
+        );
     }
 
     if (response.embeddings.length !== 1) {
         throw new Error(
-            `Expected 1 embedding, received ${response.embeddings.length}`
+            `Expected 1 embedding, received ${response.embeddings.length}`,
         );
     }
 
@@ -118,7 +153,7 @@ export async function generateEmbedding(
 
     if (!validateEmbedding(embedding)) {
         throw new Error(
-            `Invalid embedding vector. Expected ${EMBEDDING_DIMENSION} numeric dimensions`
+            `Invalid embedding vector. Expected ${EMBEDDING_DIMENSION} numeric dimensions`,
         );
     }
 
@@ -126,17 +161,19 @@ export async function generateEmbedding(
 }
 
 export async function generateEmbeddings(
-    texts: string[]
+    texts: string[],
 ): Promise<number[][]> {
     if (!texts.length) {
         return [];
     }
 
-    const emptyIndex = texts.findIndex((text) => !text.trim());
+    const emptyIndex = texts.findIndex(
+        (text) => !text.trim(),
+    );
 
     if (emptyIndex !== -1) {
         throw new Error(
-            `Cannot generate embedding for empty text at index ${emptyIndex}`
+            `Cannot generate embedding for empty text at index ${emptyIndex}`,
         );
     }
 
@@ -149,30 +186,36 @@ export async function generateEmbeddings(
         });
     } catch (error) {
         const message =
-            error instanceof Error ? error.message : String(error);
+            error instanceof Error
+                ? error.message
+                : String(error);
 
         throw new Error(
-            `Failed to generate embeddings via ${EMBEDDING_MODEL}: ${message}`
+            `Failed to generate embeddings via ${EMBEDDING_MODEL}: ${message}`,
         );
     }
 
     if (!Array.isArray(response.embeddings)) {
-        throw new Error("Ollama returned an invalid embeddings payload");
+        throw new Error(
+            "Ollama returned an invalid embeddings payload",
+        );
     }
 
     if (response.embeddings.length !== texts.length) {
         throw new Error(
-            `Expected ${texts.length} embeddings, received ${response.embeddings.length}`
+            `Expected ${texts.length} embeddings, received ${response.embeddings.length}`,
         );
     }
 
-    const invalidIndex = response.embeddings.findIndex(
-        (embedding) => !validateEmbedding(embedding)
-    );
+    const invalidIndex =
+        response.embeddings.findIndex(
+            (embedding) =>
+                !validateEmbedding(embedding),
+        );
 
     if (invalidIndex !== -1) {
         throw new Error(
-            `Invalid embedding vector at index ${invalidIndex}. Expected ${EMBEDDING_DIMENSION} numeric dimensions`
+            `Invalid embedding vector at index ${invalidIndex}. Expected ${EMBEDDING_DIMENSION} numeric dimensions`,
         );
     }
 
@@ -184,20 +227,29 @@ export function cosineSimilarity(
     b: number[],
 ): number {
     if (a.length !== b.length) {
-        throw new Error("Vectors must have the same length");
+        throw new Error(
+            "Vectors must have the same length",
+        );
     }
 
     const dot = a.reduce(
-        (sum, ai, i) => sum + ai * (b[i] ?? 0),
+        (sum, ai, i) =>
+            sum + ai * (b[i] ?? 0),
         0,
     );
 
     const magA = Math.sqrt(
-        a.reduce((sum, ai) => sum + ai * ai, 0),
+        a.reduce(
+            (sum, ai) => sum + ai * ai,
+            0,
+        ),
     );
 
     const magB = Math.sqrt(
-        b.reduce((sum, bi) => sum + bi * bi, 0),
+        b.reduce(
+            (sum, bi) => sum + bi * bi,
+            0,
+        ),
     );
 
     if (magA === 0 || magB === 0) {
