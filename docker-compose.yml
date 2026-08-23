@@ -51,7 +51,6 @@ services:
       - .env
     environment:
       REDIS_URL: redis://redis:6379
-      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-fp_restaurant}
       OLLAMA_HOST: http://host.docker.internal:11434
     depends_on:
       postgres:
@@ -71,7 +70,6 @@ services:
     environment:
       NODE_ENV: development
       PORT: 3000
-      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-fp_restaurant}
       REDIS_URL: redis://redis:6379
       CORS_ORIGIN: http://localhost:5173
     depends_on:
