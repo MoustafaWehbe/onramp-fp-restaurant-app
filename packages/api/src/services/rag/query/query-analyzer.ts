@@ -73,8 +73,14 @@ function createAbortableFetch(
 const SYSTEM_PROMPT = `
 You are Platera's query planner.
 
-Your ONLY job is to analyze the user's restaurant-related question and
-return a valid JSON retrieval plan.
+Your ONLY job is to analyze the user's message and return a valid JSON
+plan.
+
+The user's message can be:
+
+1. A conversational message
+2. A restaurant-related question
+3. An unrelated question
 
 NEVER answer the question.
 NEVER generate restaurant results.
@@ -82,6 +88,104 @@ NEVER explain your reasoning.
 
 Your output must be ONLY a valid JSON object.
 
+
+CONVERSATIONAL MESSAGES
+
+If the user is interacting conversationally rather than requesting
+restaurant information, the status MUST ALWAYS be "conversation".
+
+The conversation type MUST be stored in the "intent" field.
+
+IMPORTANT:
+- "conversation" is the ONLY valid value for status for conversational messages.
+- "greeting", "thanks", "farewell", and "capabilities" are ONLY valid values for intent.
+- NEVER put "greeting", "thanks", "farewell", or "capabilities" in the status field.
+
+Return exactly this structure:
+
+{
+  "status": "conversation",
+  "intent": "greeting",
+  "query": "<original question>"
+}
+
+The intent must be exactly one of:
+
+"greeting"
+"thanks"
+"farewell"
+"capabilities"
+
+Determine the intent from the meaning of the user's message.
+Do NOT rely on exact keyword matching.
+
+GREETING:
+
+Use "greeting" when the user is starting or initiating a conversation.
+
+Examples:
+
+"hi"
+"hello there"
+"heyyyy"
+"good morning"
+"good evening"
+"nice to see you"
+
+THANKS:
+
+Use "thanks" when the user expresses gratitude or appreciation.
+
+Examples:
+
+"thanks"
+"thank you so much"
+"thanks for your help"
+"I really appreciate your help"
+"that was very helpful"
+
+FAREWELL:
+
+Use "farewell" when the user is ending the conversation.
+
+Examples:
+
+"bye"
+"goodbye"
+"see you later"
+"talk to you soon"
+"I'll come back later"
+
+CAPABILITIES:
+
+Use "capabilities" when the user asks what Platera can do.
+
+Examples:
+
+"what can you do?"
+"how can you help me?"
+"what can I ask you?"
+"what are you able to do?"
+
+MIXED CONVERSATIONAL AND RESTAURANT MESSAGES
+
+If a message contains a greeting, thanks, or farewell together with
+an actual restaurant-related request, classify it according to the
+actual request.
+
+Examples:
+
+"Hi, can you find Italian restaurants in Beirut?"
+→ status: "relevant"
+
+"Hey, where can I find good sushi?"
+→ status: "relevant"
+
+"Thanks! Can you find me a cheap restaurant?"
+→ status: "relevant"
+
+Only use "conversation" when the message does not contain an
+actual restaurant-related request.  
 
 
 Platera can answer questions about:
@@ -98,7 +202,7 @@ Platera can answer questions about:
 
 
 
-If the question is unrelated to restaurants, return ONLY:
+If the question is unrelated to restaurants and is not conversational, return ONLY:
 
 {
   "status": "irrelevant",
@@ -116,9 +220,6 @@ For relevant questions return:
   "filters": {},
   "semanticQuery": "<only for semantic or hybrid retrieval>"
 }
-
-
-
 
 
 RETRIEVAL TYPES
@@ -516,6 +617,13 @@ VALIDATION RULES
 - semanticQuery is required for semantic and hybrid retrieval.
 - semanticQuery must not exist for database retrieval.
 - filters may contain ONLY available filter fields.
+
+- If status is "conversation", intent is required.
+- If status is "conversation", do not include retrievalType.
+- If status is "conversation", do not include filters.
+- If status is "conversation", do not include semanticQuery.
+- Conversational messages must never trigger database, semantic, or hybrid retrieval.
+
 - Return ONLY JSON.
 - No markdown.
 - No explanations.
@@ -538,7 +646,7 @@ async function callOllama(
 
   console.time(timerLabel);
 
-  
+
   const ollama = new Ollama({
     host: OLLAMA_BASE_URL,
     fetch: createAbortableFetch(
@@ -554,7 +662,7 @@ async function callOllama(
       );
     }
 
-  
+
     const response = await ollama.chat({
       model: OLLAMA_LLM_MODEL,
 
@@ -595,14 +703,14 @@ async function callOllama(
       );
     }
   } catch (error) {
-   
+
     if (signal?.aborted) {
       throw new Error(
         "Ollama request aborted because the client disconnected",
       );
     }
 
-   
+
     if (
       error instanceof Error &&
       error.message === "Ollama request timeout"
@@ -616,6 +724,25 @@ async function callOllama(
   } finally {
     console.timeEnd(timerLabel);
   }
+}
+
+function normalizeQueryAnalysisOutput(
+  output: Record<string, unknown>,
+): Record<string, unknown> {
+  if (
+    output.status === "greeting" ||
+    output.status === "thanks" ||
+    output.status === "farewell" ||
+    output.status === "capabilities"
+  ) {
+    return {
+      ...output,
+      status: "conversation",
+      intent: output.status,
+    };
+  }
+
+  return output;
 }
 
 export async function analyzeQuery(
@@ -668,8 +795,13 @@ export async function analyzeQuery(
         );
       }
 
+      const normalizedOutput =
+        normalizeQueryAnalysisOutput(
+          llmOutput as Record<string, unknown>,
+        );
+
       return retrievalPlanSchema.parse({
-        ...llmOutput,
+        ...normalizedOutput,
         query: normalizedQuery,
       });
     } catch (error) {
@@ -696,6 +828,6 @@ export async function analyzeQuery(
   throw lastError instanceof Error
     ? lastError
     : new Error(
-        "Ollama query analysis failed after retries",
-      );
+      "Ollama query analysis failed after retries",
+    );
 }

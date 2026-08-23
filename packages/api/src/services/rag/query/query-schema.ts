@@ -3,6 +3,14 @@ import { z } from "zod";
 export const queryAnalysisStatusSchema = z.enum([
   "relevant",
   "irrelevant",
+  "conversation"
+]);
+
+export const conversationIntentSchema = z.enum([
+  "greeting",
+  "thanks",
+  "farewell",
+  "capabilities",
 ]);
 
 export const retrievalTypeSchema = z.enum([
@@ -64,6 +72,8 @@ export const retrievalPlanSchema = z
       .trim()
       .min(1),
 
+    intent: conversationIntentSchema.optional(),
+
     retrievalType: retrievalTypeSchema.optional(),
 
     filters: retrievalFiltersSchema.optional(),
@@ -79,61 +89,73 @@ export const retrievalPlanSchema = z
       return;
     }
 
-    if (!plan.retrievalType) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["retrievalType"],
-        message:
-          "retrievalType is required for relevant queries",
-      });
-    }
-
-    if (
-      plan.retrievalType === "semantic" ||
-      plan.retrievalType === "hybrid"
-    ) {
-      if (!plan.semanticQuery) {
+    if (plan.status === "conversation") {
+      if (!plan.intent) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          path: ["semanticQuery"],
+          path: ["intent"],
           message:
-            "semanticQuery is required for semantic and hybrid retrieval",
+            "intent is required for conversational queries",
         });
       }
-    }
-
-    const filters = plan.filters;
-
-    if (!filters) {
       return;
     }
 
-    if (
-      filters.minRating !== undefined &&
-      filters.maxRating !== undefined &&
-      filters.minRating > filters.maxRating
-    ) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["filters", "minRating"],
-        message:
-          "minRating cannot be greater than maxRating",
-      });
-    }
+    if (!plan.retrievalType) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["retrievalType"],
+          message:
+            "retrievalType is required for relevant queries",
+        });
+      }
 
-    if (
-      filters.minItemPrice !== undefined &&
-      filters.maxItemPrice !== undefined &&
-      filters.minItemPrice > filters.maxItemPrice
-    ) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["filters", "minItemPrice"],
-        message:
-          "minItemPrice cannot be greater than maxItemPrice",
-      });
-    }
-  });
+      if (
+        plan.retrievalType === "semantic" ||
+        plan.retrievalType === "hybrid"
+      ) {
+        if (!plan.semanticQuery) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ["semanticQuery"],
+            message:
+              "semanticQuery is required for semantic and hybrid retrieval",
+          });
+        }
+      }
+
+      const filters = plan.filters;
+
+      if (!filters) {
+        return;
+      }
+
+      if (
+        filters.minRating !== undefined &&
+        filters.maxRating !== undefined &&
+        filters.minRating > filters.maxRating
+      ) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["filters", "minRating"],
+          message:
+            "minRating cannot be greater than maxRating",
+        });
+      }
+
+      if (
+        filters.minItemPrice !== undefined &&
+        filters.maxItemPrice !== undefined &&
+        filters.minItemPrice > filters.maxItemPrice
+      ) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["filters", "minItemPrice"],
+          message:
+            "minItemPrice cannot be greater than maxItemPrice",
+        });
+      }
+    });
 
 export type ValidatedRetrievalPlan = z.infer<
   typeof retrievalPlanSchema

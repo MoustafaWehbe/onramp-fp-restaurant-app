@@ -49,53 +49,74 @@ export interface RagAnswerResult {
 }
 
 async function createQueryEmbedding(
-  question: string,
-  signal?: AbortSignal,
+    question: string,
+    signal?: AbortSignal,
 ): Promise<number[]> {
-  return generateEmbedding(question,signal);
+    return generateEmbedding(question, signal);
 }
 
 async function executeRetrieval(
-  plan: ValidatedRetrievalPlan,
-  question: string,
-  signal?: AbortSignal,
+    plan: ValidatedRetrievalPlan,
+    question: string,
+    signal?: AbortSignal,
 ) {
-  switch (plan.retrievalType) {
-    case "database":
-      return databaseRetrieval(plan);
+    switch (plan.retrievalType) {
+        case "database":
+            return databaseRetrieval(plan);
 
-    case "semantic": {
-      const embedding =
-        await createQueryEmbedding(
-          question,
-          signal,
-        );
+        case "semantic": {
+            const embedding =
+                await createQueryEmbedding(
+                    question,
+                    signal,
+                );
 
-      return semanticRetrieval(
-        embedding,
-      );
+            return semanticRetrieval(
+                embedding,
+            );
+        }
+
+        case "hybrid": {
+            const embedding =
+                await createQueryEmbedding(
+                    question,
+                    signal,
+                );
+
+            return hybridRetrieval(
+                plan,
+                embedding,
+            );
+        }
+
+        default:
+            throw new Error(
+                `Unsupported retrieval strategy: ${String(
+                    plan.retrievalType,
+                )}`,
+            );
     }
+}
 
-    case "hybrid": {
-      const embedding =
-        await createQueryEmbedding(
-          question,
-          signal,
-        );
+function getConversationResponse(
+    intent: NonNullable<ValidatedRetrievalPlan["intent"]>,
+): string {
+    switch (intent) {
+        case "greeting":
+            return "Hello! 👋 How can I help you find a restaurant today?";
 
-      return hybridRetrieval(
-        plan,
-        embedding,
-      );
+        case "thanks":
+            return "You're very welcome! 😊";
+
+        case "farewell":
+            return "Goodbye! 👋 Hope to see you again soon!";
+
+        case "capabilities":
+            return "I can help you find restaurants, cuisines, menus, dishes, prices, ratings, locations, opening hours, and restaurants based on your preferences.";
+
+        default:
+            return "Hello! 👋 How can I help you today?";
     }
-
-    default:
-      throw new Error(
-        `Unsupported retrieval strategy: ${String(
-          plan.retrievalType,
-        )}`,
-      );
-  }
 }
 
 export async function answerQuestion(
@@ -112,12 +133,58 @@ export async function answerQuestion(
     });
 
     const plan =
-        await analyzeQuery(question,options.signal);
+        await analyzeQuery(question, options.signal);
+
+    if (plan.status === "conversation") {
+        if (!plan.intent) {
+            throw new Error(
+                "Conversation intent is missing from the query plan",
+            );
+        }
+
+        const answer = getConversationResponse(plan.intent);
+
+        await options.onEvent?.({
+            type: "answer_chunk",
+            content: answer,
+        });
+
+        await options.onEvent?.({
+            type: "completed",
+        });
+
+        return {
+            answer,
+            plan,
+            context: "",
+            retrievalResults: [],
+        };
+    }
+
+    if (plan.status === "irrelevant") {
+        const answer =
+            "Sorry, I can only help with restaurant-related questions. 🍽️";
+
+        await options.onEvent?.({
+            type: "answer_chunk",
+            content: answer,
+        });
+
+        await options.onEvent?.({
+            type: "completed",
+        });
+
+        return {
+            answer,
+            plan,
+            context: "",
+            retrievalResults: [],
+        };
+    }
 
     await options.onEvent?.({
         type: "retrieving",
     });
-
     const retrievalResults =
         await executeRetrieval(
             plan,
