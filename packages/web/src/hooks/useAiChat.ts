@@ -96,6 +96,8 @@ export function useAiChat() {
       }
 
       if (data.type === "answer_chunk") {
+        setLoading(false);
+        
         setMessages((prev) => {
           const lastMessage = prev[prev.length - 1];
 
