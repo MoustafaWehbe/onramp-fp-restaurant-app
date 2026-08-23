@@ -18,6 +18,18 @@ router.get(
 );
 
 router.get(
+  "/cities",
+  rateLimiter,
+  restaurantController.getCities,
+);
+
+router.get(
+  "/cuisines",
+  rateLimiter,
+  restaurantController.getCuisineTypes,
+);
+
+router.get(
   "/search",
   rateLimiter,
   validate(restaurantQuerySchema, "query"),

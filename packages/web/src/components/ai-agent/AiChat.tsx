@@ -29,18 +29,21 @@ export function AiChat({ onClose }: Props) {
   return (
     <div
       className="
-        fixed
-        bottom-32
-        right-6
-        w-96
-        h-[500px]
-        bg-white
-        rounded-2xl
-        shadow-2xl
-        z-50
-        flex
-        flex-col
-      "
+      fixed
+      bottom-32
+      right-6
+      z-50
+      flex
+      h-[720px]
+      w-[650px]
+      max-h-[calc(100vh-9rem)]
+      max-w-[calc(100vw-3rem)]
+      flex-col
+      overflow-hidden
+      rounded-2xl
+      bg-white
+      shadow-2xl
+    "
     >
       <ChatHeader
         onClose={onClose}

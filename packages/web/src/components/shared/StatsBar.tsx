@@ -1,4 +1,4 @@
-import { MOCK_SITE_STATS } from "@/data/mockRestaurants";
+import { MOCK_SITE_STATS } from "@/data/siteInfo";
 // TODO(api): replace MOCK_SITE_STATS with statsApi.getSummary() once the
 // /stats/summary endpoint ships. Keep the SiteStat[] shape the same so no
 // other change is needed here.

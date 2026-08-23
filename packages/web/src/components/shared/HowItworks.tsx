@@ -1,4 +1,4 @@
-import { HOW_IT_WORKS_STEPS } from "@/data/mockRestaurants";
+import { HOW_IT_WORKS_STEPS } from "@/data/siteInfo";
 import type { HowItWorksStep } from "@/types/restaurant";
 import { Search, UtensilsCrossed, Star, Sparkles } from "lucide-react";
 

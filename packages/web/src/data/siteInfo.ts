@@ -12,10 +12,10 @@ import type { Restaurant, SiteStat, HowItWorksStep } from "@/types/restaurant";
 
 
 export const MOCK_SITE_STATS: SiteStat[] = [
-  { id: "s1", label: "Restaurants", value: "12,400+" },
-  { id: "s2", label: "Cities", value: "48" },
-  { id: "s3", label: "Menu Items", value: "50,000+" },
-  { id: "s4", label: "Avg rating", value: "4.8★" },
+  { id: "s1", label: "Restaurants", value: "30++" },
+  { id: "s2", label: "Cities", value: "15+" },
+  { id: "s3", label: "Menu Items", value: "60+" },
+  { id: "s4", label: "Avg rating", value: "4.5★" },
 ];
 
 export const HOW_IT_WORKS_STEPS: HowItWorksStep[] = [
@@ -32,7 +32,7 @@ export const HOW_IT_WORKS_STEPS: HowItWorksStep[] = [
     step: 2,
     title: "Ask AI",
     description:
-      "Get personalized restaurant suggestions from our AI assistant based on what you are looking for.",
+      "Ask our AI assistant about restaurants, cuisines, menus, and what you're looking for.",
     icon: "ai",
   },
   {
@@ -44,21 +44,3 @@ export const HOW_IT_WORKS_STEPS: HowItWorksStep[] = [
     icon: "review",
   },
 ];
-
-export const CUISINE_FILTERS = [
-  "Italian",
-  "Japanese",
-  "American",
-  "Mexican",
-  "French",
-] as const;
-
-export const CITY_OPTIONS = [
-  "All cities",
-  "New York",
-  "San Francisco",
-  "Chicago",
-  "Austin",
-  "Los Angeles",
-  "Boston",
-] as const;

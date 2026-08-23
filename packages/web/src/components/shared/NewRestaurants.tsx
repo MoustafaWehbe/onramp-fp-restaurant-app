@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { RestaurantCard } from "@/components/shared/RestaurantCard";
 import { restaurantsApi } from "@/services/restaurantsApi";
 
-export function FeaturedRestaurants() {
+export function NewRestaurants() {
   const {
     data,
     isLoading,
@@ -21,7 +21,7 @@ export function FeaturedRestaurants() {
     <section className="w-full px-8 py-16">
       <div className="mb-8 flex items-center justify-between">
         <h2 className="text-2xl font-bold text-primary sm:text-3xl">
-          Featured this week
+          New on Platera
         </h2>
 
         <Link
