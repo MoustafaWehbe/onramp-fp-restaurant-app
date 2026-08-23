@@ -3,6 +3,14 @@ import { z } from "zod";
 export const queryAnalysisStatusSchema = z.enum([
   "relevant",
   "irrelevant",
+  "conversation"
+]);
+
+export const conversationIntentSchema = z.enum([
+  "greeting",
+  "thanks",
+  "farewell",
+  "capabilities",
 ]);
 
 export const retrievalTypeSchema = z.enum([
@@ -64,6 +72,8 @@ export const retrievalPlanSchema = z
       .trim()
       .min(1),
 
+    intent: conversationIntentSchema.optional(),
+
     retrievalType: retrievalTypeSchema.optional(),
 
     filters: retrievalFiltersSchema.optional(),
@@ -78,6 +88,32 @@ export const retrievalPlanSchema = z
     if (plan.status === "irrelevant") {
       return;
     }
+
+    if (plan.status === "conversation") {
+      if (!plan.intent) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["intent"],
+          message:
+            "intent is required for conversational queries",
+        });
+      }
+      for (const field of [
+        "retrievalType",
+        "filters",
+        "semanticQuery",
+      ] as const) {
+        if (plan[field] !== undefined) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: [field],
+            message: `${field} is not allowed for conversational queries`,
+          });
+        }
+      }
+      return;
+    }
+
 
     if (!plan.retrievalType) {
       ctx.addIssue({
