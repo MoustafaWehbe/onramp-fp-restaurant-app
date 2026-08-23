@@ -350,7 +350,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-    /auth/verify-email:
+  /auth/verify-email:
     post:
       tags: [Auth]
       summary: Verify a user's email address
