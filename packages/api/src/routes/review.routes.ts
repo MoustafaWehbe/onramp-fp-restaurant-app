@@ -33,7 +33,6 @@ router.delete(
 
 router.get(
   "/restaurants/:restaurantSlug/branches/:branchSlug/reviews",
-  authenticate,
   rateLimiter,
   validate(reviewBranchParamsSchema, "params"),
   reviewController.getBranchReviews,

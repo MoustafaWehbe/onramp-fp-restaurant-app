@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -28,6 +28,7 @@ type LoginFormData = z.infer<typeof loginSchema>;
 
 export function Login() {
   const { login } = useAuth();
+  const location = useLocation();
   const navigate = useNavigate();
 
   const [error, setError] = useState<string | null>(null);
@@ -54,6 +55,12 @@ export function Login() {
 
       const user = response.data.data;
 
+      const redirect = new URLSearchParams(location.search).get("redirect");
+
+      if (redirect?.startsWith("/")) {
+        navigate(redirect);
+        return;
+      }
 
       switch (user.role) {
         case "admin":

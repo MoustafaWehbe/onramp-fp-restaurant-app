@@ -9,7 +9,6 @@ const router = Router();
 
 router.get(
   "/:restaurantSlug/branches/:branchSlug",
-  authenticate,
   rateLimiter,
   validate(branchParamsSchema, "params"),
   branchController.getBranchBySlug,

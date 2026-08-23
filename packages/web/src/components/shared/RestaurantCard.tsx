@@ -8,6 +8,9 @@ import {
 import type { Restaurant } from "@/types/restaurant";
 import { favoritesApi } from "@/services/favoritesApi";
 import { notifyFavoriteAdded, notifyFavoriteRemoved } from "@/lib/favorite-events";
+import { useLocation } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import { AuthenticationDialog } from "@/components/shared/AuthenticationDialog";
 
 interface RestaurantCardProps {
   restaurant: Restaurant;
@@ -27,8 +30,11 @@ export const RestaurantCard = memo(function RestaurantCard({
     is_favorite,
   } = restaurant;
 
+  const { user } = useAuth();
+  const location = useLocation();
   const [isSaved, setIsSaved] = useState(is_favorite);
   const [isSaving, setIsSaving] = useState(false);
+  const [authDialogOpen, setAuthDialogOpen] = useState(false);
 
   useEffect(() => {
     setIsSaved(is_favorite);
@@ -39,6 +45,11 @@ export const RestaurantCard = memo(function RestaurantCard({
   ) => {
     event.preventDefault();
     event.stopPropagation();
+
+    if (!user) {
+      setAuthDialogOpen(true);
+      return;
+    }
 
     if (isSaving) return;
 
@@ -62,6 +73,7 @@ export const RestaurantCard = memo(function RestaurantCard({
   };
 
   return (
+    <>
     <Link
       to={`/restaurants/${slug}`}
       className="
@@ -179,5 +191,13 @@ export const RestaurantCard = memo(function RestaurantCard({
         {review_count.toLocaleString()} reviews
       </p>
     </Link>
+   <AuthenticationDialog
+      open={authDialogOpen}
+      title="Save your favorite restaurants"
+      description="Sign in or create an account to save restaurants and easily find them later."
+      redirectTo={location.pathname + location.search}
+      onClose={() => setAuthDialogOpen(false)}
+    />
+    </>
   );
 });

@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { apiClient } from "@/lib/api-client";
 import { Star } from "lucide-react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 
 interface ReviewFormProps {
     restaurantSlug: string;
@@ -23,6 +25,10 @@ const ReviewForm = ({
     onUpdated,
     onCancel,
 }: ReviewFormProps) => {
+    const { user } = useAuth();
+    const location = useLocation();
+    const navigate = useNavigate();
+
     const [rating, setRating] = useState(review?.rating ?? 0);
     const [hoverRating, setHoverRating] = useState(0);
     const [comment, setComment] = useState(review?.comment ?? "");
@@ -88,7 +94,43 @@ const ReviewForm = ({
     };
 
     const displayedRating = hoverRating || rating;
+    
+    if (!user) {
+        const redirectTo = `${location.pathname}${location.search}`;
 
+        return (
+            <div className="relative overflow-hidden rounded-2xl border border-orange-100 bg-white p-8 text-center shadow-[0_10px_35px_rgba(0,0,0,0.06)]">
+                <div className="pointer-events-none absolute -right-16 -top-16 h-32 w-32 rounded-full bg-orange-100/40 blur-3xl" />
+
+                <div className="relative">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-orange-500">
+                        Share Your Experience
+                    </p>
+
+                    <h3 className="mt-2 text-xl font-semibold tracking-tight text-gray-900">
+                        Sign in to write a review
+                    </h3>
+
+                    <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-gray-500">
+                        Sign in to share your experience and help other people
+                        discover great restaurants.
+                    </p>
+
+                    <button
+                        type="button"
+                        onClick={() =>
+                            navigate(
+                                `/login?redirect=${encodeURIComponent(redirectTo)}`
+                            )
+                        }
+                        className="mt-5 rounded-lg bg-gradient-to-r from-orange-500 to-amber-500 px-6 py-2.5 text-sm font-semibold text-white shadow-md shadow-orange-200 transition-all hover:-translate-y-0.5 hover:shadow-lg"
+                    >
+                        Sign in to review
+                    </button>
+                </div>
+            </div>
+        );
+    }
     return (
         <form
             onSubmit={handleSubmit}

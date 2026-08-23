@@ -51,31 +51,26 @@ export function AppRoutes() {
         <Route path="/reset-password" element={<ResetPassword />} />
       </Route>
 
-      {/* Protected app routes */}
-      <Route element={<ProtectedRoute />}>
-        <Route element={<AppLayout />}>
-          <Route path="/" element={<Navigate to="/home" replace />} />
-          <Route path="/home" element={<Home />} />
+      <Route element={<AppLayout />}>
+        {/* Public */}
+        <Route path="/home" element={<Home />} />
+        <Route path="/restaurants" element={<Restaurants />} />
+        <Route path="/restaurants/:slug" element={<RestaurantDetails />} />
+        <Route path="/search" element={<Search />} />
+        <Route
+          path="/restaurants/:restaurantSlug/branches/:branchSlug"
+          element={<BranchDetails />}
+        />
+
+        {/* Protected */}
+        <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/settings" element={<Settings />} />
-          <Route path="/restaurants" element={<Restaurants />} />
-          <Route path="/restaurants/:slug" element={<RestaurantDetails />} />
           <Route path="/saved-restaurants" element={<SavedRestaurants />} />
           <Route path="/profile" element={<Profile />} />
-          <Route path="/search" element={<Search />} />
-          <Route
-            path="/restaurants/:restaurantSlug/branches/:branchSlug"
-            element={<BranchDetails />}
-          />
-          <Route
-            path="/restaurants/:restaurantSlug/branches/:branchSlug/menus/:menuId"
-            element={<MenuDetailsPage />}
-          />
-          <Route
-            path="/claim-restaurant"
-            element={<RestaurantClaimPage />}
-          />
+          <Route path="/claim-restaurant" element={<RestaurantClaimPage />} />
         </Route>
+
         {/*Owner routes*/}
         <Route element={<RoleRoute allowedRoles={["owner"]} />}>
           <Route path="/owner" element={<OwnerLayout />}>
@@ -100,7 +95,7 @@ export function AppRoutes() {
               path="menus"
               element={<OwnerMenusPage />}
             />
-         </Route>
+          </Route>
         </Route>
         <Route element={<RoleRoute allowedRoles={["owner"]} />}>
           <Route
@@ -108,8 +103,8 @@ export function AppRoutes() {
             element={<CreateRestaurant />}
           />
         </Route>
-          
-          {/*Admin routes*/}
+
+        {/*Admin routes*/}
         <Route element={<RoleRoute allowedRoles={["admin"]} />}>
           <Route path="/admin" element={<AdminLayout />}>
             <Route
