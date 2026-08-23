@@ -64,7 +64,7 @@ export function MenuHeader({
           <Input
             value={description}
             onChange={(event) => setDescription(event.target.value)}
-            placeholder="Description (optional)"
+            placeholder="Description"
             className="h-9 rounded-lg"
           />
         </div>
