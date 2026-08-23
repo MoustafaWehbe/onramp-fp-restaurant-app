@@ -5,6 +5,7 @@ import { Sidebar } from "../components/layout/Sidebar";
 import { Footer } from "@/components/layout/Footer";
 import { ScrollToTop } from "@/components/shared/ScrollToTop";
 import { useAuth } from "@/hooks/useAuth";
+import { AiChef } from "@/components/ai-agent/AiChef";
 
 export function AppLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -29,6 +30,8 @@ export function AppLayout() {
           <Footer />
         </main>
       </div>
+
+      <AiChef />
     </div>
   );
 }
