@@ -281,6 +281,26 @@ export function RestaurantOwnerPage() {
 
   /*
    * ============================================================
+   * Initial form values
+   * ============================================================
+   */
+
+  const initialFormValues = useMemo(
+    (): Partial<RestaurantFormData> => ({
+      name: restaurant?.name ?? "",
+      image: null,
+      description: restaurant?.description ?? "",
+      cuisine_type: restaurant?.cuisine_type ?? "",
+      ambiance_tags: restaurant?.ambiance_tags ?? [],
+      price_range: restaurant?.price_range ?? "",
+      email: restaurant?.email ?? "",
+      phone: restaurant?.phone ?? "",
+    }),
+    [restaurant],
+  );
+
+  /*
+   * ============================================================
    * Loading
    * ============================================================
    */
@@ -379,26 +399,6 @@ export function RestaurantOwnerPage() {
 
   const rating = Number(
     restaurant.average_rating || 0,
-  );
-
-  /*
-   * ============================================================
-   * Initial form values
-   * ============================================================
-   */
-
-  const initialFormValues = useMemo(
-    (): Partial<RestaurantFormData> => ({
-      name: restaurant.name ?? "",
-      image: null,
-      description: restaurant.description ?? "",
-      cuisine_type: restaurant.cuisine_type ?? "",
-      ambiance_tags: restaurant.ambiance_tags ?? [],
-      price_range: restaurant.price_range ?? "",
-      email: restaurant.email ?? "",
-      phone: restaurant.phone ?? "",
-    }),
-    [restaurant],
   );
 
   /*
