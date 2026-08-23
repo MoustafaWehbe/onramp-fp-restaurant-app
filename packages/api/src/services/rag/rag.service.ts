@@ -1,32 +1,11 @@
 import type { ValidatedRetrievalPlan } from "./query/query-schema";
-
-import {
-    analyzeQuery,
-} from "./query/query-analyzer";
-
-import {
-    databaseRetrieval,
-} from "./retrieval/database-retrieval";
-
-import {
-    semanticRetrieval,
-} from "./retrieval/semantic-retrieval";
-
-import {
-    hybridRetrieval,
-} from "./retrieval/hybrid-retrieval";
-
-import {
-    buildContext,
-} from "./context/context-builder";
-
-import {
-    generateAnswer,
-} from "./generation/answer-generator";
-
-import {
-    generateEmbedding,
-} from "@fp_restaurant/shared";
+import { analyzeQuery } from "./query/query-analyzer";
+import { databaseRetrieval } from "./retrieval/database-retrieval";
+import { semanticRetrieval } from "./retrieval/semantic-retrieval";
+import { hybridRetrieval } from "./retrieval/hybrid-retrieval";
+import { buildContext } from "./context/context-builder";
+import { generateAnswer } from "./generation/answer-generator";
+import { generateEmbedding } from "@fp_restaurant/shared";
 
 export type RagChunkHandler = (
     chunk: string

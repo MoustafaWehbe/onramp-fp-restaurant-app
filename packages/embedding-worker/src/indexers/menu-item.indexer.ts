@@ -1,4 +1,4 @@
-import { generateEmbedding } from "../lib/ai.js";
+import { generateEmbedding } from "@fp_restaurant/shared";
 import { getMenuItemById } from "../repositories/menu-item.repository.js";
 import { embeddingRepository } from "../repositories/embedding.repository.js";
 

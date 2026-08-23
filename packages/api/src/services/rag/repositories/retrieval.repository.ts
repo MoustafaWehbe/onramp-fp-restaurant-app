@@ -37,12 +37,10 @@ const FILTER_LEVELS = {
         "menuItemName",
         "minItemPrice",
         "maxItemPrice",
-        "menuItemDescription",
     ] as const,
 
     menu: [
         "menuName",
-        "menuDescription",
     ] as const,
 };
 
@@ -234,21 +232,9 @@ export const retrievalRepository = {
             };
         }
 
-        if (filters.menuDescription) {
-            menuWhere.description = {
-                [Op.iLike]: `%${filters.menuDescription}%`,
-            };
-        }
-
         if (filters.menuItemName) {
             menuItemWhere.name = {
                 [Op.iLike]: `%${filters.menuItemName}%`,
-            };
-        }
-
-        if (filters.menuItemDescription) {
-            menuItemWhere.description = {
-                [Op.iLike]: `%${filters.menuItemDescription}%`,
             };
         }
 
