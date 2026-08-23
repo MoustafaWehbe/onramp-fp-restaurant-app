@@ -1,34 +1,43 @@
 "use strict";
 
+const path = require("path");
+const { URL } = require("url");
 require("dotenv").config({
-  path: require("path").resolve(__dirname, "../../../.env"),
+  path: path.resolve(__dirname, "../../../../.env"),
 });
 
-const url = require("url");
-
 function parseDbUrl(dbUrl) {
-  const parsed = new url.URL(dbUrl);
+  const parsed = new URL(dbUrl);
+
   return {
-    username: parsed.username,
-    password: parsed.password,
+    username: decodeURIComponent(parsed.username),
+    password: decodeURIComponent(parsed.password),
     database: parsed.pathname.slice(1),
     host: parsed.hostname,
     port: parseInt(parsed.port || "5432", 10),
+
     dialect: "postgres",
+
+    dialectOptions: {
+      ssl: {
+        require: true,
+        rejectUnauthorized: false,
+      },
+    },
+
     migrationStorage: "sequelize",
     seederStorage: "sequelize",
   };
 }
 
-const dbUrl =
-  process.env.DATABASE_URL ||
-  "postgresql://postgres:postgres@localhost:5432/fp_restaurant";
+const dbUrl = process.env.DATABASE_URL;
+
+if (!dbUrl) {
+  throw new Error("DATABASE_URL is not defined");
+}
 
 module.exports = {
   development: parseDbUrl(dbUrl),
-  test: parseDbUrl(
-    process.env.DATABASE_URL ||
-      "postgresql://postgres:postgres@localhost:5432/fp_restaurant_test",
-  ),
-  production: parseDbUrl(process.env.DATABASE_URL || dbUrl),
+  test: parseDbUrl(dbUrl),
+  production: parseDbUrl(dbUrl),
 };

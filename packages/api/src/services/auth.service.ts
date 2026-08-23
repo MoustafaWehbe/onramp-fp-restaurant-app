@@ -31,7 +31,7 @@ export class AuthService {
   async register(input: RegisterInput) {
     const existing = await User.findOne({ where: { email: input.email } });
     if (existing) {
-      throw createError("Email already in use", 409);
+      throw createError( "Registration failed. Please use a different email address or try signing in.", 409);
     }
 
     const passwordHash = await hashPassword(input.password);
