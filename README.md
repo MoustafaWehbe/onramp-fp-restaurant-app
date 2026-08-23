@@ -1,103 +1,124 @@
-# Starter Kit
+# Platera 🍽️
 
-A full-stack TypeScript monorepo with everything pre-configured so you can focus on building features.
+Platera is a full-stack restaurant discovery and management platform built for Lebanon. Users can discover restaurants, explore branches and menus, write reviews, save favorites, and use AI-powered search. Restaurant owners can claim and manage restaurants, while admins manage claims and platform operations.
 
-## Stack
+## Features
 
-| Layer | Technology |
-|-------|-----------|
-| Frontend | React 18, Vite, Tailwind CSS, shadcn/ui |
-| Backend | Express, Sequelize, Zod |
-| Background Jobs | BullMQ, Redis |
-| Database | PostgreSQL |
-| Monorepo | Turborepo |
-| Language | TypeScript (everywhere) |
+* 🔐 **Authentication & Authorization** — Registration, email verification, password reset, authentication, and role-based access (`user`, `owner`, `admin`).
+* 🍴 **Restaurant Discovery** — Search and filter restaurants by cuisine, price, rating, location, vibe, and availability.
+* 📍 **Branches** — Manage multiple branches with locations, opening hours, contact information, images, and ratings.
+* 📖 **Menus** — Manage menus, menu items, prices, availability, and branch-specific prices.
+* ⭐ **Reviews & Favorites** — Users can review branches and save restaurants to their favorites.
+* 🏪 **Restaurant Claims** — Users can request restaurant ownership, with admin approval and owner management.
+* 🤖 **AI Search** — Semantic restaurant search using embeddings, Ollama, and PostgreSQL/pgvector.
+* ⚙️ **Background Processing** — BullMQ and Redis workers for emails, embeddings, indexing, scraping, and data processing.
 
-## Project Structure
+## Tech Stack
 
-```
-packages/
-  web/        → React + Vite frontend (port 5173)
-  api/        → Express REST API (port 3000)
-  workers/    → BullMQ background job processors
-  shared/     → Shared utilities (auth, db models, queue, AI)
-```
+**Frontend**
+
+* React
+* TypeScript
+* Vite
+* Tailwind CSS
+* React Router
+
+**Backend**
+
+* Node.js
+* TypeScript
+* Express
+* Sequelize
+* Zod
+
+**Database & Infrastructure**
+
+* PostgreSQL + pgvector
+* Redis
+* BullMQ
+* Docker
+* Supabase Storage
+
+**AI**
+
+* Ollama
+* `nomic-embed-text`
+* Vector embeddings
+* Semantic search / RAG
+
 
 ## Getting Started
 
-### 1. Prerequisites
+### Requirements
 
-- Node.js >= 20
-- Docker (for PostgreSQL + Redis)
+* Node.js 22+
+* npm
+* Docker Desktop
+* Ollama
 
-### 2. Install dependencies
+### Installation
 
 ```bash
+git clone <repository-url>
+cd <repository-directory>
+
 npm install
 ```
 
-### 3. Start infrastructure
+Start the required services:
 
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
-### 4. Configure environment
+Run database migrations:
 
 ```bash
-cp .env.example .env
-# Edit .env with your values
-```
-
-### 5. Run database migrations
-
-```bash
-cd packages/api
-npx sequelize-cli db:migrate
-npx sequelize-cli db:seed:all   # optional sample data
-
-# create a new migration
-npx sequelize-cli migration:generate --name create-restaurants
-# then edit the generated file in packages/api/src/migrations/ to define the schema changes
-# then apply the migration
 npx sequelize-cli db:migrate
 ```
 
-### 6. Start development servers
+For AI search, install and run Ollama with the embedding model:
 
 ```bash
-# Start all packages in parallel
+ollama pull nomic-embed-text
+```
+
+Configure the required environment variables for the API and workers, then start the application:
+
+```bash
 npm run dev
-
-# Or start individually
-cd packages/api && npm run dev     # API on :3000
-cd packages/web && npm run dev     # Web on :5173
-cd packages/workers && npm run dev # Workers
 ```
 
-## Available Scripts (root)
+## Architecture
 
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Start all packages in watch mode |
-| `npm run build` | Build all packages |
-| `npm run test` | Run all test suites |
-| `npm run lint` | Lint all packages |
-
-## Environment Variables
-
-See `.env.example` for all required variables.
-
-## Testing
-
-```bash
-npm run test              # Run all tests
-cd packages/api && npm test  # API unit tests (Jest)
-cd packages/web && npm test  # Web tests (Vitest)
+```text
+React Web App
+      │
+      ▼
+   REST API
+      │
+ ┌────┴─────┐
+ ▼          ▼
+PostgreSQL  Redis
+ + pgvector   │
+      ▲       ▼
+      │   BullMQ Workers
+      │       │
+      └── RAG / Embeddings
 ```
 
-## Docker
+## User Roles
 
-The `docker-compose.yml` starts:
-- **PostgreSQL 16** on port `5432`
-- **Redis 7** on port `6379`
+| Role    | Main Responsibilities                       |
+| ------- | ------------------------------------------- |
+| `user`  | Discover, review, and favorite restaurants  |
+| `owner` | Manage restaurants, branches, and menus     |
+| `admin` | Manage claims and administrative operations |
+
+## API Documentation
+
+Swagger/OpenAPI documentation is available through the API's configured Swagger route when the backend is running.
+
+---
+
+**Platera — Discover. Explore. Dine.**
