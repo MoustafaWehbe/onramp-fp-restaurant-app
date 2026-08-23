@@ -102,7 +102,7 @@ export function EditMenuItemForm({
           className="h-9 rounded-lg"
         />
         <Input
-          placeholder="Description (optional)"
+          placeholder="Description"
           value={description}
           onChange={(event) => setDescription(event.target.value)}
           className="h-9 rounded-lg"

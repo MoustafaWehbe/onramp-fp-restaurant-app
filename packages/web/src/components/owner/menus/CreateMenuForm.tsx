@@ -137,7 +137,7 @@ export function CreateMenuForm({
           className="rounded-lg"
         />
         <Input
-          placeholder="Description (optional)"
+          placeholder="Description"
           value={description}
           onChange={(event) => setDescription(event.target.value)}
           className="rounded-lg"
@@ -210,7 +210,7 @@ export function CreateMenuForm({
                     className="rounded-lg"
                   />
                   <Input
-                    placeholder="Description (optional)"
+                    placeholder="Description"
                     value={item.description}
                     onChange={(event) =>
                       updateItem(item.id, { description: event.target.value })

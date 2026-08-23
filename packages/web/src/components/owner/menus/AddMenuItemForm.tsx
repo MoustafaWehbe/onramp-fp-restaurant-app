@@ -63,6 +63,12 @@ export function AddMenuItemForm({
           className="rounded-lg"
         />
         <Input
+          placeholder="Description"
+          value={description}
+          onChange={(event) => setDescription(event.target.value)}
+          className="rounded-lg sm:col-span-2"
+        />
+        <Input
           type="number"
           step="1"
           min="0"
@@ -70,12 +76,6 @@ export function AddMenuItemForm({
           value={displayOrder}
           onChange={(event) => setDisplayOrder(event.target.value)}
           className="rounded-lg"
-        />
-        <Input
-          placeholder="Description (optional)"
-          value={description}
-          onChange={(event) => setDescription(event.target.value)}
-          className="rounded-lg sm:col-span-2"
         />
         <input
           type="file"
