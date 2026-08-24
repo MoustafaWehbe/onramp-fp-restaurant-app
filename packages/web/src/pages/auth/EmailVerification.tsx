@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { CheckCircle2, Loader2, MailCheck } from "lucide-react";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import { CheckCircle2, Loader2, MailCheck, XCircle } from "lucide-react";
 import { apiClient } from "../../lib/api-client";
 import { getErrorMessage } from "../../lib/error-handler";
 import { Button } from "../../components/ui/button";
@@ -18,9 +18,18 @@ const RESEND_COOLDOWN_SECONDS = 60;
 export function EmailVerification() {
   const location = useLocation();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
-  // Register should navigate here with: navigate("/verify-email", { state: { email } })
-  const email = (location.state as { email?: string } | null)?.email ?? "";
+  const token = searchParams.get("token");
+
+  const email =
+    (location.state as { email?: string } | null)?.email ?? "";
+
+  const [isVerifying, setIsVerifying] = useState(!!token);
+  const [isVerified, setIsVerified] = useState(false);
+  const [verificationError, setVerificationError] = useState<string | null>(
+    null,
+  );
 
   const [isResending, setIsResending] = useState(false);
   const [justResent, setJustResent] = useState(false);
@@ -29,22 +38,45 @@ export function EmailVerification() {
 
   useEffect(() => {
     if (cooldown === 0) return;
+
     const timer = setInterval(() => {
       setCooldown((prev) => (prev <= 1 ? 0 : prev - 1));
     }, 1000);
+
     return () => clearInterval(timer);
   }, [cooldown]);
 
-  // If someone lands here without an email in state (e.g. direct visit),
-  // send them back to register instead of showing a broken page.
+  // Verify the token from the email link
   useEffect(() => {
-    if (!email) {
-      navigate("/register", { replace: true });
+    if (!token) {
+      setIsVerifying(false);
+      return;
     }
-  }, [email, navigate]);
+
+    const verifyEmail = async () => {
+      try {
+        await apiClient.post("/auth/verify-email", {
+          token,
+        });
+
+        setIsVerified(true);
+      } catch (error) {
+        setVerificationError(
+          getErrorMessage(
+            error,
+            "This verification link is invalid or has expired.",
+          ),
+        );
+      } finally {
+        setIsVerifying(false);
+      }
+    };
+
+    verifyEmail();
+  }, [token]);
 
   const handleResend = async () => {
-    if (isResending || cooldown > 0) return;
+    if (!email || isResending || cooldown > 0) return;
 
     setIsResending(true);
     setJustResent(false);
@@ -66,8 +98,128 @@ export function EmailVerification() {
     }
   };
 
+  // Verifying email token
+  if (token) {
+    if (isVerifying) {
+      return (
+        <Card className="w-full max-w-xl rounded-3xl border-white/20 bg-white/95 px-8 py-10 shadow-2xl backdrop-blur-sm md:px-12 md:py-12">
+          <CardHeader className="items-center space-y-5 text-center">
+            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary/10">
+              <Loader2
+                className="h-10 w-10 animate-spin text-primary"
+                aria-hidden="true"
+              />
+            </div>
+
+            <CardTitle className="text-4xl font-bold">
+              Verifying your email...
+            </CardTitle>
+
+            <CardDescription className="text-lg">
+              Please wait while we activate your Platera account.
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      );
+    }
+
+    if (verificationError) {
+      return (
+        <Card className="w-full max-w-xl rounded-3xl border-white/20 bg-white/95 px-8 py-10 shadow-2xl backdrop-blur-sm md:px-12 md:py-12">
+          <CardHeader className="items-center space-y-5 text-center">
+            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-red-100">
+              <XCircle
+                className="h-10 w-10 text-red-500"
+                aria-hidden="true"
+              />
+            </div>
+
+            <CardTitle className="text-4xl font-bold">
+              Verification failed
+            </CardTitle>
+
+            <CardDescription className="text-lg">
+              {verificationError}
+            </CardDescription>
+          </CardHeader>
+
+          <CardFooter className="justify-center pt-8">
+            <Button
+              onClick={() => navigate("/login")}
+              className="h-14 rounded-2xl px-8 text-lg"
+            >
+              Back to login
+            </Button>
+          </CardFooter>
+        </Card>
+      );
+    }
+
+    if (isVerified) {
+      return (
+        <Card className="w-full max-w-xl rounded-3xl border-white/20 bg-white/95 px-8 py-10 shadow-2xl backdrop-blur-sm md:px-12 md:py-12">
+          <CardHeader className="items-center space-y-5 text-center">
+            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-green-100">
+              <CheckCircle2
+                className="h-10 w-10 text-green-600"
+                aria-hidden="true"
+              />
+            </div>
+
+            <CardTitle className="text-4xl font-bold">
+              Email verified!
+            </CardTitle>
+
+            <CardDescription className="text-lg">
+              Your Platera account has been successfully verified.
+              You can now log in to your account.
+            </CardDescription>
+          </CardHeader>
+
+          <CardFooter className="justify-center pt-8">
+            <Button
+              onClick={() => navigate("/login")}
+              className="h-14 rounded-2xl px-8 text-lg"
+            >
+              Continue to login
+            </Button>
+          </CardFooter>
+        </Card>
+      );
+    }
+  }
+
+  // Registration flow: user arrived here without a token
   if (!email) {
-    return null;
+    return (
+      <Card className="w-full max-w-xl rounded-3xl border-white/20 bg-white/95 px-8 py-10 shadow-2xl backdrop-blur-sm md:px-12 md:py-12">
+        <CardHeader className="items-center space-y-5 text-center">
+          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary/10">
+            <MailCheck
+              className="h-10 w-10 text-primary"
+              aria-hidden="true"
+            />
+          </div>
+
+          <CardTitle className="text-4xl font-bold">
+            Verify your email
+          </CardTitle>
+
+          <CardDescription className="text-lg">
+            Please register first to receive a verification email.
+          </CardDescription>
+        </CardHeader>
+
+        <CardFooter className="justify-center pt-8">
+          <Button
+            onClick={() => navigate("/register")}
+            className="h-14 rounded-2xl px-8 text-lg"
+          >
+            Create an account
+          </Button>
+        </CardFooter>
+      </Card>
+    );
   }
 
   return (
@@ -97,19 +249,20 @@ export function EmailVerification() {
             {resendError}
           </div>
         )}
+
         {justResent && cooldown > 0 && (
           <div
             className="flex items-center gap-3 rounded-2xl bg-green-50 px-5 py-4 text-base font-medium text-green-700"
             role="status"
           >
             <CheckCircle2 className="h-5 w-5 shrink-0" aria-hidden="true" />
-            Your verification email will be sent shortly. Please check your inbox.
+            Your verification email will be sent shortly. Please check your
+            inbox.
           </div>
         )}
 
         <Button
           type="button"
-          variant="default"
           className="h-16 w-full rounded-2xl text-lg font-semibold"
           onClick={handleResend}
           disabled={isResending || cooldown > 0}

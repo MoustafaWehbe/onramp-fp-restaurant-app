@@ -49,6 +49,7 @@ export function AppRoutes() {
       {/*  AUTH ROUTES  */}
 
       <Route element={<AuthLayout />}>
+        <Route path="/" element={<Navigate to="/home" replace />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
       </Route>
