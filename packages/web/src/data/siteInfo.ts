@@ -12,7 +12,7 @@ import type { Restaurant, SiteStat, HowItWorksStep } from "@/types/restaurant";
 
 
 export const MOCK_SITE_STATS: SiteStat[] = [
-  { id: "s1", label: "Restaurants", value: "30++" },
+  { id: "s1", label: "Restaurants", value: "30+" },
   { id: "s2", label: "Cities", value: "15+" },
   { id: "s3", label: "Menu Items", value: "60+" },
   { id: "s4", label: "Avg rating", value: "4.5★" },
