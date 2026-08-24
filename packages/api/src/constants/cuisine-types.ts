@@ -11,6 +11,7 @@ export const CUISINE_TYPES = [
   "International",
   "Mediterranean",
   "Seafood",
+  "American",
 ] as const;
 
 export type CuisineType = (typeof CUISINE_TYPES)[number];

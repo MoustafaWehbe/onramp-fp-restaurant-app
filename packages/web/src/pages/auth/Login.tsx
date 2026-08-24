@@ -84,7 +84,7 @@ export function Login() {
               claim.status === "completed" &&
               claim.restaurantId !== null
             ) {
-              navigate("/owner/dashboard");
+              navigate("/owner");
             } else {
               navigate("/owner");
             }
