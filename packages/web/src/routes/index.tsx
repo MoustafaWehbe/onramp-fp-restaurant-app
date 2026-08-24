@@ -81,7 +81,7 @@ export function AppRoutes() {
         />
 
         <Route
-          path="/menus/:menuId"
+          path="restaurants/:restaurantSlug/branches/:branchSlug/menus/:menuId"
           element={<MenuDetailsPage />}
         />
 
