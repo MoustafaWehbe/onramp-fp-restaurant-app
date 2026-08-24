@@ -20,8 +20,12 @@ interface Branch {
   review_count: number;
 }
 
-export function OwnerDashboard() {
+interface DashboardResponse {
+  data: Branch[];
+  menu_count: number;
+}
 
+export function OwnerDashboard() {
   const {
     restaurantSlug,
     userName,
@@ -30,6 +34,7 @@ export function OwnerDashboard() {
   } = useOutletContext<OwnerOutletContext>();
 
   const [branches, setBranches] = useState<Branch[]>([]);
+  const [menuCount, setMenuCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -44,20 +49,16 @@ export function OwnerDashboard() {
         setIsLoading(true);
         setError(null);
 
-        const response = await apiClient.get(
+        const response = await apiClient.get<DashboardResponse>(
           `/owner/restaurants/${restaurantSlug}/branches`,
         );
 
         setBranches(response.data.data ?? []);
+        setMenuCount(response.data.menu_count ?? 0);
       } catch (error) {
-        console.error(
-          "Failed to load dashboard:",
-          error,
-        );
+        console.error("Failed to load dashboard:", error);
 
-        setError(
-          "Unable to load your dashboard data.",
-        );
+        setError("Unable to load your dashboard data.");
       } finally {
         setIsLoading(false);
       }
@@ -66,14 +67,11 @@ export function OwnerDashboard() {
     loadDashboard();
   }, [restaurantSlug]);
 
-
-
   /*
    * The branch API currently doesn't expose an
    * "is open" value. Therefore we don't invent
    * an open-branch count.
    */
-  const openBranches = null;
 
   /* ========================================================= */
   /* Loading                                                   */
@@ -106,8 +104,7 @@ export function OwnerDashboard() {
           </h2>
 
           <p className="mt-2 max-w-sm text-sm leading-6 text-muted-foreground">
-            We couldn't find a restaurant
-            associated with your owner
+            We couldn't find a restaurant associated with your owner
             account.
           </p>
         </div>
@@ -151,13 +148,13 @@ export function OwnerDashboard() {
             <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.28em] text-[#78716C]">
               Overview
             </p>
+
             <h1 className="font-serif text-4xl font-medium tracking-[-0.04em] text-[#292524] md:text-5xl">
               Hello, {userName || "there"}
             </h1>
 
             <p className="mt-3 text-sm leading-6 text-[#78716C]">
-              Manage your restaurants,
-              branches and menus from one
+              Manage your restaurants, branches and menus from one
               place.
             </p>
           </div>
@@ -169,7 +166,6 @@ export function OwnerDashboard() {
       {/* ================================================= */}
 
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-
         <StatCard
           label="Branches"
           value={branches.length.toString()}
@@ -179,10 +175,9 @@ export function OwnerDashboard() {
 
         <StatCard
           label="Menus"
-          value="—"
-          caption="Menu management"
+          value="1"
+          caption="Available menus"
           icon={BookOpen}
-          unavailable
         />
 
         <StatCard
@@ -194,153 +189,132 @@ export function OwnerDashboard() {
           }
           caption={`${reviewCount} total reviews`}
           icon={Star}
-          showTrend={false}
           rating={averageRating > 0}
         />
-
       </section>
 
+      {/* ================================================= */}
+      {/* Branch Performance                                */}
+      {/* ================================================= */}
 
-      {/* ================================================= */ }
-  {/* Branch Performance                                */ }
-  {/* ================================================= */ }
+      <section className="mt-10">
+        <div className="mb-5">
+          <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.25em] text-[#78716C]">
+            Performance
+          </p>
 
-  <section className="mt-10">
-    <div className="mb-5">
-      <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.25em] text-[#78716C]">
-        Performance
-      </p>
+          <h2 className="font-serif text-2xl font-semibold tracking-[-0.025em] text-[#292524]">
+            Branch Performance
+          </h2>
 
-      <h2 className="font-serif text-2xl font-semibold tracking-[-0.025em] text-[#292524]">
-        Branch Performance
-      </h2>
+          <p className="mt-1 text-sm text-[#78716C]">
+            Reviews and ratings by branch.
+          </p>
+        </div>
 
-      <p className="mt-1 text-sm text-[#78716C]">
-        Reviews and ratings by branch.
-      </p>
-    </div>
+        <div className="overflow-hidden rounded-2xl border border-[#E7E0D7] bg-white shadow-[0_8px_30px_rgba(41,37,36,0.04)]">
+          {branches.length === 0 ? (
+            <EmptyBranches />
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[650px]">
+                <thead>
+                  <tr className="border-b border-[#EEE9E2] bg-[#FCFAF7]">
+                    <th className="px-7 py-4 text-left text-[10px] font-semibold uppercase tracking-[0.18em] text-[#78716C]">
+                      Branch
+                    </th>
 
-    <div className="overflow-hidden rounded-2xl border border-[#E7E0D7] bg-white shadow-[0_8px_30px_rgba(41,37,36,0.04)]">
-      {branches.length === 0 ? (
-        <EmptyBranches />
-      ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[650px]">
-            <thead>
-              <tr className="border-b border-[#EEE9E2] bg-[#FCFAF7]">
-                <th className="px-7 py-4 text-left text-[10px] font-semibold uppercase tracking-[0.18em] text-[#78716C]">
-                  Branch
-                </th>
+                    <th className="px-7 py-4 text-left text-[10px] font-semibold uppercase tracking-[0.18em] text-[#78716C]">
+                      Avg. Rating
+                    </th>
 
-                <th className="px-7 py-4 text-left text-[10px] font-semibold uppercase tracking-[0.18em] text-[#78716C]">
-                  Avg. Rating
-                </th>
+                    <th className="px-7 py-4 text-right text-[10px] font-semibold uppercase tracking-[0.18em] text-[#78716C]">
+                      No. of Reviews
+                    </th>
+                  </tr>
+                </thead>
 
-                <th className="px-7 py-4 text-right text-[10px] font-semibold uppercase tracking-[0.18em] text-[#78716C]">
-                  No. of Reviews
-                </th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {branches.map(
-                (branch) => {
-                  const rating =
-                    Number(
-                      branch.average_rating ||
-                      0,
+                <tbody>
+                  {branches.map((branch) => {
+                    const rating = Number(
+                      branch.average_rating || 0,
                     );
 
-                  return (
-                    <tr
-                      key={
-                        branch.id
-                      }
-                      className="border-b border-[#F0EBE5] last:border-0 transition-colors hover:bg-[#FCFAF7]"
-                    >
-                      {/* Branch */}
+                    return (
+                      <tr
+                        key={branch.id}
+                        className="border-b border-[#F0EBE5] last:border-0 transition-colors hover:bg-[#FCFAF7]"
+                      >
+                        {/* Branch */}
 
-                      <td className="px-7 py-6">
-                        <div className="flex items-center gap-4">
-                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#FFF1E8]">
-                            <Building2
-                              className="h-4 w-4 text-primary"
-                              strokeWidth={
-                                1.6
-                              }
-                            />
-                          </div>
-
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <p className="font-serif text-[15px] font-semibold text-[#292524]">
-                                {
-                                  branch.name
-                                }
-                              </p>
-
-                              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                        <td className="px-7 py-6">
+                          <div className="flex items-center gap-4">
+                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#FFF1E8]">
+                              <Building2
+                                className="h-4 w-4 text-primary"
+                                strokeWidth={1.6}
+                              />
                             </div>
 
-                            <p className="mt-1 text-xs text-[#78716C]">
-                              {
-                                branch.city
-                              }
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <p className="font-serif text-[15px] font-semibold text-[#292524]">
+                                  {branch.name}
+                                </p>
 
-                              {branch.address &&
-                                ` · ${branch.address}`}
-                            </p>
+                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                              </div>
+
+                              <p className="mt-1 text-xs text-[#78716C]">
+                                {branch.city}
+
+                                {branch.address &&
+                                  ` · ${branch.address}`}
+                              </p>
+                            </div>
                           </div>
-                        </div>
-                      </td>
+                        </td>
 
-                      {/* Rating */}
+                        {/* Rating */}
 
-                      <td className="px-7 py-6">
-                        <div className="inline-flex items-center gap-2">
-                          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#FFF1E8]">
-                            <Star
-                              className="h-3.5 w-3.5 fill-primary text-primary"
-                              strokeWidth={
-                                1.2
-                              }
-                            />
+                        <td className="px-7 py-6">
+                          <div className="inline-flex items-center gap-2">
+                            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#FFF1E8]">
+                              <Star
+                                className="h-3.5 w-3.5 fill-primary text-primary"
+                                strokeWidth={1.2}
+                              />
+                            </div>
+
+                            <span className="font-serif text-base font-semibold text-[#292524]">
+                              {rating
+                                ? rating.toFixed(1)
+                                : "—"}
+                            </span>
                           </div>
+                        </td>
 
+                        {/* Reviews */}
+
+                        <td className="px-7 py-6 text-right">
                           <span className="font-serif text-base font-semibold text-[#292524]">
-                            {rating
-                              ? rating.toFixed(
-                                1,
-                              )
-                              : "—"}
+                            {branch.review_count}
                           </span>
-                        </div>
-                      </td>
 
-                      {/* Reviews */}
-
-                      <td className="px-7 py-6 text-right">
-                        <span className="font-serif text-base font-semibold text-[#292524]">
-                          {
-                            branch.review_count
-                          }
-                        </span>
-
-                        <span className="ml-2 text-xs text-[#78716C]">
-                          reviews
-                        </span>
-                      </td>
-                    </tr>
-                  );
-                },
-              )}
-            </tbody>
-          </table>
+                          <span className="ml-2 text-xs text-[#78716C]">
+                            reviews
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
-      )}
+      </section>
     </div>
-  </section>
-    </div >
   );
 }
 
@@ -353,7 +327,6 @@ function StatCard({
   value,
   caption,
   icon: Icon,
-  unavailable = false,
   showTrend = false,
   rating = false,
 }: {
@@ -361,7 +334,6 @@ function StatCard({
   value: string;
   caption: string;
   icon: React.ElementType;
-  unavailable?: boolean;
   showTrend?: boolean;
   rating?: boolean;
 }) {
@@ -389,12 +361,7 @@ function StatCard({
       {/* Number */}
 
       <div className="relative mt-6">
-        <span
-          className={`font-serif text-5xl font-semibold tracking-[-0.045em] ${unavailable
-            ? "text-[#A8A29E]"
-            : "text-[#292524]"
-            }`}
-        >
+        <span className="font-serif text-5xl font-semibold tracking-[-0.045em] text-[#292524]">
           {value}
         </span>
       </div>
@@ -439,8 +406,7 @@ function EmptyBranches() {
       </h3>
 
       <p className="mx-auto mt-2 max-w-xs text-xs leading-5 text-[#78716C]">
-        Add your first branch to begin
-        tracking its performance.
+        Add your first branch to begin tracking its performance.
       </p>
     </div>
   );
