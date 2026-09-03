@@ -149,22 +149,21 @@ export const retrievalRepository = {
         limit = 20,
         offset = 0
     ) {
+
+        console.log(
+            "DATABASE FILTERS:",
+            JSON.stringify(filters, null, 2)
+        );
+
         const sequelize = getSequelize();
 
         const restaurantWhere: any = {};
-
         const branchWhere: any = {};
-
         const menuWhere: any = {
             is_active: true,
         };
-
         const menuItemWhere: any = {
             is_active: true,
-        };
-
-        const branchMenuItemWhere: any = {
-            isAvailable: true,
         };
 
         if (filters.cuisine?.length) {
@@ -180,14 +179,14 @@ export const retrievalRepository = {
                 ...(restaurantWhere[Op.and] ?? []),
                 ...filters.ambianceTags.map((tag) =>
                     Sequelize.literal(`
-                EXISTS (
-                    SELECT 1
-                    FROM json_array_elements_text(
-                        "Restaurant"."ambiance_tags"
-                    ) AS ambiance_tag
-                    WHERE ambiance_tag = ${sequelize.escape(tag)}
-                )
-            `)
+                        EXISTS (
+                            SELECT 1
+                            FROM json_array_elements_text(
+                                "Restaurant"."ambiance_tags"
+                            ) AS ambiance_tag
+                            WHERE ambiance_tag = ${sequelize.escape(tag)}
+                        )
+                    `)
                 ),
             ];
         }
@@ -216,7 +215,6 @@ export const retrievalRepository = {
                 },
             }));
         }
-        //isOpenNow is calculated from opening hours column 
 
         if (filters.isOpenNow !== undefined) {
             branchWhere[Op.and] = [
@@ -225,6 +223,9 @@ export const retrievalRepository = {
             ];
         }
 
+        const hasBranchFilter =
+            Boolean(filters.city?.length) ||
+            filters.isOpenNow !== undefined;
 
         if (filters.menuName) {
             menuWhere.name = {
@@ -232,131 +233,72 @@ export const retrievalRepository = {
             };
         }
 
+        const hasMenuFilter = Boolean(filters.menuName);
+
         if (filters.menuItemName) {
             menuItemWhere.name = {
                 [Op.iLike]: `%${filters.menuItemName}%`,
             };
         }
 
-        const priceConditions: any[] = [];
+        const hasMenuItemFilter =
+            Boolean(filters.menuItemName) ||
+            filters.minItemPrice !== undefined ||
+            filters.maxItemPrice !== undefined;
 
-        if (filters.minItemPrice !== undefined) {
-            priceConditions.push(
-                sequelize.where(
-                    Sequelize.literal(`
-                        COALESCE(
-                            "branches->branchMenuItems"."custom_price",
-                            "branches->branchMenuItems->menuItem"."base_price"
-                        )
-                    `),
-                    {
-                        [Op.gte]: filters.minItemPrice,
-                    }
-                )
-            );
+        const branchInclude: any = {
+            model: Branch,
+            as: "branches",
+            required: hasBranchFilter,
+            where: branchWhere,
+        };
+
+        const menuInclude: any = {
+            model: Menu,
+            as: "menus",
+            required: hasMenuFilter || hasMenuItemFilter,
+            where: menuWhere,
+        };
+
+        if (hasMenuItemFilter) {
+            menuInclude.include = [
+                {
+                    model: MenuItem,
+                    as: "menuItems",
+                    required: true,
+                    where: menuItemWhere,
+                },
+            ];
         }
 
-        if (filters.maxItemPrice !== undefined) {
-            priceConditions.push(
-                sequelize.where(
-                    Sequelize.literal(`
-                    COALESCE(
-                            "branches->branchMenuItems"."custom_price",
-                            "branches->branchMenuItems->menuItem"."base_price"
-                        )
-                    `),
-                    {
-                        [Op.lte]: filters.maxItemPrice,
-                    }
-                )
-            );
+        if (hasBranchFilter) {
+            branchInclude.include = [
+                {
+                    model: BranchMenuItem,
+                    as: "branchMenuItems",
+                    required: false,
+                },
+            ];
         }
-
-        if (priceConditions.length > 0) {
-            branchMenuItemWhere[Op.and] = priceConditions;
-        }
-
-
-        const branchRequired = anyFilterPresent(
-            filters,
-            [
-                ...FILTER_LEVELS.branch,
-                ...FILTER_LEVELS.branchMenuItem,
-                ...FILTER_LEVELS.menuItem,
-            ]
-        );
-
-        const branchMenuItemRequired =
-            anyFilterPresent(
-                filters,
-                [
-                    ...FILTER_LEVELS.branchMenuItem,
-                    ...FILTER_LEVELS.menuItem,
-                ]
-            );
-
-        const menuItemRequired =
-            anyFilterPresent(
-                filters,
-                FILTER_LEVELS.menuItem
-            );
-
-        const menuRequired =
-            anyFilterPresent(
-                filters,
-                FILTER_LEVELS.menu
-            );
-
 
         return Restaurant.findAndCountAll({
+
+            logging: (sql) => {
+                console.log("\n========== SQL ==========");
+                console.log(sql);
+                console.log("=========================\n");
+            },
+
             where: restaurantWhere,
 
             distinct: true,
 
             limit,
-
             offset,
 
             include: [
-                {
-                    model: Branch,
-                    as: "branches",
-
-                    required: branchRequired,
-
-                    where: branchWhere,
-
-                    include: [
-                        {
-                            model: BranchMenuItem,
-                            as: "branchMenuItems",
-
-                            required: branchMenuItemRequired,
-
-                            where: branchMenuItemWhere,
-
-                            include: [
-                                {
-                                    model: MenuItem,
-                                    as: "menuItem",
-
-                                    required: menuItemRequired,
-
-                                    where: menuItemWhere,
-                                },
-                            ],
-                        },
-                    ],
-                },
-
-                {
-                    model: Menu,
-                    as: "menus",
-
-                    required: menuRequired,
-
-                    where: menuWhere,
-                },
+                branchInclude,
+                menuInclude,
             ],
         });
     },
