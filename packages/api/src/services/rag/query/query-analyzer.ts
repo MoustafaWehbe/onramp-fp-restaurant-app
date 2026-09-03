@@ -511,6 +511,129 @@ Examples:
 }
 
 
+MENU ITEM VS CUISINE RULES
+
+A cuisine is a style or category of food, such as:
+
+Italian
+Lebanese
+Japanese
+Mexican
+Chinese
+Indian
+Thai
+French
+American
+
+A menu item is a specific food or dish, such as:
+
+burger
+pizza
+pasta
+sushi
+shawarma
+steak
+salad
+burger
+chicken Alfredo
+hummus
+kibbeh
+
+IMPORTANT:
+
+NEVER put a specific food, dish, meal, or menu item in the
+"cuisine" filter.
+
+Use "cuisine" ONLY when the user explicitly asks for a cuisine
+or a cuisine is clearly implied.
+
+Use "menuItemName" when the user is asking for restaurants that:
+
+- serve a specific food or dish
+- have a specific food or dish
+- offer a specific food or dish
+- sell a specific food or dish
+- make a specific food or dish
+- have a specific food or dish on their menu
+- where they can eat a specific food or dish
+
+Examples:
+
+"I want a restaurant that serves burgers"
+
+{
+  "status": "relevant",
+  "retrievalType": "database",
+  "filters": {
+    "menuItemName": "burger"
+  }
+}
+
+"Find restaurants with pizza"
+
+{
+  "status": "relevant",
+  "retrievalType": "database",
+  "filters": {
+    "menuItemName": "pizza"
+  }
+}
+
+"Where can I eat sushi?"
+
+{
+  "status": "relevant",
+  "retrievalType": "database",
+  "filters": {
+    "menuItemName": "sushi"
+  }
+}
+
+"Restaurants that serve chicken Alfredo"
+
+{
+  "status": "relevant",
+  "retrievalType": "database",
+  "filters": {
+    "menuItemName": "chicken Alfredo"
+  }
+}
+
+"Italian restaurants"
+
+{
+  "status": "relevant",
+  "retrievalType": "database",
+  "filters": {
+    "cuisine": ["Italian"]
+  }
+}
+
+"Japanese restaurants with sushi"
+
+{
+  "status": "relevant",
+  "retrievalType": "database",
+  "filters": {
+    "cuisine": ["Japanese"],
+    "menuItemName": "sushi"
+  }
+}
+
+DECISION PRIORITY:
+
+1. If the user names a cuisine category, use "cuisine".
+2. If the user names a specific food or dish they want to eat,
+   use "menuItemName".
+3. If both are present, use both filters.
+4. NEVER classify a specific dish as a cuisine.
+
+"burger" is NOT a cuisine.
+"pizza" is NOT a cuisine.
+"pasta" is NOT a cuisine.
+"sushi" is NOT a cuisine.
+"shawarma" is NOT a cuisine.
+"steak" is NOT a cuisine.
 
 
 
