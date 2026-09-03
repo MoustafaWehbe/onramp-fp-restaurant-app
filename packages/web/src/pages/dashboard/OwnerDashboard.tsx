@@ -21,8 +21,12 @@ interface Branch {
 }
 
 interface DashboardResponse {
-  data: Branch[];
-  menu_count: number;
+  data: {
+    branch_count: number;
+    menu_count: number;
+    review_count: number;
+    average_rating: number;
+  };
 }
 
 export function OwnerDashboard() {
@@ -33,6 +37,7 @@ export function OwnerDashboard() {
     averageRating,
   } = useOutletContext<OwnerOutletContext>();
 
+  const [branchCount, setBranchCount] = useState(0);
   const [branches, setBranches] = useState<Branch[]>([]);
   const [menuCount, setMenuCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -49,12 +54,27 @@ export function OwnerDashboard() {
         setIsLoading(true);
         setError(null);
 
-        const response = await apiClient.get<DashboardResponse>(
-          `/owner/restaurants/${restaurantSlug}/branches`,
+        const [dashboardResponse, branchesResponse] = await Promise.all([
+          apiClient.get<DashboardResponse>(
+            `/owner/restaurants/${restaurantSlug}/dashboard`,
+          ),
+
+          apiClient.get<{ data: Branch[] }>(
+            `/owner/restaurants/${restaurantSlug}/branches`,
+          ),
+        ]);
+
+        setBranchCount(
+          dashboardResponse.data.data.branch_count ?? 0,
         );
 
-        setBranches(response.data.data ?? []);
-        setMenuCount(response.data.menu_count ?? 0);
+        setMenuCount(
+          dashboardResponse.data.data.menu_count ?? 0,
+        );
+
+        setBranches(
+          branchesResponse.data.data ?? [],
+        );
       } catch (error) {
         console.error("Failed to load dashboard:", error);
 
@@ -168,14 +188,14 @@ export function OwnerDashboard() {
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
         <StatCard
           label="Branches"
-          value={branches.length.toString()}
+          value={branchCount.toString()}
           caption="Active locations"
           icon={MapPin}
         />
 
         <StatCard
           label="Menus"
-          value="1"
+          value={menuCount.toString()}
           caption="Available menus"
           icon={BookOpen}
         />
