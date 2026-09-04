@@ -14,7 +14,7 @@ COPY packages/shared ./packages/shared
 RUN npm run build --workspace=@fp_restaurant/web
 
 
-FROM nginx:alpine
+FROM nginx:1.27-alpine
 
 COPY --from=build /app/packages/web/dist /usr/share/nginx/html
 COPY packages/web/nginx.conf /etc/nginx/conf.d/default.conf

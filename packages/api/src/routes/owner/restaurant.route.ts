@@ -8,6 +8,8 @@ import { verifyRestaurantOwnership } from "../../middleware/verifyRetsaurantOwne
 import { authorize } from "../../middleware/authorize";
 import { upload } from "../../middleware/upload";
 import { parseJsonFields } from "../../middleware/parse-json-fields";
+import { dashboardController } from "../../controllers/owner/dashboard.controller";
+import { ownerBranchParamsSchema } from "../../schemas/owner/branch.schema";
 
 const router = Router();
 
@@ -41,5 +43,15 @@ router.get(
     authorize("owner"),
     verifyRestaurantOwnership,
     restaurantController.getBySlug,
+);
+
+router.get(
+  "/:restaurantSlug/dashboard",
+  authenticate,
+  authorize("owner"),
+  rateLimiter,
+  validate(ownerBranchParamsSchema, "params"),
+  verifyRestaurantOwnership,
+  dashboardController.get,
 );
 export  {router as restaurantOwnerRouter};
